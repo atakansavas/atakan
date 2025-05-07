@@ -1,8 +1,63 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import { useEffect, useRef } from "react";
+
 export default function Home() {
+  const playerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Create YouTube player
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+
+    let player: any;
+    // Initialize player when YouTube API is ready
+    // Define the YouTube API ready callback on the window object
+    (window as any).onYouTubeIframeAPIReady = () => {
+      player = new (window as any).YT.Player("youtube-player", {
+        videoId: "vITHAlvP9Oo",
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          mute: 1, // Changed from 1 to 0 to enable sound
+          start: 1,
+          loop: 1,
+          playlist: "vITHAlvP9Oo",
+          showinfo: 0,
+          rel: 0,
+          enablejsapi: 1,
+        },
+        events: {
+          onReady: (event: any) => {
+            event.target.playVideo();
+          },
+        },
+      });
+    };
+
+    return () => {
+      // Clean up
+      if (player) {
+        player.destroy();
+      }
+      (window as any).onYouTubeIframeAPIReady = null;
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-b from-gray-900 to-black text-white font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col items-center gap-8 max-w-3xl text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-b from-gray-900 to-black text-white font-[family-name:var(--font-geist-sans)] relative overflow-hidden">
+      {/* YouTube Background Player */}
+      <div className="absolute inset-0 pointer-events-none opacity-30 overflow-hidden">
+        <div
+          id="youtube-player"
+          ref={playerRef}
+          className="w-full h-full"
+        ></div>
+      </div>
+
+      <main className="flex flex-col items-center gap-8 max-w-3xl text-center z-10">
         <div className="relative animate-[spin_15s_ease-in-out_infinite]">
           <div className="w-[180px] h-[180px] rounded-full border-4 border-blue-500 shadow-lg shadow-blue-500/50 overflow-hidden relative">
             <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -102,7 +157,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="mt-16 text-gray-400 text-sm font-[family-name:var(--font-geist-mono)]">
+      <footer className="mt-16 text-gray-400 text-sm font-[family-name:var(--font-geist-mono)] z-10">
         <p>
           © {new Date().getFullYear()} Developer Atakan | Powered by coffee and
           bad jokes
