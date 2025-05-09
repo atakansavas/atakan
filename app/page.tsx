@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useEffect, useRef } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const playerRef = useRef<HTMLDivElement>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     // Create YouTube player
@@ -46,6 +48,14 @@ export default function Home() {
     };
   }, []);
 
+  const openImageModal = () => {
+    setShowModal(true);
+  };
+
+  const closeImageModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gradient-to-b from-gray-900 to-black text-white font-[family-name:var(--font-geist-sans)] relative overflow-hidden">
       {/* YouTube Background Player */}
@@ -58,44 +68,49 @@ export default function Home() {
       </div>
 
       <main className="flex flex-col items-center gap-8 max-w-3xl text-center z-10">
-        <div className="relative animate-[spin_15s_ease-in-out_infinite]">
-          <div className="w-[180px] h-[180px] rounded-full border-4 border-blue-500 shadow-lg shadow-blue-500/50 overflow-hidden relative">
-            <svg viewBox="0 0 100 100" className="w-full h-full">
-              <defs>
-                <clipPath id="circleView">
-                  <circle cx="50" cy="50" r="50" />
-                </clipPath>
-              </defs>
-              <image
-                href="/atakan-profile.jpg"
-                width="100"
-                height="100"
-                clipPath="url(#circleView)"
-                className="object-cover"
-              />
-            </svg>
+        <div className="relative animate-[bounce_0.6s_ease-in-out_infinite] hover:animate-[spin_0.5s_linear_infinite]">
+          <div
+            className="w-[180px] h-[180px] rounded-full border-4 border-blue-500 shadow-lg shadow-blue-500/50 overflow-hidden relative group cursor-pointer"
+            onClick={openImageModal}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 animate-[shimmer_1s_ease-in-out_infinite] -translate-x-full group-hover:translate-x-full transition-all duration-700"></div>
+            <Image
+              src="/cv.JPG"
+              alt="Atakan"
+              width={180}
+              height={180}
+              className="transition-all duration-200 hover:scale-110 hover:rotate-12 animate-[pulse_1.5s_ease-in-out_infinite_alternate]"
+            />
           </div>
-          <div className="absolute -top-4 -right-4 bg-yellow-400 text-black p-2 rounded-full font-bold animate-[pulse_2s_infinite]">
-            <svg
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              className="fill-current"
-            >
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
-            </svg>
+          <div className="absolute -top-2 -right-2 text-2xl animate-[wiggle_0.3s_ease-in-out_infinite] opacity-0 hover:opacity-100">
+            🧙‍♂️
+          </div>
+          <div className="absolute -bottom-2 -left-2 text-2xl animate-[wiggle_0.3s_ease-in-out_infinite_0.15s] opacity-0 hover:opacity-100">
+            💻
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 animate-[pulse_3s_ease-in-out_infinite]">
+        <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 animate-[gradient_3s_ease-in-out_infinite] relative">
           Developer Atakan
+          <span className="absolute top-0 left-0 right-0 bottom-0 flex overflow-hidden opacity-70">
+            <span className="animate-[sparkle_2s_ease-in-out_infinite_0.4s] text-white absolute h-1 w-1 rounded-full bg-white top-[15%] left-[10%]"></span>
+            <span className="animate-[sparkle_2s_ease-in-out_infinite_0.1s] text-white absolute h-1 w-1 rounded-full bg-white top-[45%] left-[45%]"></span>
+            <span className="animate-[sparkle_2s_ease-in-out_infinite_0.7s] text-white absolute h-1 w-1 rounded-full bg-white top-[30%] left-[75%]"></span>
+            <span className="animate-[sparkle_2s_ease-in-out_infinite_1.1s] text-white absolute h-1 w-1 rounded-full bg-white top-[70%] left-[20%]"></span>
+            <span className="animate-[sparkle_2s_ease-in-out_infinite_0.9s] text-white absolute h-1 w-1 rounded-full bg-white top-[60%] left-[60%]"></span>
+          </span>
         </h1>
 
-        <h2 className="text-xl md:text-2xl text-blue-300 font-[family-name:var(--font-geist-mono)]">
+        <h2 className="text-xl md:text-2xl font-[family-name:var(--font-geist-mono)] bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-400 animate-[gradient_4s_ease-in-out_infinite_alternate] relative">
           Code Wizard & Bug Slayer
+          <span className="absolute top-0 left-0 right-0 bottom-0 flex overflow-hidden opacity-70">
+            <span className="animate-[sparkle_3s_ease-in-out_infinite_0.3s] text-white absolute h-1 w-1 rounded-full bg-white top-[20%] left-[15%]"></span>
+            <span className="animate-[sparkle_3s_ease-in-out_infinite_0.8s] text-white absolute h-1 w-1 rounded-full bg-white top-[50%] left-[70%]"></span>
+            <span className="animate-[sparkle_3s_ease-in-out_infinite_1.2s] text-white absolute h-1 w-1 rounded-full bg-white top-[80%] left-[30%]"></span>
+          </span>
         </h2>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md hover:scale-105 transition-transform duration-300">
+        <div className="backdrop-blur-md p-6 rounded-lg shadow-xl max-w-md hover:scale-105 transition-transform duration-300 border border-gray-700/50">
           <p className="text-lg mb-4">
             Welcome to my digital playground, where:
           </p>
@@ -117,7 +132,7 @@ export default function Home() {
 
         <div className="flex gap-4 mt-6 flex-wrap justify-center">
           <a
-            className="rounded-full bg-blue-600 text-white px-6 py-3 font-bold flex items-center gap-2 hover:scale-110 hover:bg-blue-700 active:scale-95 transition-all"
+            className="rounded-full backdrop-blur-md text-white px-6 py-3 font-bold flex items-center gap-2 hover:scale-110 active:scale-95 transition-all border border-gray-700/50"
             href="https://github.com/atakansavas"
             target="_blank"
             rel="noopener noreferrer"
@@ -136,7 +151,7 @@ export default function Home() {
             </svg>
           </a>
           <a
-            className="rounded-full bg-purple-600 text-white px-6 py-3 font-bold flex items-center gap-2 hover:scale-110 hover:bg-purple-700 active:scale-95 transition-all"
+            className="rounded-full backdrop-blur-md text-white px-6 py-3 font-bold flex items-center gap-2 hover:scale-110 active:scale-95 transition-all border border-gray-700/50"
             href="https://www.linkedin.com/in/hiata/"
             target="_blank"
             rel="noopener noreferrer"
@@ -158,10 +173,6 @@ export default function Home() {
       </main>
 
       <footer className="mt-16 text-gray-400 text-sm font-[family-name:var(--font-geist-mono)] z-10">
-        <p>
-          © {new Date().getFullYear()} Developer Atakan | Powered by coffee and
-          bad jokes
-        </p>
         <p
           className="mt-2 animate-[colorChange_3s_infinite]"
           style={{
@@ -170,7 +181,8 @@ export default function Home() {
             animationIterationCount: "infinite",
           }}
         >
-          If you can read this, you should probably hire me
+          © {new Date().getFullYear()} Developer Atakan | Powered by coffee and
+          bad jokes
         </p>
         <style jsx>{`
           @keyframes colorChange {
@@ -186,6 +198,33 @@ export default function Home() {
           }
         `}</style>
       </footer>
+
+      {/* Image Modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={closeImageModal}
+        >
+          <div
+            className="relative max-w-3xl max-h-[90vh] rounded-lg overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black/80 transition-colors"
+              onClick={closeImageModal}
+            >
+              ✕
+            </button>
+            <Image
+              src="/old.JPG"
+              alt="Atakan"
+              width={600}
+              height={600}
+              className="object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
