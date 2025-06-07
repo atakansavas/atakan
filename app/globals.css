@@ -1,26 +1,83 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Soft Light Color Palette */
+  --background-base: #f9f9f6;
+  --background-alt: #f1f3ef;
+  --accent-blue: #d6e4f0;
+  --accent-purple: #f0e4ff;
+  --accent-pink: #f9d7e3;
+  --text-primary: #1c1c1e;
+  --text-secondary: #6b7280;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+  --white-soft: #fefefe;
+
+  /* Gradient Variables */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--accent-blue) 0%,
+    var(--accent-purple) 50%,
+    var(--accent-pink) 100%
+  );
+  --gradient-background: linear-gradient(
+    135deg,
+    var(--background-base) 0%,
+    var(--background-alt) 100%
+  );
+  --gradient-card: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+
+  /* Font Variables */
+  --font-sora: var(--font-sora);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background-base);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-sora);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--gradient-background);
+  color: var(--text-primary);
+  font-family: var(--font-sora), system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection colors */
+::selection {
+  background: var(--accent-purple);
+  color: var(--text-primary);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-alt);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-blue);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-purple);
 }
