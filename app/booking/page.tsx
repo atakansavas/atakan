@@ -3,10 +3,12 @@ import { Conversation } from "@/components/Conversation";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
   Bot,
   CheckCircle,
   Clock,
   Headphones,
+  Mail,
   MessageSquare,
   Mic,
   Users,
@@ -18,6 +20,9 @@ import { useState } from "react";
 
 export default function BookingPage() {
   const [selectedService, setSelectedService] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
 
   const services = [
     {
@@ -56,6 +61,24 @@ export default function BookingPage() {
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    setIsEmailValid(validateEmail(value));
+  };
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isEmailValid) {
+      setEmailSubmitted(true);
+    }
   };
 
   return (
@@ -164,7 +187,97 @@ export default function BookingPage() {
               planlar.
             </p>
 
-            <Conversation />
+            {/* Email Collection or Conversation */}
+            {!emailSubmitted ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-md mx-auto"
+              >
+                <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-gray-200">
+                  <div className="flex flex-col items-center gap-6">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                      <Mail className="w-8 h-8 text-white" />
+                    </div>
+
+                    <div className="text-center">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        E-posta Adresiniz
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Sesli görüşmeyi başlatmak için e-posta adresinizi girin
+                      </p>
+                    </div>
+
+                    <form
+                      onSubmit={handleEmailSubmit}
+                      className="w-full space-y-4"
+                    >
+                      <div className="relative">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={handleEmailChange}
+                          placeholder="ornek@email.com"
+                          className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 bg-white/50 backdrop-blur-sm ${
+                            email && !isEmailValid
+                              ? "border-red-300 focus:border-red-500"
+                              : isEmailValid
+                              ? "border-green-300 focus:border-green-500"
+                              : "border-gray-200 focus:border-blue-500"
+                          } focus:outline-none focus:ring-0`}
+                          required
+                        />
+                        {email && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center ${
+                              isEmailValid ? "bg-green-500" : "bg-red-500"
+                            }`}
+                          >
+                            <CheckCircle className="w-3 h-3 text-white" />
+                          </motion.div>
+                        )}
+                      </div>
+
+                      <motion.button
+                        type="submit"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={!isEmailValid}
+                        className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                          isEmailValid
+                            ? "bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        Devam Et
+                        <ArrowRight className="w-4 h-4" />
+                      </motion.button>
+                    </form>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <div className="mb-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    E-posta kaydedildi: {email}
+                  </motion.div>
+                </div>
+                <Conversation email={email} disabled={false} />
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
