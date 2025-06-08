@@ -17,45 +17,90 @@ import Image from "next/image";
 export default function CVPage() {
   const experiences = [
     {
-      title: "AI Solutions Specialist",
-      company: "Ben Atakan AI",
-      period: "2022 - Devam Ediyor",
+      title: "Kıdemli Full-Stack Geliştirici & Yapay Zeka Çözümleri Mimarı",
+      period: "2021 - Günümüz",
       description:
-        "İşletmelere yapay zeka desteği sağlayan AI çözümleri ve dijital dönüşüm projeleri geliştirme.",
-      skills: ["Next.js", "OpenAI", "n8n", "MongoDB", "ElevenLabs"],
+        "Yapay zeka destekli çözümler geliştirme ve dijital dönüşüm girişimlerinde liderlik. Büyük dil modelleri, sesli yapay zeka ve süreç otomasyonu konularında uzmanlaşma.",
+      skills: ["Next.js", "OpenAI", "LangChain", "Vector DBs", "ElevenLabs"],
     },
     {
-      title: "Full-Stack Developer",
-      company: "MyBulut",
-      period: "2021 - 2022",
+      title: "Full-Stack Geliştirici",
+      period: "2017 - 2021",
       description:
-        "Bulut tabanlı SaaS çözümleri ve kurumsal yazılım geliştirme.",
-      skills: ["React", "Node.js", "PostgreSQL", "AWS"],
+        "Kurumsal düzeyde web uygulamaları ve SaaS platformları geliştirdim. Bulut mimarisi ve dağıtık sistemler üzerine odaklandım.",
+      skills: ["React", "Node.js", "PostgreSQL", "AWS", "Docker"],
     },
     {
-      title: "Frontend Developer",
-      company: "PlutonAI",
-      period: "2020 - 2021",
+      title: "Frontend Geliştirici",
+      period: "2013 - 2017",
       description:
-        "AI destekli web uygulamaları ve kullanıcı arayüzü geliştirme.",
-      skills: ["Vue.js", "TypeScript", "Firebase"],
+        "jQuery ve vanilla JavaScript ile başlayıp, Angular.js üzerinden modern frameworklere kadar ilerledim. Responsive web uygulamaları ve interaktif kullanıcı arayüzleri geliştirdim.",
+      skills: ["JavaScript", "jQuery", "Angular.js", "HTML5/CSS3"],
     },
   ];
 
   const skills = [
     {
-      category: "AI & Automation",
-      items: ["OpenAI API", "ElevenLabs", "n8n", "Logo ERP", "AI Development"],
+      category: "Yapay Zeka & Makine Öğrenmesi",
+      description:
+        "En son teknolojileri kullanarak yapay zeka çözümleri geliştirme konusunda kapsamlı deneyim",
+      items: [
+        "Büyük Dil Modelleri (GPT-3/4)",
+        "Yapay Sesli Asistanlar",
+        "Vektör Veritabanları",
+        "Makine Öğrenmesi Süreçleri",
+        "Bilgisayarlı Görü",
+      ],
     },
     {
-      category: "Frontend",
-      items: ["Next.js", "React", "Vue.js", "TypeScript", "TailwindCSS"],
+      category: "Frontend Gelişimi",
+      description:
+        "Vanilla JS'den modern frameworklere kadar frontend teknolojilerinde ilerleyici uzmanlık",
+      items: [
+        "JavaScript (ES6+)",
+        "React & Next.js",
+        "Vue.js",
+        "TypeScript",
+        "Angular",
+        "jQuery",
+      ],
     },
     {
-      category: "Backend",
-      items: ["Node.js", "MongoDB", "PostgreSQL", "Firebase"],
+      category: "Backend & Altyapı",
+      description: "Kapsamlı backend geliştirme ve bulut altyapı uzmanlığı",
+      items: [
+        "Node.js",
+        "Python",
+        "GraphQL",
+        "REST APIler",
+        "Mikroservisler",
+        "Docker/Kubernetes",
+      ],
     },
-    { category: "Tools", items: ["Git", "Docker", "AWS", "Vercel"] },
+    {
+      category: "Veritabanı & Depolama",
+      description:
+        "Çeşitli veritabanı paradigmaları ve depolama çözümlerinde deneyim",
+      items: [
+        "PostgreSQL",
+        "MongoDB",
+        "Redis",
+        "Elasticsearch",
+        "Vektör Depoları",
+        "AWS S3",
+      ],
+    },
+    {
+      category: "DevOps & Bulut",
+      description: "Bulut platform uzmanlığı ve modern dağıtım pratikleri",
+      items: [
+        "AWS Suite",
+        "Google Cloud",
+        "CI/CD Süreçleri",
+        "Altyapı Kodlaması",
+        "İzleme & Loglama",
+      ],
+    },
   ];
 
   return (
@@ -63,7 +108,7 @@ export default function CVPage() {
       className="min-h-screen"
       style={{ background: "var(--gradient-background)" }}
     >
-      {/* Navigation */}
+      {/* Navigasyon */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -84,16 +129,16 @@ export default function CVPage() {
               className="text-lg font-semibold"
               style={{ color: "var(--text-primary)" }}
             >
-              Hakkımda / Özgeçmiş
+              Hakkımda / CV
             </div>
           </div>
         </div>
       </motion.nav>
 
-      {/* Main Content */}
+      {/* Ana İçerik */}
       <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
+          {/* Başlık */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -121,7 +166,7 @@ export default function CVPage() {
               Atakan Savaş
             </h1>
             <p className="text-xl text-gray-600 mb-6">
-              AI Solutions Specialist & Full-Stack Developer
+              Full-Stack Geliştirici & Yapay Zeka Çözümleri Mimarı
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
@@ -139,7 +184,7 @@ export default function CVPage() {
             </div>
           </motion.div>
 
-          {/* About */}
+          {/* Hakkımda */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -155,21 +200,23 @@ export default function CVPage() {
                 Hakkımda
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                İşletmelere yapay zeka desteği sağlayan bir AI uzmanıyım. Sesli
-                asistanlardan süreç otomasyonuna kadar geniş bir yelpazede AI
-                çözümleri geliştiriyorum. &quot;İşinize yapay zeka desteği
-                alın&quot; mottosuyla hareket ediyorum.
+                On yılı aşkın deneyime sahip, yapay zeka çözümleri ve modern web
+                teknolojilerinde uzmanlaşmış bir full-stack geliştiriciyim.
+                Yolculuğum vanilla JavaScript ile başladı ve çeşitli framework
+                ve teknolojilerle günümüzün yapay zeka odaklı geliştirme
+                ortamına kadar evrildi.
               </p>
               <p className="text-gray-700 leading-relaxed">
-                OpenAI, ElevenLabs, n8n gibi modern AI teknolojileriyle müşteri
-                hizmetlerinden süreç otomasyonuna kadar geniş bir yelpazede
-                projeler hayata geçiriyorum. MyBulut ve PlutonAI gibi başarılı
-                AI projelerinin kurucusuyum.
+                OpenAI, LangChain ve çeşitli ML frameworkleri gibi en son
+                teknolojileri kullanarak yapay zeka destekli çözümler geliştirme
+                konusunda uzmanlaştım. Uzmanlık alanım frontend geliştirmeden
+                bulut mimarisine kadar uzanıyor ve özellikle ölçeklenebilir ve
+                yenilikçi çözümler yaratmaya odaklanıyorum.
               </p>
             </div>
           </motion.section>
 
-          {/* Experience */}
+          {/* Deneyim */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -181,7 +228,7 @@ export default function CVPage() {
               style={{ color: "var(--text-primary)" }}
             >
               <Briefcase className="w-6 h-6 text-purple-600" />
-              İş Deneyimi
+              Profesyonel Deneyim
             </h2>
             <div className="space-y-6">
               {experiences.map((exp, index) => (
@@ -201,7 +248,6 @@ export default function CVPage() {
                       >
                         {exp.title}
                       </h3>
-                      <p className="text-blue-600 font-medium">{exp.company}</p>
                     </div>
                     <div className="flex items-center gap-2 text-gray-500 text-sm mt-2 md:mt-0">
                       <Calendar className="w-4 h-4" />
@@ -224,7 +270,7 @@ export default function CVPage() {
             </div>
           </motion.section>
 
-          {/* Skills */}
+          {/* Yetenekler */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -236,9 +282,9 @@ export default function CVPage() {
               style={{ color: "var(--text-primary)" }}
             >
               <GraduationCap className="w-6 h-6 text-green-600" />
-              Teknik Yetenekler
+              Teknik Uzmanlık
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {skills.map((skillGroup, index) => (
                 <motion.div
                   key={index}
@@ -249,11 +295,12 @@ export default function CVPage() {
                   className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-gray-100"
                 >
                   <h3
-                    className="text-lg font-semibold mb-4"
+                    className="text-lg font-semibold mb-2"
                     style={{ color: "var(--text-primary)" }}
                   >
                     {skillGroup.category}
                   </h3>
+                  <p className="text-gray-600 mb-4">{skillGroup.description}</p>
                   <div className="flex flex-wrap gap-2">
                     {skillGroup.items.map((skill) => (
                       <span
@@ -269,7 +316,7 @@ export default function CVPage() {
             </div>
           </motion.section>
 
-          {/* Contact Links */}
+          {/* İletişim Bağlantıları */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -87,6 +87,11 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" />
         <link rel="canonical" href="https://benatakan.com/" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script
+          src="https://unpkg.com/@elevenlabs/convai-widget-embed"
+          async
+          type="text/javascript"
+        ></script>
       </head>
       <body className={`${sora.variable} font-sans antialiased`}>
         {children}

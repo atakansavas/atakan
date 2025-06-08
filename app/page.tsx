@@ -171,6 +171,12 @@ export default function HomePage() {
                 Hakkımda
               </a>
               <a
+                href="/booking"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                Randevu Ayarla
+              </a>
+              <a
                 href="#contact"
                 className="text-gray-600 hover:text-blue-600 transition-colors"
               >
@@ -244,7 +250,7 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <motion.a
-                  href="#contact"
+                  href="/booking"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
@@ -475,9 +481,18 @@ export default function HomePage() {
             >
               İletişim
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 mb-8">
               AI projeleriniz hakkında konuşalım
             </p>
+            <motion.a
+              href="/booking"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all mb-8"
+            >
+              <Calendar className="w-5 h-5" />
+              Hızlı Randevu Al
+            </motion.a>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
