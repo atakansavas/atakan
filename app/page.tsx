@@ -259,12 +259,12 @@ export default function HomePage() {
                   <Calendar className="w-5 h-5" />
                 </motion.a>
                 <motion.a
-                  href="#services"
+                  href="/login"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="px-8 py-4 bg-white/90 text-gray-800 rounded-full font-semibold flex items-center justify-center gap-2 backdrop-blur-lg border border-gray-200 hover:bg-white/100 transition-all"
                 >
-                  Hizmetlerimizi İncele
+                  AI Dashboard
                   <ArrowRight className="w-5 h-5" />
                 </motion.a>
               </div>
