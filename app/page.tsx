@@ -160,28 +160,16 @@ export default function HomePage() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a
-                href="#services"
+                href="/presentations"
                 className="text-gray-600 hover:text-blue-600 transition-colors"
               >
-                Hizmetler
-              </a>
-              <a
-                href="#about"
-                className="text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                Hakkımda
+                Sunumlar
               </a>
               <a
                 href="/booking"
                 className="text-gray-600 hover:text-blue-600 transition-colors"
               >
                 Randevu Ayarla
-              </a>
-              <a
-                href="#contact"
-                className="text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                İletişim
               </a>
               <a
                 href="/cv"
