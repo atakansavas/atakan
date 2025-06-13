@@ -1,67 +1,15 @@
 "use client";
 import { Conversation } from "@/components/Conversation";
 import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Bot,
-  CheckCircle,
-  Clock,
-  Headphones,
-  Mail,
-  MessageSquare,
-  Mic,
-  Users,
-  Zap,
-} from "lucide-react";
+import { ArrowLeft, Bot, CheckCircle, Clock, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function BookingPage() {
-  const [selectedService, setSelectedService] = useState("");
   const [email, setEmail] = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
-
-  const services = [
-    {
-      id: "voice-assistant",
-      title: "Sesli AI Asistan",
-      description: "7/24 çalışan sesli yapay zeka asistanı",
-      icon: <Headphones className="w-8 h-8" />,
-      duration: "30 dk",
-      color: "from-blue-500 to-purple-600",
-    },
-    {
-      id: "automation",
-      title: "Süreç Otomasyonu",
-      description: "İş süreçlerinizi otomatikleştirin",
-      icon: <Zap className="w-8 h-8" />,
-      duration: "45 dk",
-      color: "from-purple-500 to-pink-600",
-    },
-    {
-      id: "integration",
-      title: "Sistem Entegrasyonu",
-      description: "Mevcut sistemlerinizle AI entegrasyonu",
-      icon: <MessageSquare className="w-8 h-8" />,
-      duration: "60 dk",
-      color: "from-pink-500 to-red-600",
-    },
-    {
-      id: "consultation",
-      title: "AI Danışmanlığı",
-      description: "Kapsamlı AI strateji danışmanlığı",
-      icon: <Users className="w-8 h-8" />,
-      duration: "90 dk",
-      color: "from-indigo-500 to-blue-600",
-    },
-  ];
-
-  const handleServiceSelect = (serviceId: string) => {
-    setSelectedService(serviceId);
-  };
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,7 +31,7 @@ export default function BookingPage() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen flex flex-col"
       style={{ background: "var(--gradient-background)" }}
     >
       {/* Navigation */}
@@ -121,264 +69,218 @@ export default function BookingPage() {
                 </div>
               </motion.div>
             </Link>
+            <div
+              className="text-lg font-semibold"
+              style={{ color: "var(--text-primary)" }}
+            >
+              Randevu Al
+            </div>
           </div>
         </div>
       </motion.nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            animate={{
-              x: [0, 30, 0],
-              y: [0, -30, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute top-20 left-10 w-64 h-64 rounded-full opacity-20"
-            style={{ background: "var(--gradient-primary)" }}
-          />
-          <motion.div
-            animate={{
-              x: [0, -40, 0],
-              y: [0, 40, 0],
-            }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="absolute top-40 right-20 w-48 h-48 rounded-full opacity-15"
-            style={{ background: "var(--accent-blue)" }}
-          />
-        </div>
-
-        <div className="max-w-4xl mx-auto relative z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-lg rounded-full border border-gray-200 mb-8">
-              <Bot className="w-5 h-5 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">
-                AI Destekli Randevu Sistemi
-              </span>
+      {/* Main Content */}
+      <main className="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Hero Section */}
+          <section className="relative overflow-hidden">
+            {/* Animated Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <motion.div
+                animate={{
+                  x: [0, 30, 0],
+                  y: [0, -30, 0],
+                }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="absolute top-20 left-10 w-64 h-64 rounded-full opacity-20"
+                style={{ background: "var(--gradient-primary)" }}
+              />
+              <motion.div
+                animate={{
+                  x: [0, -40, 0],
+                  y: [0, 40, 0],
+                }}
+                transition={{
+                  duration: 25,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                className="absolute top-40 right-20 w-48 h-48 rounded-full opacity-15"
+                style={{ background: "var(--accent-blue)" }}
+              />
             </div>
 
-            <h1
-              className="text-5xl md:text-6xl font-bold mb-6"
-              style={{ color: "var(--text-primary)" }}
-            >
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                AI Sesli Asistanı
-              </span>
-              <br />
-              ile Randevu Alın
-            </h1>
-
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-12">
-              Yapay zeka destekli sesli asistanımız, ihtiyaçlarınızı anlayarak
-              size en uygun AI çözümlerini önerir ve randevunuzu otomatik olarak
-              planlar.
-            </p>
-
-            {/* Email Collection or Conversation */}
-            {!emailSubmitted ? (
+            <div className="relative z-10 text-center">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-md mx-auto"
-              >
-                <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-gray-200">
-                  <div className="flex flex-col items-center gap-6">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                      <Mail className="w-8 h-8 text-white" />
-                    </div>
-
-                    <div className="text-center">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        E-posta Adresiniz
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Sesli görüşmeyi başlatmak için e-posta adresinizi girin
-                      </p>
-                    </div>
-
-                    <form
-                      onSubmit={handleEmailSubmit}
-                      className="w-full space-y-4"
-                    >
-                      <div className="relative">
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={handleEmailChange}
-                          placeholder="ornek@email.com"
-                          className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 bg-white/50 backdrop-blur-sm ${
-                            email && !isEmailValid
-                              ? "border-red-300 focus:border-red-500"
-                              : isEmailValid
-                              ? "border-green-300 focus:border-green-500"
-                              : "border-gray-200 focus:border-blue-500"
-                          } focus:outline-none focus:ring-0`}
-                          required
-                        />
-                        {email && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center ${
-                              isEmailValid ? "bg-green-500" : "bg-red-500"
-                            }`}
-                          >
-                            <CheckCircle className="w-3 h-3 text-white" />
-                          </motion.div>
-                        )}
-                      </div>
-
-                      <motion.button
-                        type="submit"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        disabled={!isEmailValid}
-                        className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
-                          isEmailValid
-                            ? "bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl"
-                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        }`}
-                      >
-                        Devam Et
-                        <ArrowRight className="w-4 h-4" />
-                      </motion.button>
-                    </form>
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ duration: 0.8 }}
               >
-                <div className="mb-4">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium mb-4"
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    E-posta kaydedildi: {email}
-                  </motion.div>
-                </div>
-                <Conversation email={email} disabled={false} />
-              </motion.div>
-            )}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Service Selection */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2
-              className="text-4xl font-bold mb-6"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Hangi Konuda Destek İstiyorsunuz?
-            </h2>
-            <p className="text-xl text-gray-600">
-              AI asistanımız size uygun çözümü bulmak için hangi alanda desteğe
-              ihtiyacınız olduğunu bilmek istiyor
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            {services.map((service, index) => (
-              <motion.div
-                key={service.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-                onClick={() => handleServiceSelect(service.id)}
-                className={`p-8 rounded-3xl cursor-pointer transition-all duration-300 border-2 ${
-                  selectedService === service.id
-                    ? "border-blue-500 bg-blue-50/50"
-                    : "border-gray-200 bg-white/80 hover:border-gray-300"
-                } backdrop-blur-lg`}
-              >
-                <div className="flex items-start justify-between mb-6">
-                  <div
-                    className={`p-3 rounded-2xl bg-gradient-to-r ${service.color} text-white`}
-                  >
-                    {service.icon}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Clock className="w-4 h-4" />
-                    {service.duration}
-                  </div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-lg rounded-full border border-gray-200 mb-8">
+                  <Bot className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    AI Destekli Randevu Sistemi
+                  </span>
                 </div>
 
-                <h3
-                  className="text-xl font-semibold mb-3"
+                <h1
+                  className="text-4xl md:text-5xl font-bold mb-6"
                   style={{ color: "var(--text-primary)" }}
                 >
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 mb-4">{service.description}</p>
+                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    AI Sesli Asistanı
+                  </span>
+                  <br />
+                  ile Randevu Alın
+                </h1>
 
-                {selectedService === service.id && (
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-12">
+                  Yapay zeka destekli sesli asistanımız, ihtiyaçlarınızı
+                  anlayarak size en uygun AI çözümlerini önerir ve randevunuzu
+                  otomatik olarak planlar.
+                </p>
+
+                {/* Email Collection or Conversation */}
+                {!emailSubmitted ? (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="flex items-center gap-2 text-blue-600"
+                    className="w-full max-w-md mx-auto"
                   >
-                    <CheckCircle className="w-5 h-5" />
-                    <span className="font-medium">Seçildi</span>
+                    <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-gray-200">
+                      <div className="flex flex-col items-center gap-6">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                          <Mail className="w-8 h-8 text-white" />
+                        </div>
+
+                        <div className="text-center">
+                          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                            E-posta Adresiniz
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            Sesli görüşmeyi başlatmak için e-posta adresinizi
+                            girin
+                          </p>
+                        </div>
+
+                        <form
+                          onSubmit={handleEmailSubmit}
+                          className="w-full space-y-4"
+                        >
+                          <div className="relative">
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={handleEmailChange}
+                              placeholder="ornek@email.com"
+                              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 bg-white/50 backdrop-blur-sm ${
+                                email && !isEmailValid
+                                  ? "border-red-300 focus:border-red-500"
+                                  : isEmailValid
+                                  ? "border-green-300 focus:border-green-500"
+                                  : "border-gray-200 focus:border-blue-500"
+                              } focus:outline-none focus:ring-0`}
+                              required
+                            />
+                            {email && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center ${
+                                  isEmailValid ? "bg-green-500" : "bg-red-500"
+                                }`}
+                              >
+                                <CheckCircle className="w-3 h-3 text-white" />
+                              </motion.div>
+                            )}
+                          </div>
+
+                          <motion.button
+                            type="submit"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            disabled={!isEmailValid}
+                            className={`w-full py-3 px-6 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+                              isEmailValid
+                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg"
+                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            }`}
+                          >
+                            Devam Et
+                            <Clock className="w-5 h-5" />
+                          </motion.button>
+                        </form>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="w-full max-w-2xl mx-auto"
+                  >
+                    <Conversation email={email} />
                   </motion.div>
                 )}
               </motion.div>
-            ))}
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-auto py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="mb-6">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Image
+                  src="/logo.png"
+                  alt="Ben Atakan AI"
+                  width={32}
+                  height={32}
+                  className="rounded-lg"
+                />
+                <div
+                  className="text-2xl font-semibold"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  Ben Atakan
+                </div>
+              </div>
+              <p className="text-gray-600">İşinize Yapay Zeka Desteği Alın</p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+              <Link href="/" className="hover:text-blue-600 transition-colors">
+                Ana Sayfa
+              </Link>
+              <Link
+                href="/presentations"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Sunumlar
+              </Link>
+              <Link
+                href="/booking"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Randevu
+              </Link>
+              <Link
+                href="/cv"
+                className="hover:text-blue-600 transition-colors"
+              >
+                CV
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-white"
-          >
-            <h2 className="text-3xl font-bold mb-4">Hemen AI Desteği Alın</h2>
-            <p className="text-xl mb-8 opacity-90">
-              Sesli asistanımız 7/24 aktif! Şimdi konuşmaya başlayın.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 bg-white text-blue-600 rounded-full font-semibold flex items-center justify-center gap-2 mx-auto shadow-lg hover:shadow-xl transition-all"
-            >
-              <Mic className="w-5 h-5" />
-              Sesli Asistanı Başlat
-            </motion.button>
-          </motion.div>
-        </div>
-      </section>
+      </footer>
     </div>
   );
 }

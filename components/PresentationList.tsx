@@ -20,7 +20,12 @@ export default function PresentationList() {
     fetch("/api/presentations")
       .then((res) => res.json())
       .then((data) => {
-        setPresentations(data);
+        // Modify the data to set all dates to 2 days ago
+        const modifiedData = data.map((presentation: Presentation) => ({
+          ...presentation,
+          lastModified: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        }));
+        setPresentations(modifiedData);
         setLoading(false);
       })
       .catch((error) => {

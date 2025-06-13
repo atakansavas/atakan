@@ -12,7 +12,7 @@ export default function PresentationsLayout({
 }) {
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen flex flex-col"
       style={{ background: "var(--gradient-background)" }}
     >
       {/* Navigation */}
@@ -61,12 +61,12 @@ export default function PresentationsLayout({
       </motion.nav>
 
       {/* Main Content */}
-      <main className="pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">{children}</div>
       </main>
 
       {/* Footer */}
-      <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
+      <footer className="mt-auto py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <div className="mb-6">
