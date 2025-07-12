@@ -93,6 +93,12 @@ export default function PresentationsLayout({
                 Ana Sayfa
               </Link>
               <Link
+                href="/projects"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Projeler
+              </Link>
+              <Link
                 href="/presentations"
                 className="hover:text-blue-600 transition-colors"
               >

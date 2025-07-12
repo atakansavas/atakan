@@ -160,6 +160,12 @@ export default function HomePage() {
             </div>
             <div className="hidden md:flex items-center space-x-8">
               <a
+                href="/projects"
+                className="text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                Projeler
+              </a>
+              <a
                 href="/presentations"
                 className="text-gray-600 hover:text-blue-600 transition-colors"
               >
@@ -692,6 +698,35 @@ export default function HomePage() {
                     {tech}
                   </span>
                 ))}
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <a
+                  href="/projects"
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  Projeler
+                </a>
+                <a
+                  href="/presentations"
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  Sunumlar
+                </a>
+                <a
+                  href="/booking"
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  Randevu
+                </a>
+                <a
+                  href="/cv"
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  CV
+                </a>
               </div>
             </div>
 
