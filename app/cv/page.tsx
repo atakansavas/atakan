@@ -25,7 +25,7 @@ export default function CVPage() {
     github: "https://github.com/atakansavas",
   };
 
-  const summary = `Experienced AI Solutions Architect and Full-Stack Developer with over a decade of expertise in developing AI-powered solutions and modern web technologies. Currently leading a 3-person team achieving $1M ARR, with plans to reach $2M ARR by year-end. Specialized in large language models, voice AI agents, and process automation.`;
+  const summary = `Experienced AI Solutions Architect and Full-Stack Developer with over a decade of expertise in developing AI-powered solutions and modern web technologies. Currently supporting a team preparing for investment. Specialized in large language models, voice AI agents, and process automation.`;
 
   const experience = [
     {
@@ -63,6 +63,8 @@ export default function CVPage() {
         "Built scalable solutions for various industries",
         "Implemented cloud-native architectures and microservices",
         "Developed RESTful APIs and GraphQL endpoints",
+        "Collaborated with enterprise organizations following Agile/Scrum methodologies",
+        "Built services and internal tools with ASP.NET and Blazor; implemented CI/CD with Azure DevOps",
       ],
       technologies: [
         "React",
@@ -72,18 +74,24 @@ export default function CVPage() {
         "Docker",
         "GraphQL",
         "TypeScript",
+        "ASP.NET",
+        "Blazor",
+        "Agile/Scrum",
+        "CI/CD",
+        "Azure DevOps",
       ],
     },
     {
-      title: "Frontend Developer",
+      title: "Web Developer",
       company: "Web Development Agencies",
       period: "2013 - 2017",
       location: "Istanbul, Turkey",
       description: [
-        "Started with jQuery and vanilla JavaScript, progressed through Angular.js to modern frameworks",
+        "Worked across web technologies from UI to basic backend integrations and APIs",
         "Developed responsive web applications and interactive user interfaces",
         "Implemented modern UI/UX patterns and optimized frontend performance",
         "Created cross-browser compatible solutions",
+        "Contributed to end-to-end web features beyond purely frontend responsibilities",
       ],
       technologies: [
         "JavaScript",
@@ -96,6 +104,14 @@ export default function CVPage() {
   ];
 
   const projects = [
+    {
+      title: "Bozcaada App",
+      description:
+        "AI-powered travel guide for Bozcaada featuring smart assistant, detailed maps, route planning, and live support; actively used in production.",
+      technologies: ["React Native", "Expo", "AI Tools"],
+      link: "https://www.bozcaada.app/",
+      status: "Active",
+    },
     {
       title: "SuperSocialScore",
       description:
