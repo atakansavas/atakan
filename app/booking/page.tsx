@@ -73,14 +73,14 @@ export default function BookingPage() {
               className="text-lg font-semibold"
               style={{ color: "var(--text-primary)" }}
             >
-              Randevu Al
+              Book Appointment
             </div>
           </div>
         </div>
       </motion.nav>
 
       {/* Main Content */}
-      <main className="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <main className="flex-grow pt-20 sm:pt-24 pb-8 sm:pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Hero Section */}
           <section className="relative overflow-hidden">
@@ -123,25 +123,25 @@ export default function BookingPage() {
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-lg rounded-full border border-gray-200 mb-8">
                   <Bot className="w-5 h-5 text-blue-600" />
                   <span className="text-sm font-medium text-gray-700">
-                    AI Destekli Randevu Sistemi
+                    AI-Powered Booking System
                   </span>
                 </div>
 
                 <h1
-                  className="text-4xl md:text-5xl font-bold mb-6"
+                  className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6"
                   style={{ color: "var(--text-primary)" }}
                 >
                   <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                    AI Sesli Asistanı
+                    AI Voice Assistant
                   </span>
                   <br />
-                  ile Randevu Alın
+                  Appointment Booking
                 </h1>
 
-                <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-12">
-                  Yapay zeka destekli sesli asistanımız, ihtiyaçlarınızı
-                  anlayarak size en uygun AI çözümlerini önerir ve randevunuzu
-                  otomatik olarak planlar.
+                <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-12 px-4">
+                  Our AI-powered voice assistant understands your needs,
+                  recommends the most suitable AI solutions, and automatically
+                  schedules your appointment.
                 </p>
 
                 {/* Email Collection or Conversation */}
@@ -149,21 +149,21 @@ export default function BookingPage() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-md mx-auto"
+                    className="w-full max-w-md mx-auto px-4"
                   >
-                    <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg p-8 border border-gray-200">
+                    <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-lg p-6 sm:p-8 border border-gray-200">
                       <div className="flex flex-col items-center gap-6">
                         <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
                           <Mail className="w-8 h-8 text-white" />
                         </div>
 
                         <div className="text-center">
-                          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                            E-posta Adresiniz
+                          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                            Your Email Address
                           </h3>
-                          <p className="text-sm text-gray-600">
-                            Sesli görüşmeyi başlatmak için e-posta adresinizi
-                            girin
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Enter your email address to start the voice
+                            conversation
                           </p>
                         </div>
 
@@ -176,7 +176,7 @@ export default function BookingPage() {
                               type="email"
                               value={email}
                               onChange={handleEmailChange}
-                              placeholder="ornek@email.com"
+                              placeholder="example@email.com"
                               className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 bg-white/50 backdrop-blur-sm ${
                                 email && !isEmailValid
                                   ? "border-red-300 focus:border-red-500"
@@ -210,7 +210,7 @@ export default function BookingPage() {
                                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
                             }`}
                           >
-                            Devam Et
+                            Continue
                             <Clock className="w-5 h-5" />
                           </motion.button>
                         </form>
@@ -233,43 +233,45 @@ export default function BookingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-auto py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
+      <footer className="mt-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="mb-6">
-              <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
                 <Image
                   src="/logo.png"
                   alt="Ben Atakan AI"
-                  width={32}
-                  height={32}
-                  className="rounded-lg"
+                  width={28}
+                  height={28}
+                  className="sm:w-8 sm:h-8 rounded-lg"
                 />
                 <div
-                  className="text-2xl font-semibold"
+                  className="text-xl sm:text-2xl font-semibold"
                   style={{ color: "var(--text-primary)" }}
                 >
                   Ben Atakan
                 </div>
               </div>
-              <p className="text-gray-600">İşinize Yapay Zeka Desteği Alın</p>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Get AI Support for Your Business
+              </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
+            <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-500">
               <Link href="/" className="hover:text-blue-600 transition-colors">
-                Ana Sayfa
+                Home
               </Link>
               <Link
                 href="/presentations"
                 className="hover:text-blue-600 transition-colors"
               >
-                Sunumlar
+                Presentations
               </Link>
               <Link
                 href="/booking"
                 className="hover:text-blue-600 transition-colors"
               >
-                Randevu
+                Booking
               </Link>
               <Link
                 href="/cv"

@@ -207,17 +207,17 @@ export default function ProjectsPage() {
       </motion.nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
+            className="text-center mb-12 sm:mb-16"
           >
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
               My Projects
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
               Projects developed with artificial intelligence and modern
               technologies. Each project is designed to solve real-world
               problems.
@@ -229,13 +229,13 @@ export default function ProjectsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-4 mb-12"
+            className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 sm:mb-12 px-4"
           >
             {projects.map((project) => (
               <button
                 key={project.id}
                 onClick={() => setSelectedProject(project.id)}
-                className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                className={`px-3 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all ${
                   selectedProject === project.id
                     ? "bg-blue-600 text-white shadow-lg"
                     : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
@@ -253,7 +253,7 @@ export default function ProjectsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="grid lg:grid-cols-2 gap-12"
+              className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 px-4"
             >
               {/* Project Info */}
               <div className="space-y-8">
@@ -389,10 +389,10 @@ export default function ProjectsPage() {
               transition={{ delay: 0.4 }}
               className="mt-16"
             >
-              <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8 sm:mb-12 px-4">
                 AI Prompts
               </h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4">
                 {selectedProjectData.prompts.map((prompt, index) => (
                   <div
                     key={index}
@@ -419,7 +419,7 @@ export default function ProjectsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="mt-16 grid md:grid-cols-2 gap-8"
+              className="mt-12 sm:mt-16 grid md:grid-cols-2 gap-6 sm:gap-8 px-4"
             >
               <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -462,27 +462,29 @@ export default function ProjectsPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
+      <footer className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 border-t border-gray-200 bg-white/50 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
-            <div className="mb-8">
-              <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="mb-6 sm:mb-8">
+              <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
                 <Image
                   src="/logo.png"
                   alt="Ben Atakan AI"
-                  width={32}
-                  height={32}
-                  className="rounded-lg"
+                  width={28}
+                  height={28}
+                  className="sm:w-8 sm:h-8 rounded-lg"
                 />
-                <div className="text-2xl font-semibold text-gray-900">
+                <div className="text-xl sm:text-2xl font-semibold text-gray-900">
                   Ben Atakan
                 </div>
               </div>
-              <p className="text-gray-600">Get AI Support for Your Business</p>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Get AI Support for Your Business
+              </p>
             </div>
 
-            <div className="pt-8 border-t border-gray-200">
-              <p className="text-gray-500 text-sm">
+            <div className="pt-6 sm:pt-8 border-t border-gray-200">
+              <p className="text-gray-500 text-xs sm:text-sm">
                 © 2025 BenAtakan.com - All rights reserved.
               </p>
             </div>
