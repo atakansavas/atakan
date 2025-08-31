@@ -183,7 +183,7 @@ export default function HomePage() {
                 <div className="text-lg font-semibold text-white">
                   Ben Atakan
                 </div>
-                <div className="text-xs text-gray-400">Yazılım Geliştirici</div>
+                <div className="text-xs text-gray-400">Software Developer</div>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-8 text-sm">
@@ -191,13 +191,13 @@ export default function HomePage() {
                 href="/projects"
                 className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
               >
-                Projeler
+                Projects
               </a>
               <a
                 href="/presentations"
                 className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
               >
-                Sunumlar
+                Presentations
               </a>
               <a
                 href="/cv"
@@ -209,7 +209,7 @@ export default function HomePage() {
                 href="/booking"
                 className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
               >
-                Randevu
+                Booking
               </a>
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
             >
-              Yazılım geliştiren, ürün kuran ve performansı önemseyen biri.
+              Software developer, product builder, and performance enthusiast.
             </motion.p>
           </motion.div>
         </div>
