@@ -44,17 +44,20 @@ export default function CVPage() {
 
   const experience = [
     {
-      title: "AI Solutions Architect & Full-Stack Developer",
+      title: "Chief Technology Officer (CTO)",
       company: "Freelance / Independent",
       period: "2021 - Present",
       location: "Remote",
       description: [
-        "Leading AI-powered solutions development and digital transformation initiatives",
-        "Specialized in large language models, voice AI agents, and process automation",
+        "Leading technical strategy and product development for AI-powered solutions and digital transformation initiatives",
         "Currently working with 3-person team achieving $1M ARR, targeting $2M ARR by end of year",
-        "Built SuperSocialScore project for social media analytics",
-        "Developed production-ready voice AI agents for customer service",
-        "Transformed ERP support line with AI-powered automation",
+        "Driving product roadmap, architecture decisions, and technology stack selection",
+        "Spearheaded monetization strategies and automation workflows for scalable revenue growth",
+        "Built and productized SuperSocialScore platform for social media analytics",
+        "Developed production-ready voice AI agents for customer service with automated deployment pipelines",
+        "Transformed ERP support line with AI-powered automation, reducing operational costs by 60%",
+        "Specialized in large language models, voice AI agents, and process automation at scale",
+        "Implemented end-to-end product lifecycle management from ideation to monetization",
       ],
       technologies: [
         "Next.js",
@@ -65,6 +68,8 @@ export default function CVPage() {
         "Voice AI",
         "Python",
         "React",
+        "Product Strategy",
+        "Team Leadership",
       ],
     },
     {
