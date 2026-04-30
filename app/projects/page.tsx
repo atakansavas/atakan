@@ -94,6 +94,83 @@ export default function ProjectsPage() {
       ],
     },
     {
+      id: "mesai",
+      title: "Mesai",
+      subtitle: "Otonom Yapay Zeka Ajan Orkestrasyon Platformu",
+      description:
+        "Hiyerarşik yapıda çalışan, kompleks iş akışlarını alt görevlere bölen ve operasyonları Telegram üzerinden raporlayan terminal-tabanlı dijital ajans. Chief ajan görevleri delegate eder, specialist alt-ajanlar yetkilendirilmiş erişimle iş yapar.",
+      image: "/logo.png",
+      category: "AI & Orchestration",
+      status: "In Development",
+      technologies: [
+        "Next.js 15",
+        "PostgreSQL",
+        "Drizzle ORM",
+        "Claude Agent SDK",
+        "Whisper",
+        "XTTS v2",
+        "Telegraf",
+        "Tailwind CSS",
+      ],
+      features: [
+        "Hiyerarşik Chief / Specialist ajan mimarisi",
+        "Telegram üzerinden sesli komut ve raporlama",
+        "Whisper ile sesli notları metne çevirme",
+        "XTTS v2 ile sesli yanıt üretimi",
+        "Soft / hard cap maliyet kontrolü",
+        "MCP entegrasyonlu sistem erişimi",
+        "ClickUp ile görev senkronizasyonu",
+        "Kritik aksiyonlarda Telegram onay protokolü",
+      ],
+      architecture: {
+        frontend: "Terminal-tabanlı retro UI ile Next.js 15 landing",
+        backend: "Drizzle ORM üzerinden PostgreSQL veri katmanı",
+        ai: "Claude Agent SDK ile çok-katmanlı ajan orkestrasyonu",
+        voice: "Whisper (STT) + XTTS v2 (TTS) ses pipeline'ı",
+        comms: "Telegraf üzerinden Telegram bot katmanı",
+        mcp: "Model Context Protocol ile dosya / terminal / web erişimi",
+        cost: "Soft & hard cap mantığıyla bütçe takibi",
+      },
+      prompts: [
+        {
+          title: "Chief Görev Bölümü",
+          description:
+            "Üst seviye görev tanımını alt-ajan komutlarına ayırma",
+          prompt:
+            "Görev: {task}. Bu görevi mantıksal alt-adımlara böl. Her adım için sorumlu specialist ajanı seç ve yetki sınırlarını belirt. Çıktı: JSON ajan grafı.",
+        },
+        {
+          title: "Telegram Onay İsteği",
+          description:
+            "Kritik sistem aksiyonları öncesi kullanıcıdan onay alma",
+          prompt:
+            "Aksiyon {action} kritik sistem erişimi gerektiriyor. Kullanıcıya kısa ve net bir Telegram mesajı yaz, /onayla veya /iptal yanıtı bekle.",
+        },
+        {
+          title: "Maliyet Bütçe Kontrolü",
+          description: "Anlık ajan maliyetini cap'e karşı doğrulama",
+          prompt:
+            "Şu ana kadarki günlük harcama: {spent}. Soft cap: {soft}. Hard cap: {hard}. Yeni komut çağrısına izin ver mi? Sebep ile birlikte kararı dön.",
+        },
+      ],
+      demo: "/mesai",
+      github: "https://github.com/atakansavas/mesai",
+      challenges: [
+        "Çok-ajanlı sistemde tutarlı bağlam paylaşımı",
+        "Telegram tabanlı asenkron onay akışlarının zaman aşımı yönetimi",
+        "Whisper / XTTS pipeline'ında düşük gecikme",
+        "Otonom ajanların kontrolsüz token tüketimini engellemek",
+        "MCP sunucuları arası yetki ve audit trail",
+      ],
+      solutions: [
+        "Drizzle + PostgreSQL ile merkezi durum, ajan başına izole context",
+        "Aksiyon başına TTL'li onay kuyruğu, otomatik fallback",
+        "Streaming STT/TTS ve önbellekli ses chunk'ları",
+        "Soft cap'te uyarı, hard cap'te otomatik durdurma",
+        "Her MCP çağrısı için imzalı log ve insan onay seviyesi",
+      ],
+    },
+    {
       id: "ai-assistant",
       title: "AI Assistant Platform",
       subtitle: "Voice and Text AI Assistants",
