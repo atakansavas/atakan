@@ -32,12 +32,27 @@
 
   /* Font Variables */
   --font-sora: var(--font-sora);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
 @theme inline {
   --color-background: var(--background-base);
   --color-foreground: var(--text-primary);
   --font-sans: var(--font-sora);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sora), system-ui, sans-serif;
+  font-feature-settings: "ss01" on, "ss02" on, "cv11" on;
+  letter-spacing: -0.02em;
+}
+
+.font-mono-display {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.01em;
 }
 
 * {

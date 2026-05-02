@@ -1,11 +1,25 @@
 import type { Metadata } from "next";
-import { Sora } from "next/font/google";
+import { Bricolage_Grotesque, JetBrains_Mono, Sora } from "next/font/google";
 import "./globals.css";
 
 const sora = Sora({
   subsets: ["latin"],
   variable: "--font-sora",
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -93,7 +107,9 @@ export default function RootLayout({
           type="text/javascript"
         ></script>
       </head>
-      <body className={`${sora.variable} font-sans antialiased`}>
+      <body
+        className={`${sora.variable} ${bricolage.variable} ${jetbrains.variable} font-sans antialiased`}
+      >
         {children}
       </body>
     </html>
