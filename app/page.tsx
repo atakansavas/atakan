@@ -1,37 +1,63 @@
 "use client";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Mail, Menu, X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type Particle = {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+  delay: number;
+};
+
+const NAV_LINKS = [
+  { href: "/projects", label: "Projects" },
+  { href: "/mesai", label: "Mesai" },
+  { href: "/presentations", label: "Presentations" },
+  { href: "/cv", label: "CV" },
+  { href: "/booking", label: "Booking" },
+];
+
+const PILL_LINKS = [
+  { href: "/projects", label: "P", title: "Projects", color: "bg-blue-500/80 hover:bg-blue-400" },
+  { href: "/mesai", label: "M", title: "Mesai", color: "bg-fuchsia-500/80 hover:bg-fuchsia-400" },
+  { href: "/presentations", label: "S", title: "Presentations", color: "bg-purple-500/80 hover:bg-purple-400" },
+  { href: "/cv", label: "CV", title: "CV", color: "bg-pink-500/80 hover:bg-pink-400" },
+  { href: "/booking", label: "B", title: "Booking", color: "bg-cyan-500/80 hover:bg-cyan-400" },
+];
+
+const lines = Array.from({ length: 8 }, (_, i) => ({
+  id: i,
+  rotation: i * 45,
+  delay: i * 0.5,
+}));
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
-  // Generate floating particles for background animation
-  const particles = Array.from({ length: 60 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 2 + 0.5,
-    duration: Math.random() * 25 + 15,
-    delay: Math.random() * 5,
-  }));
-
-  // Generate flowing lines for geometric patterns
-  const lines = Array.from({ length: 8 }, (_, i) => ({
-    id: i,
-    rotation: i * 45,
-    delay: i * 0.5,
-  }));
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 60 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2 + 0.5,
+        duration: Math.random() * 25 + 15,
+        delay: Math.random() * 5,
+      })),
+    );
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white overflow-hidden relative">
-      {/* Complex Animated Background */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-950 to-black" />
 
-        {/* Animated grid overlay */}
         <motion.div
           className="absolute inset-0 opacity-5"
           style={{
@@ -51,7 +77,6 @@ export default function HomePage() {
           }}
         />
 
-        {/* Floating particles */}
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
@@ -78,7 +103,6 @@ export default function HomePage() {
           />
         ))}
 
-        {/* Large flowing orbs */}
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full opacity-5"
           style={{
@@ -121,7 +145,6 @@ export default function HomePage() {
           }}
         />
 
-        {/* Geometric flowing lines */}
         {lines.map((line) => (
           <motion.div
             key={line.id}
@@ -146,7 +169,6 @@ export default function HomePage() {
           />
         ))}
 
-        {/* Pulsing center highlight */}
         <motion.div
           className="absolute top-1/2 left-1/2 w-96 h-96 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-5"
           style={{
@@ -166,7 +188,6 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Navigation */}
       <motion.nav
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -174,7 +195,7 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <Image
                 src="/logo.png"
                 alt="Ben Atakan"
@@ -188,40 +209,26 @@ export default function HomePage() {
                 </div>
                 <div className="text-xs text-gray-400">Software Developer</div>
               </div>
-            </div>
+            </Link>
 
-            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8 text-sm">
-              <a
-                href="/projects"
-                className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
-              >
-                Projects
-              </a>
-              <a
-                href="/presentations"
-                className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
-              >
-                Presentations
-              </a>
-              <a
-                href="/cv"
-                className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
-              >
-                CV
-              </a>
-              <a
-                href="/booking"
-                className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
-              >
-                Booking
-              </a>
+              {NAV_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-gray-300 hover:text-blue-400 transition-colors duration-300"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
 
-            {/* Mobile Menu Button */}
             <motion.button
+              type="button"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileMenuOpen}
               className="md:hidden p-2 rounded-lg bg-white/10 backdrop-blur-lg border border-gray-700/30 text-white"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen((v) => !v)}
               whileTap={{ scale: 0.95 }}
             >
               {mobileMenuOpen ? (
@@ -232,50 +239,33 @@ export default function HomePage() {
             </motion.button>
           </div>
 
-          {/* Mobile Navigation Menu */}
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="md:hidden absolute top-16 left-0 right-0 bg-black/90 backdrop-blur-xl border-b border-gray-700/30 z-40"
-            >
-              <div className="px-4 py-6 space-y-4">
-                <a
-                  href="/projects"
-                  className="block text-gray-300 hover:text-blue-400 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Projects
-                </a>
-                <a
-                  href="/presentations"
-                  className="block text-gray-300 hover:text-blue-400 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Presentations
-                </a>
-                <a
-                  href="/cv"
-                  className="block text-gray-300 hover:text-blue-400 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  CV
-                </a>
-                <a
-                  href="/booking"
-                  className="block text-gray-300 hover:text-blue-400 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Booking
-                </a>
-              </div>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                key="mobile-menu"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="md:hidden absolute top-16 left-0 right-0 bg-black/90 backdrop-blur-xl border-b border-gray-700/30 z-40"
+              >
+                <div className="px-4 py-6 space-y-2">
+                  {NAV_LINKS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="block text-gray-300 hover:text-blue-400 transition-colors duration-300 py-2 px-4 rounded-lg hover:bg-white/10"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.nav>
 
-      {/* Main Content */}
       <main className="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
@@ -283,6 +273,25 @@ export default function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              className="mb-6 sm:mb-8 flex justify-center"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500/30 via-purple-500/30 to-pink-500/30 blur-2xl" />
+                <Image
+                  src="/ben.jpg"
+                  alt="Atakan"
+                  width={160}
+                  height={160}
+                  priority
+                  className="relative rounded-full border border-white/10 shadow-xl object-cover w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40"
+                />
+              </div>
+            </motion.div>
+
             <motion.h1
               className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-light mb-6 sm:mb-8 tracking-tight"
               initial={{ opacity: 0, scale: 0.9 }}
@@ -304,7 +313,6 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Contact - Bottom */}
       <motion.div
         className="fixed bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 z-20"
         initial={{ opacity: 0, y: 20 }}
@@ -320,42 +328,23 @@ export default function HomePage() {
         </a>
       </motion.div>
 
-      {/* Mobile Navigation Menu */}
       <motion.div
         className="md:hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 z-20"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 1 }}
       >
-        <div className="flex items-center gap-3 px-4 py-3 bg-black/30 backdrop-blur-xl rounded-full border border-gray-700/30">
-          <a
-            href="/projects"
-            className="w-10 h-10 rounded-full bg-blue-500/80 hover:bg-blue-400 transition-all duration-300 flex items-center justify-center hover:scale-110"
-            title="Projects"
-          >
-            <span className="text-xs text-white font-medium">P</span>
-          </a>
-          <a
-            href="/presentations"
-            className="w-10 h-10 rounded-full bg-purple-500/80 hover:bg-purple-400 transition-all duration-300 flex items-center justify-center hover:scale-110"
-            title="Presentations"
-          >
-            <span className="text-xs text-white font-medium">S</span>
-          </a>
-          <a
-            href="/cv"
-            className="w-10 h-10 rounded-full bg-pink-500/80 hover:bg-pink-400 transition-all duration-300 flex items-center justify-center hover:scale-110"
-            title="CV"
-          >
-            <span className="text-xs text-white font-medium">CV</span>
-          </a>
-          <a
-            href="/booking"
-            className="w-10 h-10 rounded-full bg-cyan-500/80 hover:bg-cyan-400 transition-all duration-300 flex items-center justify-center hover:scale-110"
-            title="Booking"
-          >
-            <span className="text-xs text-white font-medium">B</span>
-          </a>
+        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-black/30 backdrop-blur-xl rounded-full border border-gray-700/30">
+          {PILL_LINKS.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              title={item.title}
+              className={`w-9 h-9 rounded-full ${item.color} transition-all duration-300 flex items-center justify-center hover:scale-110`}
+            >
+              <span className="text-xs text-white font-medium">{item.label}</span>
+            </Link>
+          ))}
         </div>
       </motion.div>
     </div>
