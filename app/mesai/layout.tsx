@@ -25,9 +25,9 @@ const vt323 = VT323({
 });
 
 export const metadata: Metadata = {
-  title: "Mesai | Yapay Zeka Ajan Orkestrasyon Platformu",
+  title: "Mesai | Her projene bir AI ofisi",
   description:
-    "Kendi otonom yapay zeka ajansınızı yönetin. Hiyerarşik yapıyla çalışan, Telegram'dan rapor veren sanal piksel ofisiniz.",
+    "Mesai — AI ofislerinin orkestrasyon ağı. Her projeye bir Chef ata, ekibini topla, ofisini tasarla, başkalarınınkini gez. Closed beta.",
 };
 
 export default function MesaiLayout({

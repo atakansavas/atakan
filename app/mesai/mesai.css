@@ -155,3 +155,59 @@
 .mesai-scope .animate-blink {
   animation: mesai-blink 1s step-end infinite;
 }
+
+/* Pixel-art rendering for inline SVGs and images */
+.mesai-scope svg,
+.mesai-scope img {
+  image-rendering: pixelated;
+}
+
+/* Reusable office room frame */
+.mesai-scope .mesai-room-frame {
+  background: #050511;
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  position: relative;
+}
+
+.mesai-scope .mesai-room-frame[data-theme="cozy"] {
+  border-color: rgba(255, 184, 107, 0.4);
+}
+
+.mesai-scope .mesai-room-frame[data-theme="openplan"] {
+  border-color: rgba(180, 180, 200, 0.4);
+}
+
+/* Role chip — small inline rounded tag */
+.mesai-scope .mesai-role-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.06);
+  color: var(--color-accent);
+  padding: 2px 6px;
+  letter-spacing: 0.05em;
+}
+
+/* Step / role / gallery cards share an interactive feel */
+.mesai-scope .mesai-step,
+.mesai-scope .mesai-role-card,
+.mesai-scope .mesai-gallery-card {
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.mesai-scope .mesai-step:hover,
+.mesai-scope .mesai-role-card:hover,
+.mesai-scope .mesai-gallery-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow:
+    4px 4px 0px rgba(255, 0, 255, 0.4),
+    inset 0 0 16px rgba(255, 0, 255, 0.08);
+}
+
+/* Waitlist stage container — keeps the form area at a comfortable height */
+.mesai-scope .mesai-waitlist-stage {
+  min-height: 280px;
+}
