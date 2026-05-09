@@ -1,6 +1,6 @@
 "use client";
 
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { ERAS, ERA_ORDER } from "../_lib/data";
