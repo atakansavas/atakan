@@ -1,10 +1,12 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { useTexture } from "@react-three/drei";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { ERAS, ERA_ORDER } from "../_lib/data";
 import type { Era } from "../_lib/data";
+import { useLightbox } from "../_lib/lightbox";
 import type { ScrollState } from "../_lib/scroll";
 
 /* =========================================================================
@@ -341,12 +343,17 @@ function EraHorizon({ eraId }: { eraId: Era }) {
     const dim = "#1a1d2a";
     switch (eraId) {
       case "genesis":
-        // tents + lone tree silhouette
+        // Distant neighborhood — rooflines + a couple of mosques/treetops.
+        // Warmer dusk silhouette to match the peach sky behind the shop.
         return [
-          { x: -10, w: 4, h: 3, color: dim },
-          { x: -5, w: 5, h: 4, color: dim },
-          { x: 1, w: 3, h: 6, color: dim },
-          { x: 6, w: 4, h: 3, color: dim },
+          { x: -14, w: 5, h: 4, color: "#3a2a24" },
+          { x: -9, w: 4, h: 5, color: "#3a2a24" },
+          { x: -5, w: 6, h: 6, color: "#3a2a24" },
+          { x: -3.5, w: 0.8, h: 8.5, color: "#3a2a24" }, // minaret hint
+          { x: 0, w: 5, h: 4.5, color: "#3a2a24" },
+          { x: 5, w: 6, h: 5.5, color: "#3a2a24" },
+          { x: 11, w: 5, h: 4, color: "#3a2a24" },
+          { x: 14, w: 3, h: 3, color: "#3a2a24" },
         ] as Stamp[];
       case "agency":
         // workshop block + chimney
@@ -838,257 +845,1161 @@ function CheckerFloor({
 
 /* =========================================================================
  * GenesisDiorama — Doğuş era (2005-2014).
- * Survival-mode youth: tent, campfire, first chunky PC, kerosene lamp,
- * notebook + stack of programming books, lonely pine tree. Warm orange-
- * red firelight, the sense of a kid teaching himself code by torchlight.
+ * A small Turkish neighborhood street at golden hour. The middle storefront
+ * is "Savaş Elektronik" — a computer repair shop — flanked by a bakkal and
+ * a kuaför, with a 2-floor apartment block above. Trees line the sidewalk,
+ * a vintage sedan is parked on the asphalt, a street lamp warms the corner.
+ * Two real photos (cocuk.JPG, old.JPG) live inside the world: one in the
+ * shop window display, one as a framed photo above on the apartment wall.
  * ========================================================================= */
 function GenesisDiorama() {
   const accent = ERAS.genesis.accent; // #ff7a59
-  // Campfire flicker — each flame cube has its own slightly different rate
-  const flameRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
-  const lampRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const screenRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const signRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const lampGlowRef = useRef<THREE.MeshStandardMaterial | null>(null);
+
   useFrame(() => {
     const t = performance.now() * 0.001;
-    flameRefs.current.forEach((m, i) => {
-      if (!m) return;
-      m.emissiveIntensity =
-        1.2 + Math.sin(t * (5 + i) + i * 0.7) * 0.4 + Math.sin(t * 13 + i) * 0.2;
-    });
-    if (lampRef.current) {
-      lampRef.current.emissiveIntensity =
-        1.1 + Math.sin(t * 3.4) * 0.18 + Math.sin(t * 9) * 0.06;
-    }
     if (screenRef.current) {
       // green CRT phosphor wobble
       screenRef.current.emissiveIntensity =
-        0.55 + Math.sin(t * 6) * 0.06 + Math.sin(t * 17) * 0.03;
+        0.65 + Math.sin(t * 6) * 0.06 + Math.sin(t * 17) * 0.03;
+    }
+    if (signRef.current) {
+      // neon shop sign with a subtle flicker — sometimes the bulb dips
+      const dip = Math.sin(t * 11) > 0.93 ? -0.45 : 0;
+      signRef.current.emissiveIntensity = 1.55 + Math.sin(t * 2.4) * 0.1 + dip;
+    }
+    if (lampGlowRef.current) {
+      lampGlowRef.current.emissiveIntensity =
+        1.2 + Math.sin(t * 2.6) * 0.08;
     }
   });
 
   return (
     <group>
-      {/* Earthy ground — alternating dirt + dry grass */}
-      <CheckerFloor size={14} cellSize={1} y={-0.5} colorA="#3a2a1d" colorB="#2a2014" />
-      {/* Patchy "grass" tufts */}
-      {Array.from({ length: 14 }).map((_, i) => {
-        const x = (Math.sin(i * 7.3) * 0.5 + 0.5) * 12 - 6;
-        const z = (Math.cos(i * 2.1) * 0.5 + 0.5) * 12 - 6;
-        return (
-          <mesh key={i} position={[x, -0.15, z]}>
-            <boxGeometry args={[0.3, 0.2, 0.3]} />
-            <meshLambertMaterial color={i % 2 === 0 ? "#2f4a1d" : "#3a5a25"} />
-          </mesh>
-        );
-      })}
+      {/* Warm peach sky behind the diorama, cuts the global navy backdrop.
+       *  Lighting stays driven by the global rig in Scene.tsx — adding local
+       *  hemisphere/directional lights would leak into other dioramas. */}
+      <GenesisSky />
 
-      {/* Tent — triangular prism made of slabs */}
-      <group position={[-4.5, 0, -1]}>
-        <mesh castShadow>
-          <boxGeometry args={[2.6, 0.4, 2.4]} />
-          <meshLambertMaterial color="#5a3525" />
-        </mesh>
-        {/* tent fabric — two leaning slabs forming a peak */}
-        <mesh position={[-0.7, 1.1, 0]} rotation={[0, 0, Math.PI / 4]} castShadow>
-          <boxGeometry args={[2.0, 0.18, 2.4]} />
-          <meshLambertMaterial color="#7a3520" />
-        </mesh>
-        <mesh position={[0.7, 1.1, 0]} rotation={[0, 0, -Math.PI / 4]} castShadow>
-          <boxGeometry args={[2.0, 0.18, 2.4]} />
-          <meshLambertMaterial color="#5e2a18" />
-        </mesh>
-        {/* warm tent interior glow */}
-        <pointLight position={[0, 0.7, 0]} intensity={0.4} distance={4} color="#ffae6a" />
-      </group>
+      {/* A small skyline of background buildings sitting between the
+       *  apartment block and the far horizon, so the city reads as
+       *  inhabited rather than a single facade. */}
+      <BackgroundCity />
 
-      {/* Campfire — stones + flames */}
-      <group position={[-1.2, -0.3, 1.6]}>
-        {/* stone ring */}
-        {Array.from({ length: 6 }).map((_, i) => {
-          const a = (i / 6) * Math.PI * 2;
-          return (
-            <mesh
-              key={i}
-              position={[Math.cos(a) * 0.55, 0.15, Math.sin(a) * 0.55]}
-              castShadow
-            >
-              <boxGeometry args={[0.32, 0.3, 0.32]} />
-              <meshLambertMaterial color="#3a3a3a" />
-            </mesh>
-          );
-        })}
-        {/* flame cubes */}
-        {Array.from({ length: 4 }).map((_, i) => {
-          const a = (i / 4) * Math.PI * 2;
-          return (
-            <mesh
-              key={i}
-              position={[
-                Math.cos(a) * 0.18,
-                0.45 + Math.sin(i * 1.7) * 0.15,
-                Math.sin(a) * 0.18,
-              ]}
-            >
-              <boxGeometry args={[0.32, 0.45, 0.32]} />
-              <meshStandardMaterial
-                ref={(el) => {
-                  flameRefs.current[i] = el;
-                }}
-                color="#ff8a3a"
-                emissive="#ff5a1a"
-                emissiveIntensity={1.5}
-                toneMapped={false}
-              />
-            </mesh>
-          );
-        })}
-        {/* campfire light */}
-        <pointLight
-          position={[0, 0.6, 0]}
-          intensity={1.6}
-          distance={9}
-          color={accent}
+      {/* Asphalt street + sidewalks + curb + lane stripes */}
+      <GenesisStreet />
+
+      {/* Storefront row + 2-floor apartment block above */}
+      <NeighborShopFront
+        x={-7.2}
+        accent="#3a8c3a"
+        sign="BAKKAL"
+        awningColor="#3a8c3a"
+        wallColor="#c9a87a"
+      />
+      <NeighborShopFront
+        x={7.2}
+        accent="#c8588f"
+        sign="KUAFÖR"
+        awningColor="#c8588f"
+        wallColor="#cfb898"
+      />
+      <Suspense fallback={null}>
+        <SavasElektronikFront
+          screenRef={screenRef}
+          signRef={signRef}
+          accent={accent}
         />
-      </group>
+      </Suspense>
+      <ApartmentBlock />
 
-      {/* Workbench (small wooden table) */}
-      <mesh position={[1.5, 1.2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3.2, 0.3, 2.2]} />
+      {/* Sidewalk life — trees, lamp, bench, parked car */}
+      <DeciduousTree position={[-9.6, 0, 1.1]} variant={0} />
+      <DeciduousTree position={[-3.2, 0, 1.6]} variant={1} />
+      <DeciduousTree position={[3.2, 0, 1.6]} variant={2} />
+      <DeciduousTree position={[9.6, 0, 1.1]} variant={0} />
+
+      <StreetLamp position={[-5.2, 0, 1.2]} bulbRef={lampGlowRef} />
+      <StreetLamp position={[5.2, 0, 1.2]} />
+
+      <Bench position={[-2.6, 0, 2.2]} />
+
+      <ParkedCar position={[5.2, 0, 3.8]} bodyColor="#7d8c64" />
+
+      {/* Background hint: a couple of voxel pedestrians */}
+      <Pedestrian position={[-1.4, 0, 2.6]} top="#2a4d8a" bottom="#1a1f2e" />
+      <Pedestrian position={[1.6, 0, 2.0]} top="#a23a3a" bottom="#3a2a18" />
+
+      {/* Hero asset 1 — "the kid" photo, front and centre on a chunky
+       *  wooden easel propped on the sidewalk. Tilted slightly toward the
+       *  camera and given a soft accent glow so it reads as the focal
+       *  artefact in the diorama. Click → lightbox. */}
+      <Suspense fallback={null}>
+        <PhotoEasel
+          position={[-3.5, 0, 2.6]}
+          rotationY={0.32}
+          src="/assets/cocuk-tex.jpg"
+          width={1.7}
+          height={1.7}
+          caption={{
+            tr: "Atakan, ~2005 — ilk kod gününden",
+            en: "Atakan, ~2005 — from the first-code days",
+          }}
+        />
+      </Suspense>
+
+      {/* Hero asset 2 — "old times" photo as a large mural / poster on the
+       *  apartment side wall, hanging like a faded ad. Click → lightbox. */}
+      <Suspense fallback={null}>
+        <FramedPhoto
+          position={[3.6, 4.3, -0.55]}
+          src="/assets/old-tex.jpg"
+          width={3.2}
+          height={2.3}
+          frameColor="#5a3a22"
+          matColor="#e6d6b0"
+          glow
+          caption={{
+            tr: "O zamanların ekipmanı — Savaş Elektronik arşivi",
+            en: "Old-times gear — Savaş Elektronik archive",
+          }}
+        />
+      </Suspense>
+    </group>
+  );
+}
+
+function PhotoEasel({
+  position,
+  rotationY = 0,
+  src,
+  width,
+  height,
+  caption,
+}: {
+  position: [number, number, number];
+  rotationY?: number;
+  src: string;
+  width: number;
+  height: number;
+  caption?: { tr: string; en: string };
+}) {
+  // Sidewalk easel — three timber legs in an A-frame supporting the framed
+  // photo. Sits at child-eye height so the cocuk photo lands at a friendly,
+  // discoverable spot for visitors of the era.
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      {/* Two front legs */}
+      <mesh position={[-0.45, 1.0, 0.05]} rotation={[0, 0, 0.06]} castShadow>
+        <boxGeometry args={[0.12, 2.0, 0.12]} />
         <meshLambertMaterial color="#5a3a1f" />
       </mesh>
-      {([
-        [0.2, 0.55, 0.9],
-        [2.8, 0.55, 0.9],
-        [0.2, 0.55, -0.9],
-        [2.8, 0.55, -0.9],
-      ] as [number, number, number][]).map((p, i) => (
-        <mesh key={i} position={p} castShadow>
-          <boxGeometry args={[0.25, 1.1, 0.25]} />
-          <meshLambertMaterial color="#3f2812" />
-        </mesh>
-      ))}
-
-      {/* Chunky beige PC tower (90s/2000s) */}
-      <mesh position={[1.2, 1.95, -0.3]} castShadow>
-        <boxGeometry args={[0.9, 1.2, 1.4]} />
-        <meshLambertMaterial color="#d8d0b0" />
+      <mesh position={[0.45, 1.0, 0.05]} rotation={[0, 0, -0.06]} castShadow>
+        <boxGeometry args={[0.12, 2.0, 0.12]} />
+        <meshLambertMaterial color="#5a3a1f" />
       </mesh>
-      {/* floppy slot */}
-      <mesh position={[1.2, 2.2, 0.41]}>
-        <boxGeometry args={[0.45, 0.08, 0.04]} />
-        <meshLambertMaterial color="#1a1a1a" />
+      {/* Back leg (kickstand) */}
+      <mesh position={[0, 1.0, -0.4]} rotation={[-0.18, 0, 0]} castShadow>
+        <boxGeometry args={[0.12, 2.0, 0.12]} />
+        <meshLambertMaterial color="#5a3a1f" />
       </mesh>
-      {/* CD slot */}
-      <mesh position={[1.2, 1.9, 0.41]}>
-        <boxGeometry args={[0.6, 0.05, 0.04]} />
-        <meshLambertMaterial color="#1a1a1a" />
+      {/* Crossbar shelf */}
+      <mesh position={[0, 0.8, 0.05]} castShadow>
+        <boxGeometry args={[1.2, 0.1, 0.16]} />
+        <meshLambertMaterial color="#7a4a24" />
       </mesh>
-      {/* power LED */}
-      <mesh position={[1.5, 1.65, 0.41]}>
-        <boxGeometry args={[0.06, 0.06, 0.04]} />
-        <meshStandardMaterial color="#000" emissive="#22ff66" emissiveIntensity={2.5} toneMapped={false} />
-      </mesh>
-
-      {/* CRT monitor (green phosphor) */}
-      <mesh position={[2.5, 2.3, 0]} castShadow>
-        <boxGeometry args={[1.6, 1.4, 1.2]} />
-        <meshLambertMaterial color="#cfc8a8" />
-      </mesh>
-      <mesh position={[2.5, 2.3, 0.61]}>
-        <boxGeometry args={[1.2, 1.0, 0.04]} />
+      {/* Photo */}
+      <FramedPhoto
+        position={[0, 1.6, 0.12]}
+        src={src}
+        width={width}
+        height={height}
+        frameColor="#3a2418"
+        matColor="#f0e6c8"
+        glow
+        caption={caption}
+      />
+      {/* "TIKLA" pixel hint flag perched above the easel */}
+      <mesh position={[0, 2.95, 0.15]}>
+        <boxGeometry args={[1.0, 0.34, 0.04]} />
         <meshStandardMaterial
-          ref={screenRef}
-          color="#0d2010"
-          emissive="#3aff7a"
-          emissiveIntensity={0.6}
+          color="#000"
+          emissive="#ff7a59"
+          emissiveIntensity={0.9}
           toneMapped={false}
         />
       </mesh>
-      {/* Phosphor scanlines (cosmetic) */}
-      {Array.from({ length: 6 }).map((_, i) => (
-        <mesh key={i} position={[2.5, 1.95 + i * 0.16, 0.625]}>
-          <boxGeometry args={[1.05, 0.02, 0.01]} />
-          <meshStandardMaterial color="#62ffaa" emissive="#62ffaa" emissiveIntensity={0.4} toneMapped={false} transparent opacity={0.4} />
-        </mesh>
+      <SignGlyph
+        position={[0, 2.95, 0.18]}
+        text="TIKLA"
+        color="#fff5e6"
+        scale={0.04}
+      />
+    </group>
+  );
+}
+
+/* ----- Genesis world helpers --------------------------------------------- */
+
+function GenesisSky() {
+  // Big peach-orange backdrop plane that overrides the global navy. Slightly
+  // tilted and stretched so it covers the camera's field of view at this era.
+  return (
+    <group position={[0, 5, -16]}>
+      {/* upper warm sky */}
+      <mesh position={[0, 4, 0]}>
+        <planeGeometry args={[60, 14]} />
+        <meshBasicMaterial color="#f4b27a" toneMapped={false} />
+      </mesh>
+      {/* horizon glow */}
+      <mesh position={[0, -2, 0.05]}>
+        <planeGeometry args={[60, 6]} />
+        <meshBasicMaterial color="#ffd49a" toneMapped={false} />
+      </mesh>
+      {/* lower haze */}
+      <mesh position={[0, -6, 0.1]}>
+        <planeGeometry args={[60, 6]} />
+        <meshBasicMaterial color="#d68a64" toneMapped={false} />
+      </mesh>
+      {/* low sun disc — sits just above the horizon, accents the era hue */}
+      <mesh position={[8, -1, 0.06]}>
+        <circleGeometry args={[1.6, 24]} />
+        <meshBasicMaterial color="#ffe6b8" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+/* Background city — a chunky voxel skyline that sits between the apartment
+ * block (z = -1.6) and the warm sky backdrop (z = -16). Two parallel rows
+ * give a sense of depth: a near row of mid-height apartments and a far row
+ * with more variety (taller block, water tank, minaret, factory chimney).
+ */
+function BackgroundCity() {
+  // Hand-tuned silhouette so it reads as a cluster of buildings rather than
+  // a procedural noise. Each item is one box mesh; scattered colours within
+  // a warm dusk palette so the city blends with the sky.
+  type Block = {
+    x: number;
+    z: number;
+    w: number;
+    h: number;
+    d: number;
+    color: string;
+    roof?: string;
+  };
+  const blocks: Block[] = [
+    // Near row — sits just behind the apartment block (z ~ -4..-5)
+    { x: -12, z: -5, w: 4.4, h: 5.5, d: 3, color: "#a07a5a", roof: "#5a3a22" },
+    { x: -7.5, z: -5.2, w: 3.6, h: 7, d: 3, color: "#b08866", roof: "#5a3a22" },
+    { x: 8.5, z: -5, w: 4.2, h: 6.4, d: 3, color: "#8a6a4a", roof: "#5a3a22" },
+    { x: 13.2, z: -5.2, w: 3.8, h: 5.8, d: 3, color: "#9a785a", roof: "#5a3a22" },
+    // Far row — taller cluster + a couple of distinctive shapes (z ~ -9..-11)
+    { x: -14, z: -10, w: 5, h: 8, d: 3.4, color: "#7a5a40" },
+    { x: -8.6, z: -10.5, w: 3.4, h: 11, d: 3.4, color: "#8a6a4a" },
+    { x: -4, z: -10.2, w: 4.6, h: 6.5, d: 3.4, color: "#7a5a40" },
+    { x: 1.5, z: -10.5, w: 5.2, h: 9, d: 3.4, color: "#8a6a4a" },
+    { x: 6.6, z: -10.3, w: 3.6, h: 7, d: 3.4, color: "#7a5a40" },
+    { x: 11.4, z: -10.6, w: 5.4, h: 10, d: 3.4, color: "#8a6a4a" },
+    { x: 16, z: -10.2, w: 3.6, h: 6, d: 3.4, color: "#7a5a40" },
+  ];
+  return (
+    <group>
+      {blocks.map((b, i) => (
+        <group key={i} position={[b.x, 0, b.z]}>
+          <mesh position={[0, b.h / 2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[b.w, b.h, b.d]} />
+            <meshLambertMaterial color={b.color} />
+          </mesh>
+          {b.roof && (
+            <mesh position={[0, b.h + 0.18, 0]}>
+              <boxGeometry args={[b.w + 0.2, 0.36, b.d + 0.2]} />
+              <meshLambertMaterial color={b.roof} />
+            </mesh>
+          )}
+          {/* Window grid — tiny emissive dots so distant buildings look
+           *  inhabited at golden hour. Sparse so we don't add too many
+           *  draw calls per building. */}
+          {Array.from({ length: Math.min(3, Math.floor(b.h / 2)) }).map((_, r) => (
+            <group key={r}>
+              {Array.from({ length: 2 }).map((_, c) => (
+                <mesh
+                  key={c}
+                  position={[
+                    -b.w / 4 + c * (b.w / 2),
+                    1.0 + r * 1.7,
+                    b.d / 2 + 0.02,
+                  ]}
+                >
+                  <boxGeometry args={[b.w * 0.18, 0.6, 0.04]} />
+                  <meshStandardMaterial
+                    color="#1a1a1e"
+                    emissive={(r + c + i) % 3 === 0 ? "#ffd28a" : "#9a8a6a"}
+                    emissiveIntensity={(r + c + i) % 3 === 0 ? 0.7 : 0.25}
+                    toneMapped={false}
+                  />
+                </mesh>
+              ))}
+            </group>
+          ))}
+        </group>
       ))}
 
-      {/* Stack of HTML/programming books */}
-      <group position={[2.7, 1.5, -0.7]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.7, 0.16, 0.5]} />
-          <meshLambertMaterial color="#a23a2a" />
+      {/* Distinctive landmarks — minaret, water tower, factory chimney */}
+      {/* Minaret (slim spire with a small balcony) */}
+      <group position={[-1, 0, -10.8]}>
+        <mesh position={[0, 5.5, 0]} castShadow>
+          <boxGeometry args={[1.2, 11, 1.2]} />
+          <meshLambertMaterial color="#9a785a" />
         </mesh>
-        <mesh position={[0, 0.18, 0]} castShadow>
-          <boxGeometry args={[0.7, 0.16, 0.5]} />
-          <meshLambertMaterial color="#3a4a8a" />
+        <mesh position={[0, 8.5, 0]}>
+          <boxGeometry args={[1.6, 0.4, 1.6]} />
+          <meshLambertMaterial color="#5a3a22" />
         </mesh>
-        <mesh position={[0, 0.36, 0]} castShadow>
-          <boxGeometry args={[0.7, 0.16, 0.5]} />
-          <meshLambertMaterial color="#2a8a4a" />
+        <mesh position={[0, 11.6, 0]} castShadow>
+          <coneGeometry args={[0.7, 1.4, 8]} />
+          <meshLambertMaterial color="#3a2a18" />
         </mesh>
       </group>
-
-      {/* Notebook + pencil */}
-      <mesh position={[0.6, 1.39, 0.4]} rotation={[0, -0.2, 0]} castShadow>
-        <boxGeometry args={[0.6, 0.04, 0.8]} />
-        <meshLambertMaterial color="#e0d8b0" />
-      </mesh>
-      <mesh position={[0.95, 1.41, 0.45]} rotation={[0, 0.4, 0]}>
-        <boxGeometry args={[0.4, 0.04, 0.04]} />
-        <meshLambertMaterial color="#ffa64a" />
-      </mesh>
-
-      {/* Kerosene lamp on the floor */}
-      <group position={[-2.2, 0, 1.8]}>
-        <mesh position={[0, 0.4, 0]} castShadow>
-          <cylinderGeometry args={[0.18, 0.22, 0.8, 8]} />
-          <meshLambertMaterial color="#3a2a1a" />
+      {/* Water tower */}
+      <group position={[18, 0, -10]}>
+        {[-0.6, 0.6].map((x, i) => (
+          <mesh key={i} position={[x, 3, 0]} castShadow>
+            <boxGeometry args={[0.18, 6, 0.18]} />
+            <meshLambertMaterial color="#4a4030" />
+          </mesh>
+        ))}
+        <mesh position={[0, 6.3, 0]} castShadow>
+          <cylinderGeometry args={[0.9, 0.9, 1.2, 8]} />
+          <meshLambertMaterial color="#7a8a6a" />
         </mesh>
-        <mesh position={[0, 0.95, 0]}>
-          <cylinderGeometry args={[0.14, 0.14, 0.3, 8]} />
+        <mesh position={[0, 7.0, 0]}>
+          <coneGeometry args={[0.92, 0.5, 8]} />
+          <meshLambertMaterial color="#3a3a30" />
+        </mesh>
+      </group>
+      {/* Factory chimney */}
+      <group position={[-18, 0, -9.5]}>
+        <mesh position={[0, 4.5, 0]} castShadow>
+          <boxGeometry args={[0.8, 9, 0.8]} />
+          <meshLambertMaterial color="#5a4030" />
+        </mesh>
+        <mesh position={[0, 9.2, 0]}>
+          <boxGeometry args={[1.0, 0.3, 1.0]} />
+          <meshLambertMaterial color="#2a1a10" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function GenesisStreet() {
+  // Asphalt road runs across the diorama in front of the shop row.
+  // Sidewalk sits between the road and the storefronts. Kept as a few big
+  // boxes (instead of a checker grid) so the draw-call cost stays low — the
+  // diorama already has a lot of small meshes for the buildings.
+  return (
+    <group>
+      {/* Asphalt */}
+      <mesh position={[0, -0.45, 3.5]} receiveShadow>
+        <boxGeometry args={[26, 0.1, 4]} />
+        <meshLambertMaterial color="#3a3a40" />
+      </mesh>
+      {/* Lane stripes — dashed centerline */}
+      {Array.from({ length: 7 }).map((_, i) => (
+        <mesh key={i} position={[-9 + i * 3, -0.39, 3.5]}>
+          <boxGeometry args={[1.4, 0.02, 0.18]} />
+          <meshBasicMaterial color="#e6c66a" toneMapped={false} />
+        </mesh>
+      ))}
+      {/* Curb — slight raise between asphalt and sidewalk */}
+      <mesh position={[0, -0.32, 1.3]}>
+        <boxGeometry args={[26, 0.36, 0.2]} />
+        <meshLambertMaterial color="#a8a89a" />
+      </mesh>
+      {/* Sidewalk — single slab in warm sand, with a darker inset stripe to
+       *  hint at tile seams without exploding the mesh count. */}
+      <mesh position={[0, -0.45, 0.4]} receiveShadow>
+        <boxGeometry args={[26, 0.1, 1.6]} />
+        <meshLambertMaterial color="#c4b596" />
+      </mesh>
+      {Array.from({ length: 13 }).map((_, i) => (
+        <mesh key={i} position={[-12 + i * 2, -0.39, 0.4]}>
+          <boxGeometry args={[0.06, 0.02, 1.5]} />
+          <meshLambertMaterial color="#8a7a5e" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function ApartmentBlock() {
+  // Two-floor apartment block sitting on top of the shop row. We render a
+  // light cream wall with rows of windows + a flat roof. The shopfronts
+  // below are rendered as separate components.
+  const wallColor = "#cdb898";
+  const trim = "#7a5a3a";
+  return (
+    <group position={[0, 4.4, -1.6]}>
+      {/* Big wall block (z=-1.6, behind sidewalk) */}
+      <mesh receiveShadow castShadow>
+        <boxGeometry args={[20, 4.2, 1.6]} />
+        <meshLambertMaterial color={wallColor} />
+      </mesh>
+      {/* Floor divider band */}
+      <mesh position={[0, 0, 0.81]}>
+        <boxGeometry args={[20, 0.18, 0.05]} />
+        <meshLambertMaterial color={trim} />
+      </mesh>
+      {/* Roof */}
+      <mesh position={[0, 2.25, 0]} castShadow>
+        <boxGeometry args={[20.5, 0.3, 1.8]} />
+        <meshLambertMaterial color="#5a3a2a" />
+      </mesh>
+      {/* Cornice */}
+      <mesh position={[0, 2.05, 0.82]}>
+        <boxGeometry args={[20.4, 0.2, 0.08]} />
+        <meshLambertMaterial color={trim} />
+      </mesh>
+      {/* Windows — two floors, six bays, with the middle bay swapped for
+       *  framed photo (old.JPG) on the lower floor. */}
+      {Array.from({ length: 6 }).map((_, i) => {
+        const x = -8.5 + i * 3.4;
+        return (
+          <group key={i}>
+            {/* Lower floor window */}
+            {i !== 3 && (
+              <ApartmentWindow position={[x, -0.9, 0.81]} />
+            )}
+            {/* Upper floor window */}
+            <ApartmentWindow position={[x, 1.1, 0.81]} />
+          </group>
+        );
+      })}
+      {/* Tiny rooftop AC units */}
+      <mesh position={[-6, 2.55, 0]} castShadow>
+        <boxGeometry args={[1.2, 0.4, 0.6]} />
+        <meshLambertMaterial color="#9a9a96" />
+      </mesh>
+      <mesh position={[6, 2.55, 0]} castShadow>
+        <boxGeometry args={[1.2, 0.4, 0.6]} />
+        <meshLambertMaterial color="#9a9a96" />
+      </mesh>
+    </group>
+  );
+}
+
+function ApartmentWindow({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* frame */}
+      <mesh>
+        <boxGeometry args={[1.5, 1.6, 0.04]} />
+        <meshLambertMaterial color="#5a3a2a" />
+      </mesh>
+      {/* glass */}
+      <mesh position={[0, 0, 0.03]}>
+        <boxGeometry args={[1.3, 1.4, 0.02]} />
+        <meshStandardMaterial
+          color="#bdd4e6"
+          emissive="#ffd49a"
+          emissiveIntensity={0.45}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* mullions */}
+      <mesh position={[0, 0, 0.05]}>
+        <boxGeometry args={[1.3, 0.06, 0.02]} />
+        <meshLambertMaterial color="#5a3a2a" />
+      </mesh>
+      <mesh position={[0, 0, 0.05]}>
+        <boxGeometry args={[0.06, 1.4, 0.02]} />
+        <meshLambertMaterial color="#5a3a2a" />
+      </mesh>
+    </group>
+  );
+}
+
+function NeighborShopFront({
+  x,
+  sign,
+  accent,
+  awningColor,
+  wallColor,
+}: {
+  x: number;
+  sign: string;
+  accent: string;
+  awningColor: string;
+  wallColor: string;
+}) {
+  // A simple neighbor storefront. Glassy door, glowing sign, awning.
+  return (
+    <group position={[x, 0, -1.2]}>
+      {/* shop wall */}
+      <mesh position={[0, 1.25, 0]} castShadow>
+        <boxGeometry args={[5.6, 2.5, 0.4]} />
+        <meshLambertMaterial color={wallColor} />
+      </mesh>
+      {/* big window */}
+      <mesh position={[-1.2, 1.4, 0.21]}>
+        <boxGeometry args={[2.6, 1.6, 0.05]} />
+        <meshStandardMaterial
+          color="#a9c4d6"
+          emissive="#ffe2b6"
+          emissiveIntensity={0.35}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* door */}
+      <mesh position={[1.6, 1.1, 0.21]}>
+        <boxGeometry args={[1.2, 2.0, 0.05]} />
+        <meshLambertMaterial color="#3a2a1a" />
+      </mesh>
+      <mesh position={[1.6, 1.4, 0.24]}>
+        <boxGeometry args={[1.0, 1.2, 0.02]} />
+        <meshStandardMaterial
+          color="#9ab6c6"
+          emissive="#ffe2b6"
+          emissiveIntensity={0.35}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* awning (striped) */}
+      <mesh position={[0, 2.7, 0.5]} castShadow>
+        <boxGeometry args={[5.4, 0.18, 1.2]} />
+        <meshLambertMaterial color={awningColor} />
+      </mesh>
+      <mesh position={[0, 2.55, 1.0]}>
+        <boxGeometry args={[5.4, 0.16, 0.04]} />
+        <meshLambertMaterial color="#f2eadf" />
+      </mesh>
+      {/* sign plaque + neon strip stand-in for the sign text. We encode the
+       *  shop type via colour rather than rendering real text — keeps the
+       *  GPU shader budget tight (Three's TextGeometry pipeline gets
+       *  expensive across 5 dioramas). */}
+      <mesh position={[0, 2.95, 0.22]}>
+        <boxGeometry args={[3.4, 0.5, 0.06]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[0, 2.95, 0.27]}>
+        <boxGeometry args={[2.8, 0.28, 0.04]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.4}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph
+        position={[0, 2.95, 0.31]}
+        text={sign}
+        color="#fff5e6"
+        scale={0.06}
+      />
+    </group>
+  );
+}
+
+/* Pixel-glyph mini font — renders short uppercase strings as tiny voxel
+ * blocks. Keeps the diorama text-readable without pulling a TTF/SDF
+ * pipeline into the canvas (which has been the cause of GPU shader
+ * pressure when dropped onto multiple eras). Only covers the characters
+ * we actually use on signs and posters. */
+type Glyph = ReadonlyArray<readonly [number, number]>;
+const GLYPHS: Record<string, Glyph> = {
+  // 3 cols × 5 rows pixel font
+  A: [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[1,2],[2,2],[0,3],[2,3],[0,4],[2,4]],
+  B: [[0,0],[1,0],[0,1],[2,1],[0,2],[1,2],[0,3],[2,3],[0,4],[1,4]],
+  C: [[1,0],[2,0],[0,1],[0,2],[0,3],[1,4],[2,4]],
+  D: [[0,0],[1,0],[0,1],[2,1],[0,2],[2,2],[0,3],[2,3],[0,4],[1,4]],
+  E: [[0,0],[1,0],[2,0],[0,1],[0,2],[1,2],[0,3],[0,4],[1,4],[2,4]],
+  F: [[0,0],[1,0],[2,0],[0,1],[0,2],[1,2],[0,3],[0,4]],
+  G: [[1,0],[2,0],[0,1],[0,2],[2,2],[0,3],[2,3],[1,4],[2,4]],
+  H: [[0,0],[2,0],[0,1],[2,1],[0,2],[1,2],[2,2],[0,3],[2,3],[0,4],[2,4]],
+  // dotless capital I (used for SAVAŞ ELEKTRONIK fallback when needed) and
+  // standard I both render as the same vertical bar — Turkish typography
+  // distinguishes them with the dotted İ below.
+  I: [[1,0],[1,1],[1,2],[1,3],[1,4]],
+  J: [[2,0],[2,1],[2,2],[0,3],[2,3],[1,4]],
+  K: [[0,0],[2,0],[0,1],[1,1],[0,2],[0,3],[1,3],[0,4],[2,4]],
+  L: [[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[2,4]],
+  M: [[0,0],[2,0],[0,1],[1,1],[2,1],[0,2],[2,2],[0,3],[2,3],[0,4],[2,4]],
+  N: [[0,0],[2,0],[0,1],[1,1],[2,1],[0,2],[2,2],[0,3],[1,3],[2,3],[0,4],[2,4]],
+  O: [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[2,2],[0,3],[2,3],[0,4],[1,4],[2,4]],
+  P: [[0,0],[1,0],[0,1],[2,1],[0,2],[1,2],[0,3],[0,4]],
+  R: [[0,0],[1,0],[0,1],[2,1],[0,2],[1,2],[0,3],[1,3],[0,4],[2,4]],
+  S: [[1,0],[2,0],[0,1],[1,2],[2,3],[0,4],[1,4]],
+  T: [[0,0],[1,0],[2,0],[1,1],[1,2],[1,3],[1,4]],
+  U: [[0,0],[2,0],[0,1],[2,1],[0,2],[2,2],[0,3],[2,3],[1,4],[2,4],[0,4]],
+  V: [[0,0],[2,0],[0,1],[2,1],[0,2],[2,2],[0,3],[2,3],[1,4]],
+  Y: [[0,0],[2,0],[0,1],[2,1],[1,2],[1,3],[1,4]],
+  Z: [[0,0],[1,0],[2,0],[2,1],[1,2],[0,3],[0,4],[1,4],[2,4]],
+  Ş: [[1,0],[2,0],[0,1],[1,2],[2,3],[0,4],[1,4],[1,5]],
+  Ç: [[1,0],[2,0],[0,1],[0,2],[0,3],[1,4],[2,4],[1,5]],
+  Ö: [[0,0],[1,0],[2,0],[0,1],[2,1],[0,2],[2,2],[0,3],[2,3],[0,4],[1,4],[2,4],[1,-1]],
+  Ü: [[0,0],[2,0],[0,1],[2,1],[0,2],[2,2],[0,3],[2,3],[1,4],[2,4],[0,4],[1,-1]],
+  İ: [[0,0],[1,0],[2,0],[1,1],[1,2],[1,3],[0,4],[1,4],[2,4],[1,-1]],
+  " ": [],
+  "·": [[1,2]],
+};
+
+function SignGlyph({
+  position,
+  text,
+  color,
+  scale = 0.06,
+}: {
+  position: [number, number, number];
+  text: string;
+  color: string;
+  scale?: number;
+}) {
+  // Build voxel pixels for each char and lay them along X. Each char is 3
+  // cols + 1 col gap = 4 cols wide, 5 rows tall (plus dot row above for
+  // diacritics).
+  const pixels = useMemo(() => {
+    const out: { x: number; y: number; key: string }[] = [];
+    const chars = text.toUpperCase().split("");
+    const charW = 4; // 3 + 1 gap
+    const totalW = charW * chars.length - 1;
+    chars.forEach((ch, ci) => {
+      const g = GLYPHS[ch];
+      if (!g) return;
+      g.forEach(([cx, cy]) => {
+        out.push({
+          x: ci * charW + cx - totalW / 2,
+          // invert y so row 0 sits at top
+          y: 4 - cy,
+          key: `${ci}-${cx}-${cy}`,
+        });
+      });
+    });
+    return out;
+  }, [text]);
+  return (
+    <group position={position} scale={[scale, scale, scale]}>
+      {pixels.map((p) => (
+        <mesh key={p.key} position={[p.x, p.y, 0]}>
+          <boxGeometry args={[1, 1, 0.6]} />
           <meshStandardMaterial
-            ref={lampRef}
-            color="#1a1a1a"
-            emissive="#ffaf3a"
-            emissiveIntensity={1.1}
+            color={color}
+            emissive={color}
+            emissiveIntensity={0.7}
             toneMapped={false}
           />
         </mesh>
-        <mesh position={[0, 1.18, 0]}>
-          <cylinderGeometry args={[0.16, 0.18, 0.18, 8]} />
-          <meshLambertMaterial color="#3a2a1a" />
-        </mesh>
-        <pointLight position={[0, 1.1, 0]} intensity={0.5} distance={4} color="#ffaf3a" />
-      </group>
+      ))}
+    </group>
+  );
+}
 
-      {/* Lonely pine tree (single voxel tree) */}
-      <group position={[5.5, 0, -2.2]}>
-        <mesh position={[0, 0.8, 0]} castShadow>
-          <boxGeometry args={[0.4, 1.6, 0.4]} />
-          <meshLambertMaterial color="#3a2515" />
-        </mesh>
-        <mesh position={[0, 2.4, 0]} castShadow>
-          <boxGeometry args={[1.6, 1.0, 1.6]} />
-          <meshLambertMaterial color="#1f3f23" />
-        </mesh>
-        <mesh position={[0, 3.4, 0]} castShadow>
-          <boxGeometry args={[1.2, 0.8, 1.2]} />
-          <meshLambertMaterial color="#2a4f2e" />
-        </mesh>
-        <mesh position={[0, 4.1, 0]} castShadow>
-          <boxGeometry args={[0.8, 0.6, 0.8]} />
-          <meshLambertMaterial color="#34603a" />
-        </mesh>
-      </group>
+type SavasElektronikProps = {
+  screenRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+  signRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+  accent: string;
+};
 
-      {/* Tiny wooden chair */}
-      <mesh position={[0.2, 0.9, 1.6]} castShadow>
-        <boxGeometry args={[0.7, 0.18, 0.7]} />
-        <meshLambertMaterial color="#5a3a22" />
+function SavasElektronikFront({
+  screenRef,
+  signRef,
+  accent,
+}: SavasElektronikProps) {
+  // Center storefront. Wider than neighbors, with a backlit sign reading
+  // "SAVAŞ ELEKTRONİK", a window display showing a CRT + beige tower being
+  // repaired, a framed photo (cocuk.JPG) propped in the window, and a
+  // sub-header reading "Bilgisayar Tamir" so the function reads at a glance.
+  return (
+    <group position={[0, 0, -1.2]}>
+      {/* Storefront wall — slightly recessed to stand out */}
+      <mesh position={[0, 1.3, 0]} castShadow>
+        <boxGeometry args={[7.6, 2.6, 0.4]} />
+        <meshLambertMaterial color="#e8d8b8" />
       </mesh>
-      <mesh position={[0.2, 1.45, 1.95]} castShadow>
-        <boxGeometry args={[0.7, 1.0, 0.12]} />
-        <meshLambertMaterial color="#5a3a22" />
+      {/* Tile band along the bottom */}
+      <mesh position={[0, 0.18, 0.21]}>
+        <boxGeometry args={[7.6, 0.36, 0.02]} />
+        <meshLambertMaterial color="#3a2a1a" />
+      </mesh>
+      {/* Big window — curved frame */}
+      <mesh position={[-1.5, 1.45, 0.21]} castShadow>
+        <boxGeometry args={[3.8, 2.0, 0.06]} />
+        <meshLambertMaterial color="#3a2a1a" />
+      </mesh>
+      {/* Inner glass */}
+      <mesh position={[-1.5, 1.45, 0.24]}>
+        <boxGeometry args={[3.5, 1.75, 0.02]} />
+        <meshStandardMaterial
+          color="#b3c8d4"
+          emissive="#fff0c8"
+          emissiveIntensity={0.55}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Window display: CRT + beige tower + keyboard sitting on a counter,
+       *  visible through the glass. Pushed slightly forward so it reads. */}
+      <group position={[-1.5, 0.7, 0.5]}>
+        {/* Counter */}
+        <mesh position={[0, 0.36, 0]} castShadow>
+          <boxGeometry args={[3.2, 0.16, 0.9]} />
+          <meshLambertMaterial color="#5a3a1f" />
+        </mesh>
+        {/* Beige tower */}
+        <mesh position={[-1.0, 0.95, -0.05]} castShadow>
+          <boxGeometry args={[0.7, 1.0, 0.7]} />
+          <meshLambertMaterial color="#d8d0b0" />
+        </mesh>
+        <mesh position={[-1.0, 1.15, 0.36]}>
+          <boxGeometry args={[0.36, 0.06, 0.02]} />
+          <meshLambertMaterial color="#1a1a1a" />
+        </mesh>
+        <mesh position={[-1.0, 0.95, 0.36]}>
+          <boxGeometry args={[0.5, 0.04, 0.02]} />
+          <meshLambertMaterial color="#1a1a1a" />
+        </mesh>
+        <mesh position={[-0.83, 0.78, 0.36]}>
+          <boxGeometry args={[0.05, 0.05, 0.02]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#22ff66"
+            emissiveIntensity={2.0}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* CRT monitor */}
+        <mesh position={[0.3, 0.95, 0]} castShadow>
+          <boxGeometry args={[1.3, 1.1, 1.0]} />
+          <meshLambertMaterial color="#cfc8a8" />
+        </mesh>
+        <mesh position={[0.3, 0.95, 0.51]}>
+          <boxGeometry args={[1.0, 0.82, 0.02]} />
+          <meshStandardMaterial
+            ref={screenRef}
+            color="#0d2010"
+            emissive="#3aff7a"
+            emissiveIntensity={0.65}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* phosphor scanlines */}
+        {Array.from({ length: 5 }).map((_, i) => (
+          <mesh key={i} position={[0.3, 0.65 + i * 0.16, 0.525]}>
+            <boxGeometry args={[0.95, 0.02, 0.01]} />
+            <meshStandardMaterial
+              color="#62ffaa"
+              emissive="#62ffaa"
+              emissiveIntensity={0.4}
+              toneMapped={false}
+              transparent
+              opacity={0.4}
+            />
+          </mesh>
+        ))}
+        {/* keyboard */}
+        <mesh position={[1.05, 0.5, 0.15]} rotation={[-0.18, 0, 0]} castShadow>
+          <boxGeometry args={[0.7, 0.06, 0.34]} />
+          <meshLambertMaterial color="#cfc8a8" />
+        </mesh>
+        {/* a small stack of "fixed" devices */}
+        <mesh position={[1.3, 0.5, -0.25]} castShadow>
+          <boxGeometry args={[0.55, 0.16, 0.4]} />
+          <meshLambertMaterial color="#7a8a9a" />
+        </mesh>
+        <mesh position={[1.3, 0.66, -0.25]} castShadow>
+          <boxGeometry args={[0.5, 0.14, 0.36]} />
+          <meshLambertMaterial color="#404048" />
+        </mesh>
+      </group>
+
+      {/* Door */}
+      <mesh position={[2.4, 1.2, 0.21]}>
+        <boxGeometry args={[1.4, 2.2, 0.06]} />
+        <meshLambertMaterial color="#3a2a1a" />
+      </mesh>
+      <mesh position={[2.4, 1.55, 0.25]}>
+        <boxGeometry args={[1.1, 1.4, 0.02]} />
+        <meshStandardMaterial
+          color="#aac1d2"
+          emissive="#fff0c8"
+          emissiveIntensity={0.55}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* door handle */}
+      <mesh position={[3.0, 1.2, 0.27]}>
+        <boxGeometry args={[0.06, 0.18, 0.06]} />
+        <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.3} />
+      </mesh>
+      {/* AÇIK door plaque */}
+      <mesh position={[2.4, 2.05, 0.27]}>
+        <boxGeometry args={[0.5, 0.18, 0.02]} />
+        <meshStandardMaterial color="#1a1a1a" emissive={accent} emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+      <SignGlyph position={[2.4, 2.05, 0.3]} text="AÇIK" color="#fff" scale={0.025} />
+
+      {/* Backlit awning */}
+      <mesh position={[0, 2.85, 0.6]} castShadow>
+        <boxGeometry args={[7.4, 0.22, 1.4]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      {/* Sign backplate — single wide strip so the shop name reads on one line */}
+      <mesh position={[0, 3.25, 0.4]} castShadow>
+        <boxGeometry args={[7.2, 0.6, 0.18]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      {/* Sign neon glow strip behind text */}
+      <mesh position={[0, 3.25, 0.51]}>
+        <boxGeometry args={[6.9, 0.42, 0.04]} />
+        <meshStandardMaterial
+          ref={signRef}
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.6}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Sign text — Savaş Elektronik on a single line */}
+      <SignGlyph
+        position={[0, 3.27, 0.56]}
+        text="SAVAŞ ELEKTRONİK"
+        color="#fff5e6"
+        scale={0.05}
+      />
+      {/* Sub-header — Bilgisayar Tamir */}
+      <SignGlyph
+        position={[0, 2.55, 0.32]}
+        text="BILGISAYAR TAMIR"
+        color="#3a2418"
+        scale={0.038}
+      />
+
+      {/* A small sandwich-board on the sidewalk in front of the door */}
+      <group position={[2.4, 0, 1.6]} rotation={[0, -0.25, 0]}>
+        <mesh position={[0, 0.55, 0]} castShadow>
+          <boxGeometry args={[0.9, 1.1, 0.06]} />
+          <meshLambertMaterial color="#f0e6c8" />
+        </mesh>
+        <SignGlyph position={[0, 0.85, 0.04]} text="FORMAT" color="#3a2418" scale={0.035} />
+        <SignGlyph position={[0, 0.55, 0.04]} text="VIRUS" color="#3a2418" scale={0.035} />
+        <SignGlyph position={[0, 0.25, 0.04]} text="DONANIM" color="#3a2418" scale={0.035} />
+      </group>
+
+      {/* Warm window-glow point light to make the storefront pop */}
+      <pointLight position={[-1.4, 1.4, 0.6]} intensity={0.9} distance={6} color="#ffd49a" />
+      <pointLight position={[0, 3.2, 0.6]} intensity={0.7} distance={5} color={accent} />
+    </group>
+  );
+}
+
+function FramedPhoto({
+  position,
+  src,
+  width,
+  height,
+  rotationY = 0,
+  caption,
+  frameColor = "#3a2418",
+  matColor = "#f0e6c8",
+  glow = false,
+}: {
+  position: [number, number, number];
+  src: string;
+  width: number;
+  height: number;
+  rotationY?: number;
+  caption?: { tr: string; en: string };
+  frameColor?: string;
+  matColor?: string;
+  glow?: boolean;
+}) {
+  const tex = useTexture(src);
+  const { open } = useLightbox();
+  const [hovered, setHovered] = useState(false);
+  useEffect(() => {
+    if (!tex) return;
+    tex.colorSpace = THREE.SRGBColorSpace;
+    // Skip mipmaps — these are small framed photos shown at fixed size, so
+    // we avoid the GPU memory overhead. Linear filter keeps them readable.
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+  }, [tex]);
+  // Toggle the canvas cursor when hovering over a clickable photo so users
+  // know it's interactive without us drawing extra UI.
+  useEffect(() => {
+    if (!hovered) return;
+    document.body.style.cursor = "pointer";
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, [hovered]);
+  const handleClick = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation();
+    open({ src, caption });
+  };
+  return (
+    <group
+      position={position}
+      rotation={[0, rotationY, 0]}
+      scale={hovered ? 1.04 : 1}
+      onClick={handleClick}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
+      {/* frame */}
+      <mesh castShadow>
+        <boxGeometry args={[width + 0.18, height + 0.18, 0.08]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      {/* matte */}
+      <mesh position={[0, 0, 0.05]}>
+        <boxGeometry args={[width + 0.06, height + 0.06, 0.02]} />
+        <meshLambertMaterial color={matColor} />
+      </mesh>
+      {/* photo */}
+      <mesh position={[0, 0, 0.07]}>
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial map={tex} toneMapped={false} />
+      </mesh>
+      {/* hover glow ring + always-on accent if glow=true */}
+      {(hovered || glow) && (
+        <mesh position={[0, 0, -0.02]}>
+          <planeGeometry args={[width + 0.5, height + 0.5]} />
+          <meshBasicMaterial
+            color={hovered ? "#ffd49a" : "#ff7a59"}
+            transparent
+            opacity={hovered ? 0.55 : 0.25}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+function DeciduousTree({
+  position,
+  variant,
+}: {
+  position: [number, number, number];
+  variant: 0 | 1 | 2;
+}) {
+  // Three voxel tree silhouettes — slight palette shift per variant so the
+  // street row doesn't look copy-pasted. Trunk + 3 chunky leaf stacks.
+  const palettes: { trunk: string; a: string; b: string; c: string }[] = [
+    { trunk: "#4a3018", a: "#3a6a2e", b: "#4a8038", c: "#5a9a44" },
+    { trunk: "#3a2510", a: "#2a5024", b: "#3a6e30", c: "#4a883c" },
+    { trunk: "#523524", a: "#458a3a", b: "#56a345", c: "#6cba50" },
+  ];
+  const p = palettes[variant];
+  return (
+    <group position={position}>
+      {/* trunk */}
+      <mesh position={[0, 0.7, 0]} castShadow>
+        <boxGeometry args={[0.36, 1.4, 0.36]} />
+        <meshLambertMaterial color={p.trunk} />
+      </mesh>
+      {/* canopy stack */}
+      <mesh position={[0, 1.9, 0]} castShadow>
+        <boxGeometry args={[1.7, 0.9, 1.7]} />
+        <meshLambertMaterial color={p.a} />
+      </mesh>
+      <mesh position={[0.2, 2.6, -0.1]} castShadow>
+        <boxGeometry args={[1.4, 0.8, 1.4]} />
+        <meshLambertMaterial color={p.b} />
+      </mesh>
+      <mesh position={[-0.1, 3.2, 0.1]} castShadow>
+        <boxGeometry args={[1.0, 0.7, 1.0]} />
+        <meshLambertMaterial color={p.c} />
+      </mesh>
+      {/* base ring of soil */}
+      <mesh position={[0, -0.36, 0]}>
+        <boxGeometry args={[0.9, 0.1, 0.9]} />
+        <meshLambertMaterial color="#4a3220" />
+      </mesh>
+    </group>
+  );
+}
+
+function StreetLamp({
+  position,
+  bulbRef,
+}: {
+  position: [number, number, number];
+  bulbRef?: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  return (
+    <group position={position}>
+      {/* base */}
+      <mesh position={[0, 0.1, 0]} castShadow>
+        <boxGeometry args={[0.3, 0.2, 0.3]} />
+        <meshLambertMaterial color="#2a2a2e" />
+      </mesh>
+      {/* pole */}
+      <mesh position={[0, 1.7, 0]} castShadow>
+        <boxGeometry args={[0.12, 3.2, 0.12]} />
+        <meshLambertMaterial color="#2a2a2e" />
+      </mesh>
+      {/* arm */}
+      <mesh position={[0.35, 3.25, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.12, 0.12]} />
+        <meshLambertMaterial color="#2a2a2e" />
+      </mesh>
+      {/* head shade */}
+      <mesh position={[0.7, 3.1, 0]} castShadow>
+        <boxGeometry args={[0.42, 0.18, 0.42]} />
+        <meshLambertMaterial color="#1a1a1e" />
+      </mesh>
+      {/* bulb */}
+      <mesh position={[0.7, 2.93, 0]}>
+        <boxGeometry args={[0.32, 0.16, 0.32]} />
+        <meshStandardMaterial
+          ref={bulbRef}
+          color="#1a1a1a"
+          emissive="#ffd28a"
+          emissiveIntensity={1.2}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* warm pool of light */}
+      <pointLight
+        position={[0.7, 2.85, 0]}
+        intensity={0.7}
+        distance={6}
+        color="#ffd28a"
+      />
+    </group>
+  );
+}
+
+function Bench({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* legs */}
+      {[-0.6, 0.6].map((x, i) => (
+        <mesh key={i} position={[x, 0.3, 0]} castShadow>
+          <boxGeometry args={[0.14, 0.6, 0.5]} />
+          <meshLambertMaterial color="#2a2a2e" />
+        </mesh>
+      ))}
+      {/* seat */}
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <boxGeometry args={[1.7, 0.1, 0.5]} />
+        <meshLambertMaterial color="#7a4a24" />
+      </mesh>
+      {/* back */}
+      <mesh position={[0, 0.95, -0.2]} castShadow>
+        <boxGeometry args={[1.7, 0.7, 0.08]} />
+        <meshLambertMaterial color="#7a4a24" />
+      </mesh>
+    </group>
+  );
+}
+
+function ParkedCar({
+  position,
+  bodyColor,
+}: {
+  position: [number, number, number];
+  bodyColor: string;
+}) {
+  return (
+    <group position={position} rotation={[0, Math.PI / 2, 0]}>
+      {/* body lower */}
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <boxGeometry args={[3.4, 0.6, 1.4]} />
+        <meshLambertMaterial color={bodyColor} />
+      </mesh>
+      {/* cabin */}
+      <mesh position={[0.1, 0.85, 0]} castShadow>
+        <boxGeometry args={[1.9, 0.55, 1.25]} />
+        <meshLambertMaterial color={bodyColor} />
+      </mesh>
+      {/* windows */}
+      <mesh position={[0.1, 0.85, 0.63]}>
+        <boxGeometry args={[1.7, 0.42, 0.02]} />
+        <meshStandardMaterial
+          color="#2a3a4a"
+          emissive="#88a4b4"
+          emissiveIntensity={0.25}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh position={[0.1, 0.85, -0.63]}>
+        <boxGeometry args={[1.7, 0.42, 0.02]} />
+        <meshStandardMaterial color="#2a3a4a" emissive="#88a4b4" emissiveIntensity={0.25} toneMapped={false} />
+      </mesh>
+      {/* headlight */}
+      <mesh position={[1.72, 0.35, 0.45]}>
+        <boxGeometry args={[0.05, 0.18, 0.18]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={0.8} toneMapped={false} />
+      </mesh>
+      <mesh position={[1.72, 0.35, -0.45]}>
+        <boxGeometry args={[0.05, 0.18, 0.18]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={0.8} toneMapped={false} />
+      </mesh>
+      {/* tail light */}
+      <mesh position={[-1.72, 0.35, 0.45]}>
+        <boxGeometry args={[0.05, 0.18, 0.18]} />
+        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      <mesh position={[-1.72, 0.35, -0.45]}>
+        <boxGeometry args={[0.05, 0.18, 0.18]} />
+        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      {/* wheels */}
+      {([
+        [1.1, 0, 0.7],
+        [-1.1, 0, 0.7],
+        [1.1, 0, -0.7],
+        [-1.1, 0, -0.7],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh key={i} position={p} castShadow>
+          <boxGeometry args={[0.5, 0.5, 0.3]} />
+          <meshLambertMaterial color="#1a1a1a" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function Pedestrian({
+  position,
+  top,
+  bottom,
+}: {
+  position: [number, number, number];
+  top: string;
+  bottom: string;
+}) {
+  return (
+    <group position={position}>
+      {/* legs */}
+      <mesh position={[0, 0.45, 0]} castShadow>
+        <boxGeometry args={[0.32, 0.9, 0.28]} />
+        <meshLambertMaterial color={bottom} />
+      </mesh>
+      {/* torso */}
+      <mesh position={[0, 1.15, 0]} castShadow>
+        <boxGeometry args={[0.45, 0.6, 0.32]} />
+        <meshLambertMaterial color={top} />
+      </mesh>
+      {/* head */}
+      <mesh position={[0, 1.65, 0]} castShadow>
+        <boxGeometry args={[0.32, 0.32, 0.32]} />
+        <meshLambertMaterial color="#d8b48a" />
+      </mesh>
+      {/* hair cap */}
+      <mesh position={[0, 1.83, 0]}>
+        <boxGeometry args={[0.34, 0.08, 0.34]} />
+        <meshLambertMaterial color="#2a1a10" />
       </mesh>
     </group>
   );

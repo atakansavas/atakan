@@ -304,6 +304,197 @@
   pointer-events: auto;
   transform: translateY(-50%) scale(1);
 }
+/* Collapsed state — slides off-screen to the right. The card stays mounted
+   so the inner story re-renders silently while it's hidden, ready to glide
+   back in when the user (or an era handover) opens it again. */
+.story-card.story-card-era.is-visible.is-collapsed {
+  /* 720ms-ish slide. Combined with the 2s era handover, the card spends
+     ~560ms fully off-screen between an era change and reappearing. */
+  transition: opacity 700ms ease, transform 700ms cubic-bezier(0.5, 0, 0.2, 1);
+  transform: translateY(-50%) translateX(calc(100% + clamp(16px, 3vw, 36px) + 24px));
+  opacity: 0.6;
+  pointer-events: none;
+}
+/* Floating toggle handle — styled as a chunky pixel-art shop sticker
+   stuck to the panel edge. Era-accent border + bold pixel arrows give it
+   the same voxel feel as the dioramas, so it reads as part of the world
+   rather than a generic close button. */
+.story-card-toggle {
+  --tab-w: 38px;
+  --tab-h: 56px;
+  --tab-bg: rgba(10, 12, 24, 0.96);
+  position: absolute;
+  left: calc(-1 * var(--tab-w) + 2px);
+  top: 28px;
+  width: var(--tab-w);
+  height: var(--tab-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, var(--tab-bg) 0%, rgba(10, 12, 24, 0.88) 100%),
+    repeating-linear-gradient(
+      45deg,
+      var(--era-accent-soft, rgba(255, 122, 89, 0.08)) 0 2px,
+      transparent 2px 6px
+    );
+  color: var(--era-accent);
+  border: 2px solid var(--era-accent);
+  border-right: none;
+  border-radius: 0;
+  /* Pixel-art chunky shadow + soft outer glow in the era hue */
+  box-shadow:
+    -3px 3px 0 0 rgba(0, 0, 0, 0.45),
+    -10px 0 24px -8px var(--era-accent-soft, rgba(255, 122, 89, 0.5));
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  letter-spacing: 0.5px;
+  transition: background 200ms ease, color 200ms ease,
+    transform 220ms cubic-bezier(0.5, 0, 0.2, 1),
+    box-shadow 220ms ease;
+}
+.story-card-toggle::before {
+  /* Tape-bridge that "attaches" the tab to the card. A thin sliver of
+     era-accent on the inner edge sells the in-world handcrafted feel. */
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: -2px;
+  bottom: -2px;
+  width: 4px;
+  background: var(--era-accent);
+  opacity: 0.55;
+}
+.story-card-toggle:hover {
+  background:
+    linear-gradient(180deg, rgba(20, 22, 36, 1), rgba(14, 16, 28, 0.95)),
+    repeating-linear-gradient(
+      45deg,
+      var(--era-accent-soft, rgba(255, 122, 89, 0.18)) 0 2px,
+      transparent 2px 6px
+    );
+  color: #fff;
+  transform: translateX(-3px);
+  box-shadow:
+    -4px 4px 0 0 rgba(0, 0, 0, 0.5),
+    -14px 0 28px -6px var(--era-accent);
+}
+.story-card-toggle:focus-visible {
+  outline: 2px solid var(--era-accent);
+  outline-offset: 3px;
+}
+.story-card-toggle-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 13px;
+  text-shadow: 0 0 6px var(--era-accent-soft, transparent);
+}
+.story-card-toggle-icon::before {
+  content: attr(data-arrow);
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -1px;
+  /* Crisp pixel rendering on the arrow glyph */
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  color: var(--era-accent);
+  text-shadow:
+    0 0 4px var(--era-accent),
+    1px 0 0 rgba(255, 255, 255, 0.15);
+}
+.story-card-toggle:hover .story-card-toggle-icon::before {
+  color: #fff;
+  text-shadow: 0 0 8px var(--era-accent);
+}
+/* When collapsed, keep the handle reachable by anchoring it to the
+   viewport edge instead of the card edge. */
+.story-card.story-card-era.is-collapsed .story-card-toggle {
+  /* Counter the card's translateX so the handle visually stays put on the
+     right edge of the screen even though its parent is off-screen. */
+  transform: translateX(
+    calc(-1 * (100% - var(--tab-w) + 2px) - clamp(16px, 3vw, 36px) - 24px)
+  );
+  pointer-events: auto;
+}
+.story-card.story-card-era.is-collapsed .story-card-toggle:hover {
+  transform: translateX(
+    calc(-1 * (100% - var(--tab-w) + 2px) - clamp(16px, 3vw, 36px) - 24px - 3px)
+  );
+}
+
+/* ===== Asset lightbox ============================================== */
+.asset-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(8, 10, 22, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 4vw, 48px);
+  cursor: zoom-out;
+}
+.asset-lightbox-frame {
+  position: relative;
+  max-width: min(1100px, 92vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(20, 14, 8, 0.95), rgba(10, 8, 4, 0.95));
+  border: 2px solid var(--era-accent, #ff7a59);
+  box-shadow:
+    0 30px 60px -10px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+  cursor: default;
+}
+.asset-lightbox-img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(92vh - 90px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: #000;
+}
+.asset-lightbox-caption {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 235, 210, 0.92);
+  text-align: center;
+  padding: 4px 0 0;
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+}
+.asset-lightbox-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--era-accent, #ff7a59);
+  background: rgba(10, 8, 4, 0.96);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.6);
+  transition: transform 160ms ease, background 160ms ease;
+}
+.asset-lightbox-close:hover {
+  transform: scale(1.08);
+  background: var(--era-accent, #ff7a59);
+}
 .story-card::-webkit-scrollbar { width: 6px; }
 .story-card::-webkit-scrollbar-thumb { background: var(--era-accent); border-radius: 3px; }
 .story-card .story-head {

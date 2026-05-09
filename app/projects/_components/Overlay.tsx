@@ -16,6 +16,7 @@ import {
 } from "../_lib/data";
 import type { Experience, LifeChapter, Project, Era } from "../_lib/data";
 import { pick, useLang } from "../_lib/lang";
+import { useLightbox } from "../_lib/lightbox";
 import type { ScrollState } from "../_lib/scroll";
 
 const COPY = {
@@ -87,6 +88,8 @@ const COPY = {
   eraEmpty: { tr: "Bu dönemde kayıt yok.", en: "No records in this era." },
   liveBadge: { tr: "Yayında", en: "Live" },
   countSuffix: { tr: "kayıt", en: "items" },
+  panelCollapse: { tr: "Paneli gizle", en: "Hide panel" },
+  panelExpand: { tr: "Paneli aç", en: "Show panel" },
   outro: {
     eyebrow: { tr: "Sayfanın sonu, hikâyenin değil", en: "End of the page, not the story" },
     title: { tr: "Şu an buradayım.", en: "This is where I am now." },
@@ -114,6 +117,26 @@ export function TimelineOverlay({ scrollRef, visible }: Props) {
   const [activeYear, setActiveYear] = useState(ERAS[ERA_ORDER[0]].range[0]);
   const [activeExp, setActiveExp] = useState<Experience[]>([]);
   const rafRef = useRef<number | null>(null);
+
+  // Panel visibility — split into a user preference (toggled by the chevron
+  // button) and an era-transition flag. The card slides off-screen on era
+  // change so the diorama gets a beat to land before the new content drops
+  // in. Effective: open only when the user wants it AND we're not in the
+  // 2-second handover gap.
+  const [userPanelOpen, setUserPanelOpen] = useState(true);
+  const [eraTransitioning, setEraTransitioning] = useState(false);
+  const lastEraRef = useRef<Era>(ERA_ORDER[0]);
+  useEffect(() => {
+    if (activeEra === lastEraRef.current) return;
+    lastEraRef.current = activeEra;
+    // Only run the slide-out/in dance if the user hasn't already hidden it
+    // — they'd just see nothing change otherwise, which is confusing.
+    if (!userPanelOpen) return;
+    setEraTransitioning(true);
+    const t = window.setTimeout(() => setEraTransitioning(false), 2000);
+    return () => window.clearTimeout(t);
+  }, [activeEra, userPanelOpen]);
+  const panelOpen = userPanelOpen && !eraTransitioning;
 
   // Mirror scroll-ref into React state. We track the active era (for the
   // story-card content) and the active year (so the life-chapter chip stays
@@ -178,7 +201,27 @@ export function TimelineOverlay({ scrollRef, visible }: Props) {
 
       <ActiveExperiencePanel visible={visible} experiences={activeExp} />
 
-      <article className={`story-card story-card-era ${visible ? "is-visible" : ""}`}>
+      <article
+        className={`story-card story-card-era ${visible ? "is-visible" : ""} ${
+          panelOpen ? "" : "is-collapsed"
+        }`}
+      >
+        <button
+          type="button"
+          className="story-card-toggle"
+          aria-expanded={panelOpen}
+          aria-label={pick(panelOpen ? COPY.panelCollapse : COPY.panelExpand, lang)}
+          title={pick(panelOpen ? COPY.panelCollapse : COPY.panelExpand, lang)}
+          onClick={() => setUserPanelOpen((v) => !v)}
+        >
+          <span
+            className="story-card-toggle-icon"
+            data-arrow={panelOpen ? "▶▶" : "◀◀"}
+            aria-hidden
+          >
+            {lang === "tr" ? "PNL" : "PNL"}
+          </span>
+        </button>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`era:${activeEra}`}
@@ -988,5 +1031,60 @@ function LifeChapterChip({ chapter }: { chapter: LifeChapter }) {
         · {chapter.start}–{endStr}
       </span>
     </div>
+  );
+}
+
+/* ===== Asset lightbox =====
+ * Full-screen photo viewer that fades in when the user clicks an in-world
+ * framed photo (cocuk.JPG, old.JPG, …). Subtle: era-tinted backdrop, soft
+ * caption strip below, ESC or click-outside to dismiss.
+ */
+export function AssetLightbox() {
+  const { lang } = useLang();
+  const { current, close } = useLightbox();
+  return (
+    <AnimatePresence>
+      {current && (
+        <motion.div
+          className="asset-lightbox"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          onClick={close}
+          role="dialog"
+          aria-modal="true"
+        >
+          <motion.div
+            className="asset-lightbox-frame"
+            initial={{ scale: 0.94, y: 12 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.96, y: 6 }}
+            transition={{ duration: 0.22, ease: [0.2, 0.7, 0.2, 1] }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="asset-lightbox-close"
+              onClick={close}
+              aria-label={lang === "tr" ? "Kapat" : "Close"}
+            >
+              ×
+            </button>
+            <img
+              className="asset-lightbox-img"
+              src={current.src}
+              alt={current.caption ? pick(current.caption, lang) : ""}
+              draggable={false}
+            />
+            {current.caption && (
+              <div className="asset-lightbox-caption">
+                {pick(current.caption, lang)}
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

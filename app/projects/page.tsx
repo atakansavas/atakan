@@ -5,7 +5,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ERAS, ERA_ORDER } from "./_lib/data";
 import type { Era } from "./_lib/data";
 import { LangProvider } from "./_lib/lang";
-import { ProjectsHero, ProjectsOutro, TimelineOverlay } from "./_components/Overlay";
+import { LightboxProvider } from "./_lib/lightbox";
+import {
+  AssetLightbox,
+  ProjectsHero,
+  ProjectsOutro,
+  TimelineOverlay,
+} from "./_components/Overlay";
 import { ProjectsNav } from "./_components/Nav";
 import { ScrollNavPill } from "./_components/ScrollNavPill";
 import { EraRail } from "./_components/EraRail";
@@ -29,7 +35,10 @@ const STOPS_COUNT = 1 + ERA_ORDER.length + 1; // hero + N eras + outro
 export default function ProjectsPage() {
   return (
     <LangProvider>
-      <ProjectsExperience />
+      <LightboxProvider>
+        <ProjectsExperience />
+        <AssetLightbox />
+      </LightboxProvider>
     </LangProvider>
   );
 }
