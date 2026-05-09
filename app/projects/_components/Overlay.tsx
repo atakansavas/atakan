@@ -749,6 +749,11 @@ export function ProjectsHero({ opacity = 1 }: { opacity?: number }) {
       aria-label="intro"
       style={{ opacity, transform: `translateY(${(1 - opacity) * -16}px)`, transition: "opacity 200ms ease-out, transform 200ms ease-out" }}
     >
+      {/* Veil sits between the canvas and the hero copy. Without it, the
+       *  brightened Genesis diorama (peach sky + lit signs) bleeds straight
+       *  through and clashes with the title. The radial gradient keeps the
+       *  centre readable while letting the world breathe at the edges. */}
+      <div className="hero-veil" aria-hidden />
       <div className="hero-stage">
         <motion.div
           className="hero-portrait"

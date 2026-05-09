@@ -817,6 +817,34 @@
   justify-content: center;
   padding: 96px 24px 48px;
 }
+/* Hero veil — a layered backdrop that sits between the diorama canvas
+   (z-index 0) and the hero copy (z-index 10). Two stacked gradients: a
+   strong centred radial dim that pools behind the title, and a top-to-
+   bottom dark wash so the navigation/eyebrow text stays legible against
+   the brightened Genesis world.  Fades along with the hero opacity. */
+.hero-veil {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 70% 60% at 50% 52%,
+      rgba(8, 10, 22, 0.92) 0%,
+      rgba(8, 10, 22, 0.78) 35%,
+      rgba(8, 10, 22, 0.5) 65%,
+      rgba(8, 10, 22, 0.18) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(8, 10, 22, 0.65) 0%,
+      rgba(8, 10, 22, 0.25) 30%,
+      rgba(8, 10, 22, 0.25) 70%,
+      rgba(8, 10, 22, 0.55) 100%
+    );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
 .hero-stage {
   display: grid;
   grid-template-columns: auto 1fr;
