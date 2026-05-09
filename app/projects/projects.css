@@ -276,7 +276,9 @@
   line-height: 1.45;
 }
 
-/* Story card (right side, fixed) */
+/* Story card (right side, fixed) — glass panel: stronger blur, lower
+   opacity so the diorama reads through the bottom of the card, but a
+   subtle inner gradient keeps text contrast where it matters. */
 .story-card {
   position: fixed;
   right: clamp(16px, 3vw, 36px);
@@ -287,17 +289,38 @@
   max-height: min(70vh, 720px);
   overflow-y: auto;
   border-radius: 18px;
-  padding: 20px 22px;
-  background: linear-gradient(180deg, rgba(8, 10, 22, 0.85), rgba(8, 10, 22, 0.6));
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6),
-              0 0 0 1px var(--era-accent-soft);
-  backdrop-filter: blur(14px);
+  padding: 22px 24px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(8, 10, 22, 0.62) 0%,
+      rgba(8, 10, 22, 0.42) 55%,
+      rgba(8, 10, 22, 0.28) 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 32px 70px -20px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px var(--era-accent-soft);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 450ms ease, transform 450ms ease;
   scrollbar-width: thin;
   scrollbar-color: var(--era-accent) transparent;
+}
+/* Boost text contrast inside the now-transparent card — soft shadow so
+   white text stays readable even when a busy diorama sits behind it. */
+.story-card .era-card-title,
+.story-card .era-card-tagline,
+.story-card .era-card-row-title,
+.story-card .era-card-row-sub,
+.story-card .era-card-row-year,
+.story-card .story-title,
+.story-card .story-sub,
+.story-card .story-body {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 .story-card.is-visible {
   opacity: 1;
@@ -315,116 +338,88 @@
   opacity: 0.6;
   pointer-events: none;
 }
-/* Floating toggle handle — styled as a chunky pixel-art shop sticker
-   stuck to the panel edge. Era-accent border + bold pixel arrows give it
-   the same voxel feel as the dioramas, so it reads as part of the world
-   rather than a generic close button. */
-.story-card-toggle {
-  --tab-w: 38px;
-  --tab-h: 56px;
-  --tab-bg: rgba(10, 12, 24, 0.96);
-  position: absolute;
-  left: calc(-1 * var(--tab-w) + 2px);
-  top: 28px;
-  width: var(--tab-w);
-  height: var(--tab-h);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background:
-    linear-gradient(180deg, var(--tab-bg) 0%, rgba(10, 12, 24, 0.88) 100%),
-    repeating-linear-gradient(
-      45deg,
-      var(--era-accent-soft, rgba(255, 122, 89, 0.08)) 0 2px,
-      transparent 2px 6px
-    );
-  color: var(--era-accent);
-  border: 2px solid var(--era-accent);
-  border-right: none;
-  border-radius: 0;
-  /* Pixel-art chunky shadow + soft outer glow in the era hue */
-  box-shadow:
-    -3px 3px 0 0 rgba(0, 0, 0, 0.45),
-    -10px 0 24px -8px var(--era-accent-soft, rgba(255, 122, 89, 0.5));
-  cursor: pointer;
-  padding: 0;
-  z-index: 1;
-  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
-  letter-spacing: 0.5px;
-  transition: background 200ms ease, color 200ms ease,
-    transform 220ms cubic-bezier(0.5, 0, 0.2, 1),
-    box-shadow 220ms ease;
-}
-.story-card-toggle::before {
-  /* Tape-bridge that "attaches" the tab to the card. A thin sliver of
-     era-accent on the inner edge sells the in-world handcrafted feel. */
-  content: "";
-  position: absolute;
-  right: -2px;
-  top: -2px;
-  bottom: -2px;
-  width: 4px;
-  background: var(--era-accent);
-  opacity: 0.55;
-}
-.story-card-toggle:hover {
-  background:
-    linear-gradient(180deg, rgba(20, 22, 36, 1), rgba(14, 16, 28, 0.95)),
-    repeating-linear-gradient(
-      45deg,
-      var(--era-accent-soft, rgba(255, 122, 89, 0.18)) 0 2px,
-      transparent 2px 6px
-    );
-  color: #fff;
-  transform: translateX(-3px);
-  box-shadow:
-    -4px 4px 0 0 rgba(0, 0, 0, 0.5),
-    -14px 0 28px -6px var(--era-accent);
-}
-.story-card-toggle:focus-visible {
-  outline: 2px solid var(--era-accent);
-  outline-offset: 3px;
-}
-.story-card-toggle-icon {
+/* Panel toggle — own fixed-position button so it's always reachable
+   regardless of card state. Big, labeled, and era-tinted; lives at the
+   right edge of the viewport at the same vertical band as the card. */
+.panel-toggle {
+  position: fixed;
+  right: clamp(16px, 3vw, 36px);
+  top: calc(50% + 24px);
+  transform: translateY(-50%);
+  z-index: 25; /* above the card so it's always clickable */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-weight: 700;
-  font-size: 13px;
-  text-shadow: 0 0 6px var(--era-accent-soft, transparent);
-}
-.story-card-toggle-icon::before {
-  content: attr(data-arrow);
-  font-size: 18px;
-  line-height: 1;
-  letter-spacing: -1px;
-  /* Crisp pixel rendering on the arrow glyph */
-  -webkit-font-smoothing: none;
-  font-smooth: never;
+  justify-content: center;
+  gap: 6px;
+  width: 64px;
+  height: 96px;
+  padding: 0 4px;
+  background: linear-gradient(180deg, rgba(14, 16, 30, 0.96), rgba(8, 10, 22, 0.96));
+  border: 2px solid var(--era-accent);
+  border-radius: 14px;
   color: var(--era-accent);
-  text-shadow:
-    0 0 4px var(--era-accent),
-    1px 0 0 rgba(255, 255, 255, 0.15);
+  cursor: pointer;
+  font-family: ui-monospace, "SFMono-Regular", "Menlo", monospace;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow:
+    0 16px 30px -10px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 24px -6px var(--era-accent-soft);
+  transition: transform 200ms cubic-bezier(0.5, 0, 0.2, 1),
+    background 200ms ease, color 200ms ease, box-shadow 220ms ease;
 }
-.story-card-toggle:hover .story-card-toggle-icon::before {
+.panel-toggle:hover {
+  background: linear-gradient(180deg, rgba(22, 24, 40, 1), rgba(14, 16, 28, 1));
   color: #fff;
-  text-shadow: 0 0 8px var(--era-accent);
+  transform: translateY(-50%) translateX(-3px) scale(1.04);
+  box-shadow:
+    0 18px 36px -8px rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--era-accent),
+    0 0 30px -4px var(--era-accent);
 }
-/* When collapsed, keep the handle reachable by anchoring it to the
-   viewport edge instead of the card edge. */
-.story-card.story-card-era.is-collapsed .story-card-toggle {
-  /* Counter the card's translateX so the handle visually stays put on the
-     right edge of the screen even though its parent is off-screen. */
-  transform: translateX(
-    calc(-1 * (100% - var(--tab-w) + 2px) - clamp(16px, 3vw, 36px) - 24px)
-  );
-  pointer-events: auto;
+.panel-toggle:focus-visible {
+  outline: 2px solid var(--era-accent);
+  outline-offset: 3px;
 }
-.story-card.story-card-era.is-collapsed .story-card-toggle:hover {
-  transform: translateX(
-    calc(-1 * (100% - var(--tab-w) + 2px) - clamp(16px, 3vw, 36px) - 24px - 3px)
-  );
+/* When the card is open, nudge the toggle inward so it doesn't visually
+   collide with the card's right edge. When collapsed, the card is gone
+   so the toggle sits flush against the viewport edge. */
+.panel-toggle.is-open {
+  /* Anchor toggle to the LEFT edge of the card (which is at right:
+     `clamp + cardWidth`). We translate from the viewport-right anchor
+     by the card width so the toggle hugs the card's left edge. */
+  transform: translateY(-50%) translateX(calc(-1 * min(420px, 92vw) - 12px));
+}
+.panel-toggle.is-open:hover {
+  transform: translateY(-50%) translateX(calc(-1 * min(420px, 92vw) - 18px))
+    scale(1.04);
+}
+.panel-toggle-arrow {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 400;
+  color: var(--era-accent);
+  text-shadow: 0 0 12px var(--era-accent-soft);
+  transition: transform 200ms ease;
+}
+.panel-toggle:hover .panel-toggle-arrow {
+  color: #fff;
+  text-shadow: 0 0 14px var(--era-accent);
+}
+.panel-toggle.is-closed .panel-toggle-arrow {
+  /* Pulse the arrow gently when the card is hidden — tells the user this
+     is the way to bring the panel back. */
+  animation: panel-toggle-pulse 1.6s ease-in-out infinite;
+}
+@keyframes panel-toggle-pulse {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-3px); }
+}
+.panel-toggle-label {
+  font-size: 10px;
+  letter-spacing: 1.5px;
 }
 
 /* ===== Asset lightbox ============================================== */
@@ -2136,10 +2131,19 @@
   width: min(480px, 92vw);
   max-height: min(78vh, 760px);
   padding: 22px 24px 18px;
-  background: linear-gradient(180deg, rgba(10, 12, 26, 0.92), rgba(6, 8, 18, 0.78));
+  /* Glass: low opacity + heavy blur. The diorama reads through the lower
+     half while the gradient keeps the header/eyebrow band readable. */
+  background: linear-gradient(
+    180deg,
+    rgba(10, 12, 26, 0.6) 0%,
+    rgba(8, 10, 22, 0.42) 55%,
+    rgba(6, 8, 18, 0.28) 100%
+  );
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
               0 0 0 1px var(--era-accent-soft),
-              inset 0 1px 0 rgba(255, 255, 255, 0.04);
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .era-card-head {
   margin-bottom: 16px;

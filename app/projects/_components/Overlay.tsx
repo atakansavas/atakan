@@ -206,22 +206,6 @@ export function TimelineOverlay({ scrollRef, visible }: Props) {
           panelOpen ? "" : "is-collapsed"
         }`}
       >
-        <button
-          type="button"
-          className="story-card-toggle"
-          aria-expanded={panelOpen}
-          aria-label={pick(panelOpen ? COPY.panelCollapse : COPY.panelExpand, lang)}
-          title={pick(panelOpen ? COPY.panelCollapse : COPY.panelExpand, lang)}
-          onClick={() => setUserPanelOpen((v) => !v)}
-        >
-          <span
-            className="story-card-toggle-icon"
-            data-arrow={panelOpen ? "▶▶" : "◀◀"}
-            aria-hidden
-          >
-            {lang === "tr" ? "PNL" : "PNL"}
-          </span>
-        </button>
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`era:${activeEra}`}
@@ -238,6 +222,27 @@ export function TimelineOverlay({ scrollRef, visible }: Props) {
           </motion.div>
         </AnimatePresence>
       </article>
+
+      {/* Toggle button — own fixed-position element so it's always reachable
+       *  regardless of whether the card has slid out. Big enough to read at
+       *  a glance and labeled with intent text + a directional arrow. */}
+      {visible && (
+        <button
+          type="button"
+          className={`panel-toggle ${panelOpen ? "is-open" : "is-closed"}`}
+          aria-expanded={panelOpen}
+          aria-label={pick(panelOpen ? COPY.panelCollapse : COPY.panelExpand, lang)}
+          title={pick(panelOpen ? COPY.panelCollapse : COPY.panelExpand, lang)}
+          onClick={() => setUserPanelOpen((v) => !v)}
+        >
+          <span className="panel-toggle-arrow" aria-hidden>
+            {panelOpen ? "›" : "‹"}
+          </span>
+          <span className="panel-toggle-label">
+            {lang === "tr" ? (panelOpen ? "GİZLE" : "DETAY") : panelOpen ? "HIDE" : "DETAILS"}
+          </span>
+        </button>
+      )}
 
       <NextEraHint visible={visible} activeEra={activeEra} />
     </>
