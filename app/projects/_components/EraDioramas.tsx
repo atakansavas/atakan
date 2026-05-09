@@ -926,7 +926,7 @@ function GenesisDiorama() {
 
       <Bench position={[-2.6, 0, 2.2]} />
 
-      <ParkedCar position={[5.2, 0, 3.8]} bodyColor="#7d8c64" />
+      <Bicycle position={[3.4, 0, 1.0]} rotationY={-0.18} />
 
       {/* Background hint: a couple of voxel pedestrians */}
       <Pedestrian position={[-1.4, 0, 2.6]} top="#2a4d8a" bottom="#1a1f2e" />
@@ -1903,69 +1903,121 @@ function Bench({ position }: { position: [number, number, number] }) {
   );
 }
 
-function ParkedCar({
+/* Voxel city bicycle leaning by the shop door — stand-in for the car the
+ * shop's owner used to keep parked there. Two ring-style wheels (made
+ * from radially-arranged thin boxes), a chunky frame, saddle and
+ * handlebars. Slight tilt so it reads as parked rather than mid-ride.
+ */
+function Bicycle({
   position,
-  bodyColor,
+  rotationY = 0,
 }: {
   position: [number, number, number];
-  bodyColor: string;
+  rotationY?: number;
 }) {
+  // Each wheel: 12 small slats around a center to fake a tire — cheap and
+  // crisp at this scale, matches the diorama's voxel look.
+  const wheelSlats = useMemo(() => {
+    const out: { x: number; y: number; rot: number }[] = [];
+    const segs = 12;
+    for (let i = 0; i < segs; i++) {
+      const a = (i / segs) * Math.PI * 2;
+      out.push({ x: Math.cos(a) * 0.32, y: Math.sin(a) * 0.32, rot: a });
+    }
+    return out;
+  }, []);
   return (
-    <group position={position} rotation={[0, Math.PI / 2, 0]}>
-      {/* body lower */}
-      <mesh position={[0, 0.3, 0]} castShadow>
-        <boxGeometry args={[3.4, 0.6, 1.4]} />
-        <meshLambertMaterial color={bodyColor} />
-      </mesh>
-      {/* cabin */}
-      <mesh position={[0.1, 0.85, 0]} castShadow>
-        <boxGeometry args={[1.9, 0.55, 1.25]} />
-        <meshLambertMaterial color={bodyColor} />
-      </mesh>
-      {/* windows */}
-      <mesh position={[0.1, 0.85, 0.63]}>
-        <boxGeometry args={[1.7, 0.42, 0.02]} />
-        <meshStandardMaterial
-          color="#2a3a4a"
-          emissive="#88a4b4"
-          emissiveIntensity={0.25}
-          toneMapped={false}
-        />
-      </mesh>
-      <mesh position={[0.1, 0.85, -0.63]}>
-        <boxGeometry args={[1.7, 0.42, 0.02]} />
-        <meshStandardMaterial color="#2a3a4a" emissive="#88a4b4" emissiveIntensity={0.25} toneMapped={false} />
-      </mesh>
-      {/* headlight */}
-      <mesh position={[1.72, 0.35, 0.45]}>
-        <boxGeometry args={[0.05, 0.18, 0.18]} />
-        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={0.8} toneMapped={false} />
-      </mesh>
-      <mesh position={[1.72, 0.35, -0.45]}>
-        <boxGeometry args={[0.05, 0.18, 0.18]} />
-        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={0.8} toneMapped={false} />
-      </mesh>
-      {/* tail light */}
-      <mesh position={[-1.72, 0.35, 0.45]}>
-        <boxGeometry args={[0.05, 0.18, 0.18]} />
-        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.6} toneMapped={false} />
-      </mesh>
-      <mesh position={[-1.72, 0.35, -0.45]}>
-        <boxGeometry args={[0.05, 0.18, 0.18]} />
-        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.6} toneMapped={false} />
-      </mesh>
-      {/* wheels */}
-      {([
-        [1.1, 0, 0.7],
-        [-1.1, 0, 0.7],
-        [1.1, 0, -0.7],
-        [-1.1, 0, -0.7],
-      ] as [number, number, number][]).map((p, i) => (
-        <mesh key={i} position={p} castShadow>
-          <boxGeometry args={[0.5, 0.5, 0.3]} />
-          <meshLambertMaterial color="#1a1a1a" />
+    <group position={position} rotation={[0, rotationY, 0.06]}>
+      {/* Front wheel (leaning end) */}
+      <group position={[0.55, 0.36, 0]}>
+        {wheelSlats.map((s, i) => (
+          <mesh key={i} position={[s.x, s.y, 0]} rotation={[0, 0, s.rot]}>
+            <boxGeometry args={[0.12, 0.06, 0.06]} />
+            <meshLambertMaterial color="#1a1a1a" />
+          </mesh>
+        ))}
+        {/* hub */}
+        <mesh>
+          <boxGeometry args={[0.14, 0.14, 0.1]} />
+          <meshLambertMaterial color="#3a3a3a" />
         </mesh>
-      ))}
+      </group>
+      {/* Rear wheel */}
+      <group position={[-0.55, 0.36, 0]}>
+        {wheelSlats.map((s, i) => (
+          <mesh key={i} position={[s.x, s.y, 0]} rotation={[0, 0, s.rot]}>
+            <boxGeometry args={[0.12, 0.06, 0.06]} />
+            <meshLambertMaterial color="#1a1a1a" />
+          </mesh>
+        ))}
+        <mesh>
+          <boxGeometry args={[0.14, 0.14, 0.1]} />
+          <meshLambertMaterial color="#3a3a3a" />
+        </mesh>
+      </group>
+
+      {/* Frame — top tube + down tube + seat tube */}
+      <mesh position={[0, 0.66, 0]} rotation={[0, 0, -0.06]} castShadow>
+        <boxGeometry args={[1.0, 0.08, 0.08]} />
+        <meshLambertMaterial color="#3a6c8a" />
+      </mesh>
+      <mesh position={[0.05, 0.5, 0]} rotation={[0, 0, 0.55]} castShadow>
+        <boxGeometry args={[0.78, 0.08, 0.08]} />
+        <meshLambertMaterial color="#3a6c8a" />
+      </mesh>
+      <mesh position={[-0.34, 0.55, 0]} rotation={[0, 0, -0.4]} castShadow>
+        <boxGeometry args={[0.6, 0.08, 0.08]} />
+        <meshLambertMaterial color="#3a6c8a" />
+      </mesh>
+
+      {/* Pedals + crank */}
+      <mesh position={[0, 0.34, 0]}>
+        <boxGeometry args={[0.1, 0.1, 0.32]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      <mesh position={[0.16, 0.3, 0.18]}>
+        <boxGeometry args={[0.18, 0.05, 0.06]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+
+      {/* Seat post + saddle */}
+      <mesh position={[-0.42, 0.78, 0]} castShadow>
+        <boxGeometry args={[0.07, 0.34, 0.07]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      <mesh position={[-0.42, 0.99, 0]} castShadow>
+        <boxGeometry args={[0.32, 0.08, 0.16]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+
+      {/* Handlebar stem + bars */}
+      <mesh position={[0.45, 0.82, 0]} castShadow>
+        <boxGeometry args={[0.07, 0.32, 0.07]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      <mesh position={[0.45, 0.98, 0]} castShadow>
+        <boxGeometry args={[0.1, 0.06, 0.5]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      {/* Grips */}
+      <mesh position={[0.45, 0.98, 0.25]}>
+        <boxGeometry args={[0.1, 0.08, 0.12]} />
+        <meshLambertMaterial color="#7a4a24" />
+      </mesh>
+      <mesh position={[0.45, 0.98, -0.25]}>
+        <boxGeometry args={[0.1, 0.08, 0.12]} />
+        <meshLambertMaterial color="#7a4a24" />
+      </mesh>
+
+      {/* Front basket — a small shop courier touch */}
+      <mesh position={[0.7, 0.92, 0]} castShadow>
+        <boxGeometry args={[0.36, 0.26, 0.34]} />
+        <meshLambertMaterial color="#a87a44" />
+      </mesh>
+      <mesh position={[0.7, 0.93, 0]}>
+        <boxGeometry args={[0.32, 0.22, 0.3]} />
+        <meshLambertMaterial color="#3a2a18" />
+      </mesh>
     </group>
   );
 }
