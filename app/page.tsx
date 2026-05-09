@@ -14,15 +14,18 @@ type Particle = {
   delay: number;
 };
 
-const NAV_LINKS = [
-  { href: "/projects", label: "Projects", soon: true },
+type NavLink = { href: string; label: string; soon?: boolean };
+type PillLink = { href: string; label: string; title: string; color: string; soon?: boolean };
+
+const NAV_LINKS: NavLink[] = [
+  { href: "/projects", label: "Projects" },
   { href: "/mesai", label: "Mesai" },
   { href: "/presentations", label: "Presentations" },
   { href: "/cv", label: "CV" },
 ];
 
-const PILL_LINKS = [
-  { href: "/projects", label: "P", title: "Projects · Coming soon", color: "bg-blue-500/80 hover:bg-blue-400", soon: true },
+const PILL_LINKS: PillLink[] = [
+  { href: "/projects", label: "P", title: "Projects", color: "bg-blue-500/80 hover:bg-blue-400" },
   { href: "/mesai", label: "M", title: "Mesai", color: "bg-fuchsia-500/80 hover:bg-fuchsia-400" },
   { href: "/presentations", label: "S", title: "Presentations", color: "bg-purple-500/80 hover:bg-purple-400" },
   { href: "/cv", label: "CV", title: "CV", color: "bg-pink-500/80 hover:bg-pink-400" },

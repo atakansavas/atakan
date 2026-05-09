@@ -1,0 +1,819 @@
+{
+  "_about": "Bu dosyayi duzenleyerek /projects sayfasinin tum icerigini guncelleyebilirsin. Sectionlar: eras, experiences, projects, lifeChapters. Bilingual alanlar her zaman { tr, en } formundadir. Yil alanlari sayidir; 'present' string'i devam eden sureci belirtir. Yorum yazma (JSON desteklemez); ihtiyac varsa _notes alanlari kullanabilirsin.",
+  "_schema": {
+    "Bilingual": "{ tr: string, en: string }",
+    "Era": "id (slug): genesis | agency | enterprise | drift | agentic",
+    "Status keywords for live projects": "Yayinda, Live, Üretimde, In production, Active, Deployed, Geliştiriliyor, In development",
+    "Project parentExperienceId": "Hangi experience.id altinda gectigini belirtir; bos birakirsan govdeden filiz olur"
+  },
+  "eras": [
+    {
+      "id": "genesis",
+      "range": [2005, 2014],
+      "name": { "tr": "Doğuş", "en": "Genesis" },
+      "tagline": {
+        "tr": "İlk satır kod, staj, üniversite ve hayatta kalma",
+        "en": "First line of code, internship, college and survival"
+      },
+      "accent": "#ff7a59"
+    },
+    {
+      "id": "agency",
+      "range": [2014, 2018],
+      "name": { "tr": "Atölye", "en": "Atelier" },
+      "tagline": {
+        "tr": "İlk işler — SSCTur, XeusMedia ve Improde, .NET, full-stack",
+        "en": "First jobs — SSCTur, XeusMedia and Improde, .NET, full-stack"
+      },
+      "accent": "#7d8cff"
+    },
+    {
+      "id": "enterprise",
+      "range": [2018, 2022],
+      "name": { "tr": "Kurumsal", "en": "Enterprise" },
+      "tagline": {
+        "tr": "Kariyer.net — mikro servisler, DDD, CQRS, ekip ölçeği",
+        "en": "Kariyer.net — microservices, DDD, CQRS, team scale"
+      },
+      "accent": "#a78bfa"
+    },
+    {
+      "id": "drift",
+      "range": [2022, 2025],
+      "name": { "tr": "Geçiş", "en": "Drift" },
+      "tagline": {
+        "tr": "Debite (UK), Web3, karavan, kişisel ürünler ve AI keşfi",
+        "en": "Debite (UK), Web3, caravan life, personal products and AI exploration"
+      },
+      "accent": "#f472b6"
+    },
+    {
+      "id": "agentic",
+      "range": [2025, 2026],
+      "name": { "tr": "Agentic", "en": "Agentic" },
+      "tagline": {
+        "tr": "Khora CTO, Stealth co-founder, AI ajanlar",
+        "en": "Khora CTO, Stealth co-founder, AI agents"
+      },
+      "accent": "#60a5fa"
+    }
+  ],
+  "experiences": [
+    {
+      "id": "exp-turk-telekom",
+      "start": 2010,
+      "end": 2011,
+      "era": "genesis",
+      "company": { "tr": "Türk Telekom", "en": "Türk Telekom" },
+      "role": { "tr": "Stajyer", "en": "Intern" },
+      "location": { "tr": "İstanbul, Türkiye", "en": "Istanbul, Türkiye" },
+      "story": {
+        "tr": "Türkiye'nin en büyük telekomünikasyon firmasında 10 aylık staj. Kurumsal bir IT departmanının nefesini ilk kez burada hissettim — ağ bakımı, donanım, masa altı kabloları. \"Yazılım yazmak\" cümlesinin etrafında sayısız başka iş olduğunu öğrendim.",
+        "en": "Ten months of internship at Turkey's largest telecom. My first time feeling the breath of a corporate IT department — network maintenance, hardware, cables under desks. Learned that \"writing software\" sits inside a much larger ring of other work."
+      },
+      "bullets": [
+        { "tr": "Yerel ağ bakımı ve arızalı bilgisayarların onarımı", "en": "Maintained the local network and repaired broken machines" },
+        { "tr": "Muhasebe ekibi için küçük bir Windows uygulaması yazdım", "en": "Built a small Windows app for the accounting team" }
+      ],
+      "tech": ["Windows", "Networking", "C#"],
+      "flagship": false
+    },
+    {
+      "id": "exp-ssctur",
+      "start": 2014,
+      "end": 2015,
+      "era": "agency",
+      "company": { "tr": "SSCTur", "en": "SSCTur" },
+      "role": { "tr": ".NET Yazılım Geliştirici", "en": ".NET Software Developer" },
+      "location": { "tr": "İstanbul, Türkiye", "en": "Istanbul, Türkiye" },
+      "story": {
+        "tr": "İlk iş deneyimim. Eski alobilethatti.com üzerinde çalışarak online uçak bileti satış yazılımı geliştirdim. .NET dünyasında üretim ortamını ilk kez burada gördüm.",
+        "en": "My first job. Worked on the former alobilethatti.com, developing online flight ticket sales software. This is where I first saw a .NET production environment."
+      },
+      "bullets": [
+        { "tr": "Online uçak bileti satım yazılımı geliştirme", "en": "Developed online flight ticket sales software" },
+        { "tr": "alobilethatti.com üzerinde bakım ve yeni özellikler", "en": "Maintenance and new features on alobilethatti.com" }
+      ],
+      "tech": [".NET Framework", "C#", "MSSQL", "JavaScript"],
+      "flagship": false
+    },
+    {
+      "id": "exp-xeusmedia",
+      "start": 2015,
+      "end": 2016,
+      "era": "agency",
+      "company": { "tr": "XeusMedia Technology", "en": "XeusMedia Technology" },
+      "role": { "tr": "Software Engineer", "en": "Software Engineer" },
+      "location": { "tr": "İstanbul, Türkiye", "en": "Istanbul, Türkiye" },
+      "story": {
+        "tr": "Yayıncılık sektörüne özel ürünler — Playout, Character Generator, Scheduler. Ekibe katıldığımda bu ürünleri sıfırdan yeniden yazıyorduk. TCP/IP üzerinden konuşan dağıtık masaüstü uygulamalarıyla mesleğin \"network programming\" tarafını ilk burada gördüm.",
+        "en": "Products for the broadcasting sector — Playout, Character Generator, Scheduler. When I joined we were rewriting them from scratch. This is where I first met the network-programming side of the craft, with distributed desktop apps talking over TCP/IP."
+      },
+      "bullets": [
+        { "tr": "Full-stack web ve Windows uygulamaları geliştirdim", "en": "Shipped full-stack web and Windows applications" },
+        { "tr": "TCP/IP + SignalR ile gerçek zamanlı web istemci", "en": "Real-time web client with TCP/IP and SignalR" },
+        { "tr": "Java + TCP/IP ile Android istemci", "en": "Android client with Java + TCP/IP" },
+        { "tr": "Photoshop yerine WPF ile Character Generator (özelleştirilebilir UI)", "en": "Built a Character Generator in WPF instead of Photoshop (customizable UI)" },
+        { "tr": "Xamarin ile POC denemesi", "en": "POC experiment with Xamarin" }
+      ],
+      "tech": [".NET Framework", "WCF", "WPF", "MSSQL", "MySQL", "MVC", "JavaScript", "jQuery", "AngularJS", "TFS", "TCP/IP", "SignalR", "Java", "Xamarin"],
+      "flagship": false
+    },
+    {
+      "id": "exp-improde",
+      "start": 2016,
+      "end": 2018,
+      "era": "agency",
+      "company": { "tr": "Improde", "en": "Improde" },
+      "role": { "tr": "Software Engineer", "en": "Software Engineer" },
+      "location": { "tr": "İstanbul, Türkiye", "en": "Istanbul, Türkiye" },
+      "story": {
+        "tr": "İnşaat sektörü için bir teknoloji firması. \"imarsorgulama.com\" — kaçak yapıyı tespit edip 3D model üzerinde sonucu gösteren bir ürün. Cesium ile harita 2D'den 3D'ye döndürmek, Z koordinatını yüksekliğe çevirmek; CBS dünyasıyla ilk gerçek temasım buradaydı.",
+        "en": "A construction-tech company. \"imarsorgulama.com\" — a product that detects illegal construction and shows results on a 3D model. Flipping a map from 2D to 3D with Cesium, computing altitudes from Z coordinates; my first real contact with the GIS world."
+      },
+      "bullets": [
+        { "tr": ".NET full-stack, REST + SOAP servisleri ve harici entegrasyonlar", "en": ".NET full-stack, REST + SOAP services and external integrations" },
+        { "tr": "GeoServer + Jetty + PostgreSQL geometry types ile CBS pipeline", "en": "GIS pipeline with GeoServer + Jetty + PostgreSQL geometry types" },
+        { "tr": "Cesium ile 2D→3D harita, OpenLayers ile katmanlar", "en": "2D→3D map with Cesium, layers with OpenLayers" },
+        { "tr": "ES5 + jQuery + Bootstrap ile B2C; N-Layer mimarisi ile B2B", "en": "ES5 + jQuery + Bootstrap B2C; N-Layer architecture B2B" },
+        { "tr": "N-Tier mimarisinde 2 farklı sunum projesi", "en": "Two different presentation projects on top of an N-Tier architecture" }
+      ],
+      "tech": [".NET Framework", "C#", "REST", "SOAP", "MSSQL", "MySQL", "PostgreSQL", "JavaScript", "jQuery", "AngularJS", "Cesium", "OpenLayers", "GeoServer", "Jetty"],
+      "flagship": true
+    },
+    {
+      "id": "exp-kariyer-spec",
+      "start": 2018,
+      "end": 2021,
+      "era": "enterprise",
+      "company": { "tr": "Kariyer.net", "en": "Kariyer.net" },
+      "role": { "tr": "Software Development Specialist", "en": "Software Development Specialist" },
+      "location": { "tr": "İstanbul, Türkiye", "en": "Istanbul, Türkiye" },
+      "story": {
+        "tr": "Türkiye'nin en büyük iş arama platformlarından birinin Application Tracking System ekibinde back-end geliştiriciyim. 10 kişilik kendi-kendini yöneten bir scrum takımı, mikroservis mimarisine geçiş, Elastic'le full-text arama, RabbitMQ/Kafka ile mesajlaşma. \"Ölçek\" kelimesinin gerçek anlamını burada öğrendim.",
+        "en": "Back-end developer in the Application Tracking System team at one of Turkey's largest job platforms. A self-organising 10-person scrum squad, migration to microservices, full-text search with Elastic, messaging with RabbitMQ/Kafka. The real meaning of the word \"scale.\""
+      },
+      "bullets": [
+        { "tr": "C#, .NET Core, OOP, MEF ile canlı sistemleri geliştirdim ve sürdürdüm", "en": "Built and maintained live systems with C#, .NET Core, OOP, MEF" },
+        { "tr": "ATS'in yeni sürümüne taşıma ekibinin parçasıydım", "en": "Was part of the migration team to the new ATS version" },
+        { "tr": "4 mikroservis kurdum; biri NodeJS + Pipeline Pattern + DDD", "en": "Bootstrapped 4 microservices; one in NodeJS with Pipeline Pattern + DDD" },
+        { "tr": "Redis dağıtık cache, ElasticSearch query/şema iyileştirmeleri", "en": "Redis distributed cache, ElasticSearch query/schema improvements" },
+        { "tr": "MSSQL ve PostgreSQL ile çift veritabanı dünyası, kuyruk: RabbitMQ + Kafka", "en": "Dual-database world with MSSQL + PostgreSQL, queues: RabbitMQ + Kafka" },
+        { "tr": "CI/CD bash komutlarında iyileştirmeler", "en": "Improvements to CI/CD bash commands" }
+      ],
+      "tech": [".NET Core", "C#", "OOP", "MEF", "MSSQL", "PostgreSQL", "Redis", "ElasticSearch", "RabbitMQ", "Kafka", "NodeJS", "DDD", "TDD", "Sentry", "NewRelic", "Sonarqube", "Jenkins", "Octopus"],
+      "flagship": true
+    },
+    {
+      "id": "exp-kariyer-senior",
+      "start": 2021,
+      "end": 2022,
+      "era": "enterprise",
+      "company": { "tr": "Kariyer.net", "en": "Kariyer.net" },
+      "role": { "tr": "Senior Software Developer", "en": "Senior Software Developer" },
+      "location": { "tr": "İstanbul, Türkiye", "en": "Istanbul, Türkiye" },
+      "story": {
+        "tr": "Kariyer.net'te yeni bir ürün başladı: HrVenue — adayların kendi kendine kayıt yapabildiği async mülakat platformu. Bu projede full-stack geliştirici olarak yer aldım; CQRS + Mediator + DDD bağlantısını buradaki kod tabanında ilk kez gerçekten oturttum.",
+        "en": "A new product launched inside Kariyer.net: HrVenue — an async interview platform where candidates record themselves answering HR questions. I joined this project as a full-stack developer and finally connected the CQRS + Mediator + DDD triangle in a real codebase here."
+      },
+      "bullets": [
+        { "tr": "C#, .NET 5, CQRS + Mediatr (Mediator Pattern), DDD", "en": "C#, .NET 5, CQRS + Mediatr (Mediator Pattern), DDD" },
+        { "tr": "ReactJS ve VueJS ile front-end; NextJS ile SSR", "en": "Front-end in ReactJS and VueJS; SSR with NextJS" },
+        { "tr": "Azure cloud servisleri", "en": "Azure cloud services" },
+        { "tr": "3 kişilik bir agile scrum takımının üyesi", "en": "Member of a 3-person agile scrum team" },
+        { "tr": "Generic functionality için her katmanda jenerik ortaklıklar", "en": "Generic functionality shared across every layer" },
+        { "tr": "Deployment pipeline bakımı, canlı sistem izleme", "en": "Deployment pipeline maintenance, live system monitoring" }
+      ],
+      "tech": [".NET 5", "C#", "CQRS", "Mediatr", "DDD", "ReactJS", "VueJS", "NextJS", "Tailwind", "PostgreSQL", "Azure DevOps", "Sentry"],
+      "flagship": false
+    },
+    {
+      "id": "exp-debite",
+      "start": 2022,
+      "end": 2024,
+      "era": "drift",
+      "company": { "tr": "Debite", "en": "Debite" },
+      "role": { "tr": "Frontend Developer", "en": "Frontend Developer" },
+      "location": { "tr": "Birleşik Krallık (Uzaktan)", "en": "United Kingdom (Remote)" },
+      "story": {
+        "tr": "Birleşik Krallık merkezli bir fintech için yüksek-performanslı web uygulamaları. ReactJS + NextJS + TypeScript; SEO ve performans için SSR; cache servisleri. 5 kişilik agile bir takımın parçasıydım — JS dünyasının ileri ucunda 2 yıl. Bu süreçte Çanakkale, Muğla, Tayland, Malezya, Endonezya'dan çalıştım.",
+        "en": "High-performance web apps for a UK-based fintech. ReactJS + NextJS + TypeScript; SSR for SEO and performance; cache services. Part of a 5-person agile team — 2 years at the leading edge of the JS world. Worked remotely from Çanakkale, Muğla, Thailand, Malaysia, and Indonesia during this period."
+      },
+      "bullets": [
+        { "tr": "NextJS + ReactJS ile front-end projelerini geliştirdim ve liderlik ettim", "en": "Built and led front-end projects with NextJS + ReactJS" },
+        { "tr": "Paylaşılan bileşen kütüphanesinin geliştirilmesini yönettim", "en": "Drove the development of a shared component library" },
+        { "tr": "SEO ve performans için server-side rendering (SSR) implementasyonu", "en": "Implemented server-side rendering for SEO and performance" },
+        { "tr": "Cache servisleri ile API yükünü azaltma", "en": "Reduced API load with cache services" },
+        { "tr": "Cross-functional ekiplerle entegrasyon ve sevkiyat", "en": "Cross-functional integration and delivery" },
+        { "tr": "Tailwind ile tutarlı tasarım sistemi", "en": "Consistent design system with Tailwind" }
+      ],
+      "tech": ["JavaScript", "TypeScript", "NextJS", "ReactJS", "Tailwind", "Redis", "GitHub Actions", "Sentry"],
+      "flagship": true
+    },
+    {
+      "id": "exp-khora",
+      "start": 2025,
+      "end": "present",
+      "era": "agentic",
+      "company": { "tr": "Khora Design Lab", "en": "Khora Design Lab" },
+      "role": { "tr": "Chief Technology Officer", "en": "Chief Technology Officer" },
+      "location": { "tr": "Muğla, Türkiye (Uzaktan)", "en": "Muğla, Türkiye (Remote)" },
+      "story": {
+        "tr": "Bir tasarım laboratuvarının CTO'su olarak teknik stratejiyi, mimariyi ve ekip kompozisyonunu yönetiyorum. Geliştiricilerle ve tasarımcılarla birlikte projeleri planlıyor ve hayata geçiriyorum.",
+        "en": "CTO of a design lab — driving technical strategy, architecture and team composition. Planning and shipping projects alongside developers and designers."
+      },
+      "bullets": [
+        { "tr": "Projelerin planlanması ve geliştirilmesi", "en": "Planning and developing projects" },
+        { "tr": "Geliştirici ve tasarımcı ekibinin teknik liderliği", "en": "Technical leadership of the developer and designer team" }
+      ],
+      "tech": ["Next.js", "TypeScript", "OpenAI", "Claude Agent SDK", "Vercel", "Railway"],
+      "flagship": true
+    },
+    {
+      "id": "exp-stealth",
+      "start": 2025,
+      "end": "present",
+      "era": "agentic",
+      "company": { "tr": "Gizli Girişim", "en": "Stealth Startup" },
+      "role": { "tr": "Kurucu Ortak", "en": "Co-Founder" },
+      "location": { "tr": "Uzaktan", "en": "Remote" },
+      "story": {
+        "tr": "Henüz kamuoyuna açıklanmamış bir girişimde kurucu ortak. Sektörü, ürünü ve hikâyesi yakında — şimdilik sadece kuruluş aşamasını paylaşabiliyorum.",
+        "en": "Co-founder of an as-yet-undisclosed startup. The space, the product and the story are coming soon — for now I can only share that we're at the founding stage."
+      },
+      "bullets": [
+        { "tr": "Sıfırdan kuruluş, ekip ve ürün vizyonu", "en": "Building from zero — company, team and product vision" },
+        { "tr": "Tam zamanlı, uzaktan", "en": "Full-time, remote" }
+      ],
+      "tech": ["Next.js", "AI", "Product Strategy"],
+      "flagship": true
+    }
+  ],
+  "projects": [
+    {
+      "id": "first-html",
+      "year": 2005,
+      "yearLabel": "~2005",
+      "era": "genesis",
+      "title": "İlk index.html",
+      "subtitle": { "tr": "<marquee> ile karşılama metni", "en": "Welcome text with <marquee>" },
+      "story": {
+        "tr": "Ailenin köhne PC'sinde Notepad'i açıp ilk HTML dosyasını yazdığım gün. Sayfayı F5'lediğimde yazının kayan bir şerit olduğunu görmek, dünyayı emrime amade hissettirmişti.",
+        "en": "The day I opened Notepad on the family PC and wrote my first HTML file. Hitting F5 and seeing my text scroll across the screen made me feel like the world had a build button."
+      },
+      "tech": ["HTML", "Notepad", "Internet Explorer"]
+    },
+    {
+      "id": "agency-portfolio",
+      "year": 2014,
+      "endYear": 2015,
+      "era": "agency",
+      "title": "Ajans portföy siteleri",
+      "subtitle": { "tr": "İstanbul'da küçük ajanslar için siteler", "en": "Sites for small Istanbul agencies" },
+      "story": {
+        "tr": "Bir avuç restoran, mimar, butik markanın siteleri. jQuery slider'lar, parallax dönemi, ilk kez 'müşteri istemiyor' cümlesini duymak.",
+        "en": "A handful of sites for restaurants, architects, boutique brands. jQuery sliders, the parallax era, and hearing 'the client doesn't want it' for the first time."
+      },
+      "tech": ["jQuery", "HTML5", "PHP", "WordPress"]
+    },
+    {
+      "id": "playout-web-client",
+      "year": 2015,
+      "endYear": 2016,
+      "parentExperienceId": "exp-xeusmedia",
+      "era": "agency",
+      "title": "Playout Web Client",
+      "subtitle": { "tr": "XeusMedia — yayın sunucusuna bağlanan web istemci", "en": "XeusMedia — web client connecting to a broadcast server" },
+      "story": {
+        "tr": "Kullanıcılardan gelen istekleri, sunucunun kendi ağındaki başka bir bilgisayarda bulunan Windows servisine gönderip, gelen isteği sayfanın gerekli yerlerinde gösteren uygulama. SignalR ile real-time iletişim.",
+        "en": "A web app that relayed user requests to a Windows service on another machine in the server's local network, then rendered the response in the right places on the page. Real-time communication via SignalR."
+      },
+      "tech": ["ASP.NET MVC", "SignalR", "MySQL", "jQuery"],
+      "flagship": false
+    },
+    {
+      "id": "character-generator",
+      "year": 2015,
+      "endYear": 2016,
+      "parentExperienceId": "exp-xeusmedia",
+      "era": "agency",
+      "title": "Character Generator",
+      "subtitle": { "tr": "XeusMedia — WPF ile TV grafik düzenleyici", "en": "XeusMedia — TV graphics editor in WPF" },
+      "story": {
+        "tr": "WPF ile yazılmış bir Windows uygulaması. Photoshop benzeri gelişmiş bir çalışma alanı: label, crawl text, animasyon, logo, timer gibi öğeleri sürükle-bırak ile yerleştirme. Tüm değişiklikler TCP/IP üzerinden sunucuya gönderiliyordu. Ayrıca CG uygulamasının bağlandığı core servisi de ben yazdım.",
+        "en": "A Windows application built in WPF. An advanced Photoshop-like workspace: drag-and-drop placement of labels, crawl text, animations, logos, timers. All changes were sent to the server over TCP/IP. I also wrote the core service that the CG app connected to."
+      },
+      "tech": [".NET Framework", "C#", "WPF", "OOP", "TCP/IP", "UDP", "XML", "Xamarin"],
+      "flagship": true
+    },
+    {
+      "id": "imarsorgulama",
+      "year": 2017,
+      "endYear": 2018,
+      "parentExperienceId": "exp-improde",
+      "era": "agency",
+      "title": "imarsorgulama.com",
+      "subtitle": { "tr": "Improde'da kaçak yapı tespiti — 2D'den 3D'ye harita", "en": "Illegal-construction detection at Improde — from 2D to 3D maps" },
+      "story": {
+        "tr": "Improde'daki bayrak ürün: belediyelere ait imar verisini kullanıp kaçak yapıyı tespit edip 3D üzerinde gösteren B2C/B2B servis. Cesium ile haritayı 2D'den 3D'ye çevirdik, yapı geometrisinin Z koordinatını yüksekliğe haritaladık. CBS dünyasıyla, jeometrik veritabanlarıyla ve N-Tier mimariyle ilk gerçek temasım.",
+        "en": "Flagship product at Improde: a B2C/B2B service that detected illegal construction using municipal zoning data and rendered it on a 3D model. Flipped the map from 2D to 3D with Cesium and mapped Z coordinates of building geometries to elevation. My first real contact with GIS, geometric databases, and N-Tier architecture."
+      },
+      "tech": ["Cesium", "OpenLayers", "GeoServer", "Jetty", "PostgreSQL", ".NET", "C#", "MSSQL"],
+      "flagship": true,
+      "challenge": {
+        "tr": "İmar geometrisinin Z koordinatını yapı yüksekliğine haritalamak — veri her zaman temiz değildi, kenar vakaları manuel ayıkladım.",
+        "en": "Mapping the Z coordinates of zoning geometries onto building heights — data was rarely clean, edge cases were manually triaged."
+      },
+      "takeaway": {
+        "tr": "3D tarayıcı içi haritanın değeri görselden çok güveni — kullanıcı yapıyı 360° görünce şikayet süresi yarıdan ineceğine ikna olduldu.",
+        "en": "The value of in-browser 3D maps was less about the visual and more about trust — users who saw a structure in 360° were convinced complaint timelines would be cut in half."
+      },
+      "highlight": [
+        { "tr": "B2C ödemeli rapor + B2B kurumsal sözleşmeler", "en": "B2C paid reports + B2B enterprise contracts" },
+        { "tr": "Cesium 3D harita, ilk büyük WebGL deneyimim", "en": "Cesium 3D map — my first major WebGL experience" }
+      ]
+    },
+    {
+      "id": "bisesvar",
+      "year": 2017,
+      "era": "agency",
+      "title": "Bi Ses Var",
+      "subtitle": { "tr": "Ses paylaşımı mobil uygulaması", "en": "Voice-sharing mobile app" },
+      "story": {
+        "tr": "Ses kayıtlarını paylaşmaya dayalı bir mobil uygulama. React Native ile cross-platform geliştirme, Node.js backend, Firebase ile kimlik doğrulama ve gerçek zamanlı veritabanı. Topluluk etkileşimini ses üzerinden kuran bir deneyim.",
+        "en": "A mobile application built around sharing voice recordings. Cross-platform development with React Native, Node.js backend, Firebase for authentication and real-time database. An experiment in building community engagement through voice."
+      },
+      "tech": [".NET Framework", ".NET MVC", "C#", "JavaScript", "jQuery", "Apache Cordova", "Phonegap", "Framework 7", "Firebase"],
+      "flagship": false
+    },
+    {
+      "id": "ats-microservices",
+      "year": 2018,
+      "endYear": 2021,
+      "parentExperienceId": "exp-kariyer-spec",
+      "era": "enterprise",
+      "title": "ATS mikroservis geçişi",
+      "subtitle": { "tr": "Application Tracking System — monolitten parçalı servislere", "en": "Application Tracking System — from monolith to microservices" },
+      "story": {
+        "tr": "Kariyer.net'in ATS ürününü monolit yapıdan dört mikroservise böldük. Biri NodeJS + Pipeline Pattern + DDD; diğerleri .NET Core. CI/CD pipeline'ları, kod review kültürü, branch stratejisi — yani 'mühendislik' kelimesinin gerçek anlamını burada anladım.",
+        "en": "Split Kariyer.net's ATS product from a monolith into four microservices. One in NodeJS with Pipeline Pattern + DDD; others in .NET Core. CI/CD pipelines, code review culture, branching strategy — the real meaning of the word 'engineering' clicked here."
+      },
+      "tech": [".NET Core", "C#", "NodeJS", "DDD", "MSSQL", "PostgreSQL", "Redis", "ElasticSearch", "RabbitMQ", "Kafka", "Sentry", "Jenkins"]
+    },
+    {
+      "id": "covid-pivot",
+      "year": 2020,
+      "endYear": 2021,
+      "parentExperienceId": "exp-kariyer-spec",
+      "era": "enterprise",
+      "title": "Pandemi pivotu",
+      "subtitle": { "tr": "Ofisten dağıtık takıma geçiş", "en": "From the office to a distributed team" },
+      "story": {
+        "tr": "Mart 2020'de tüm ekibin bir gecede uzaktan çalışmaya geçişi. Kod yazmanın değil, async iletişimin asıl iş olduğunu öğrendiğim yıl.",
+        "en": "March 2020: the entire team going remote overnight. The year I learned the real job is async communication, not code."
+      },
+      "tech": ["Slack", "Notion", "Linear", "GitHub"]
+    },
+    {
+      "id": "kuryem",
+      "year": 2020,
+      "endYear": 2021,
+      "era": "enterprise",
+      "title": "Kuryem",
+      "subtitle": { "tr": "Akıllı lojistik zinciri platformu", "en": "Smart logistics chain platform" },
+      "story": {
+        "tr": "Teslimat sürecini optimize eden akıllı bir lojistik projesi. Lead developer olarak mimariyi kurdum ve geliştirdim — gerçek zamanlı takip, rota optimizasyonu, üçüncü taraf entegrasyonları. 1 web (VueJS), 2 mobil (React Native + Expo), 1 yönetim paneli (ReactJS) ve 9 backend servisi (NodeJS). Tüm backend AWS Lambda üzerinde Serverless Framework ile çalışıyor.",
+        "en": "A smart logistics project optimising delivery processes. As lead developer I architected and built the system — real-time tracking, route optimisation, third-party integrations. 1 web client (VueJS), 2 mobile apps (React Native + Expo), 1 admin panel (ReactJS), and 9 backend services (NodeJS). The entire backend ran on AWS Lambda via Serverless Framework."
+      },
+      "tech": ["JavaScript", "NodeJS", "ReactJS", "VueJS", "React Native", "Expo", "MongoDB", "AWS Lambda", "AWS API Gateway", "AWS DocumentDB", "AWS DynamoDB", "AWS CloudFront", "Docker", "Heroku", "Fastify", "Sentry", "Redux", "DDD"],
+      "flagship": true,
+      "challenge": {
+        "tr": "9 backend servisinin tutarlılığını sağlamak — ortak helper'lar ve servisler için GitHub package oluşturdum.",
+        "en": "Keeping 9 backend services consistent — created a GitHub package for shared helpers and services."
+      },
+      "takeaway": {
+        "tr": "Serverless mimarisi, doğru scope'landığında gerçek ölçek avantajı veriyor; ama cold start reality check'i de cabası.",
+        "en": "Serverless architecture delivers real scale advantages when scoped correctly; but the cold-start reality check comes free."
+      },
+      "highlight": [
+        { "tr": "1 web + 2 mobil + 1 panel + 9 backend servisi", "en": "1 web + 2 mobile + 1 panel + 9 backend services" },
+        { "tr": "Tamamı AWS Lambda + Serverless Framework üzerinde", "en": "Entirely on AWS Lambda + Serverless Framework" }
+      ]
+    },
+    {
+      "id": "stelyum",
+      "year": 2021,
+      "endYear": 2024,
+      "era": "enterprise",
+      "title": "Stelyum",
+      "subtitle": {
+        "tr": "Heybeliada'da 3 kez baştan yazılan kişisel girişim",
+        "en": "Personal startup rewritten three times on Heybeliada Island"
+      },
+      "story": {
+        "tr": "Kariyer.net ve Debite'a paralel sürdürdüğüm kişisel girişim. 3 kez sıfırdan yazdım — her yeniden yazım yeni bir teknik öğrenme, yeni bir vazgeçiş, yeni bir karar. Heybeliada'da deniz, anakarada ekran. 2024 ortasında iptal ettim.",
+        "en": "A personal startup I ran in parallel with Kariyer.net and Debite. Rewrote it from scratch three times — each rewrite was a new technical lesson, a new abandonment, a new commitment. Sea on the island, screen on the mainland. Cancelled in mid-2024."
+      },
+      "tech": ["Next.js", "Node.js", "PostgreSQL", "TypeScript"],
+      "flagship": true,
+      "challenge": {
+        "tr": "Bir ürünün hangi yeniden yazımının 'doğru' olduğuna karar vermek; kendine güvenmenin sınırını çizmek.",
+        "en": "Deciding which rewrite of a product is the 'right' one; learning where to draw the line on self-trust."
+      },
+      "takeaway": {
+        "tr": "Bir ürünü 3 kez yazmak, 3 kez fırlatmaktan ucuz değil. Erken kıymetli olan vazgeçme refleksini öğrendim.",
+        "en": "Rewriting a product three times is not cheaper than launching three. What I gained early was the reflex to walk away."
+      },
+      "highlight": [
+        { "tr": "3 sıfırdan yazım, 2024'te iptal", "en": "Three from-scratch rewrites, cancelled in 2024" },
+        { "tr": "Paralel iki tam zamanlı işle birlikte", "en": "Alongside two parallel full-time roles" }
+      ]
+    },
+    {
+      "id": "bozcaada",
+      "year": 2025,
+      "endYear": "present",
+      "era": "agentic",
+      "title": "Bozcaada App",
+      "subtitle": { "tr": "Adaya rehberlik eden mobil uygulama", "en": "A mobile guide for the island" },
+      "story": {
+        "tr": "Bozcaada'ya gelen turistlerin sorduğu her şeye cevap veren bir mobil uygulama. Kayalıklarda offline harita, restoran rezervasyonu, ada rüzgârı. 2025'te 3 ayda canlıya aldım — ada hâlâ kullanıyor.",
+        "en": "A mobile app answering everything a Bozcaada visitor asks. Offline maps on cliffs, restaurant reservations, island wind. Took it live in 2025 in about 3 months — the island still uses it."
+      },
+      "tech": ["React Native", "Expo", "Mapbox", "AI Tools"],
+      "link": "https://www.bozcaada.app/",
+      "status": { "tr": "Yayında", "en": "Live" }
+    },
+    {
+      "id": "indie-pivot",
+      "year": 2024,
+      "endYear": 2025,
+      "era": "drift",
+      "title": "Indie pivot",
+      "subtitle": { "tr": "Debite sonrası kendi ürünlerime tam zaman", "en": "Going full-time on my own products after Debite" },
+      "story": {
+        "tr": "Debite'taki 2 yılın ardından maaşlı koltuğu kapatıp kendi ürünlerime tam zamanlı yatırım yaptığım dönem. Stelyum'u iptal ettim, kendimi tamamen yapay zeka ile çalışmaya verdim. Web3 dünyasına girdim, Pluton oyununu çıkardım. Bu pivot bir yıl sonra Khora CTO'luğunu mümkün kıldı.",
+        "en": "After 2 years at Debite, closing the salaried chair and going full-time on my own products. Cancelled Stelyum, committed fully to working with AI. Entered the Web3 world, shipped the Pluton game. This pivot is what later made the Khora CTO seat possible."
+      },
+      "tech": ["Next.js", "Node.js", "Vercel", "MongoDB", "Web3"],
+      "flagship": true,
+      "challenge": {
+        "tr": "Tek başına teknik karar almanın ağırlığı: yanlış stack seçimi haftalarca işkence demek.",
+        "en": "The weight of making technical calls alone: a wrong stack choice means weeks of pain."
+      },
+      "takeaway": {
+        "tr": "Karar hızı, kararın 'mükemmelliğinden' daha çok ürün üretiyor.",
+        "en": "Decision speed ships more product than decision perfection."
+      },
+      "highlight": [
+        { "tr": "Web3 ve AI dünyasına tam geçiş", "en": "Full transition into Web3 and AI" },
+        { "tr": "Bağımsız çalışmanın hız + risk dengesi", "en": "Independent work's speed + risk equilibrium" }
+      ]
+    },
+    {
+      "id": "pluton",
+      "year": 2024,
+      "endYear": 2025,
+      "era": "drift",
+      "title": "Pluton",
+      "subtitle": { "tr": "Telegram tabanlı Web3 oyunu — 1.3M kullanıcı", "en": "Telegram-based Web3 game — 1.3M users" },
+      "story": {
+        "tr": "Karavanda yaşarken geliştirdiğim Telegram tabanlı bir Web3 oyunu. 1.3 milyon kullanıcıya ulaştı, günlük 150 bin trafik yönetti. Web3'ün dağıtım gücünü ve Telegram'ın viral mekaniklerini ilk elden deneyimledim.",
+        "en": "A Telegram-based Web3 game I built while living in a caravan. Reached 1.3 million users, handled 150K daily traffic. Experienced the distribution power of Web3 and Telegram's viral mechanics firsthand."
+      },
+      "tech": ["Telegram Bot API", "Web3", "Next.js", "Node.js"],
+      "flagship": true,
+      "challenge": {
+        "tr": "Günlük 150K trafiği karavan internetiyle yönetmek ve altyapıyı ölçeklendirmek.",
+        "en": "Scaling infrastructure to handle 150K daily traffic while managing it from caravan internet."
+      },
+      "takeaway": {
+        "tr": "Dağıtım kanalı ürünün kendisi kadar önemli — Telegram'ın viral loop'u büyümeyi mümkün kıldı.",
+        "en": "The distribution channel matters as much as the product — Telegram's viral loop made the growth possible."
+      },
+      "highlight": [
+        { "tr": "1.3 milyon kullanıcı", "en": "1.3 million users" },
+        { "tr": "Günlük 150K trafik", "en": "150K daily traffic" }
+      ]
+    },
+    {
+      "id": "fanf",
+      "year": 2024,
+      "endYear": 2025,
+      "era": "drift",
+      "title": "FANF",
+      "subtitle": { "tr": "Web3 + AI agent marketplace denemesi", "en": "Web3 + AI agent marketplace experiment" },
+      "story": {
+        "tr": "AI agent marketplace oluşturmak üzerine deneysel bir Web3 projesi. Yapıldı, denendi ama sürdürülebilir bir model bulunamadı. Şu an canlı değil.",
+        "en": "An experimental Web3 project exploring an AI agent marketplace. Built and tested but a sustainable model was not found. Currently not live."
+      },
+      "tech": ["Web3", "AI", "Next.js"],
+      "flagship": false
+    },
+    {
+      "id": "supersocialscore",
+      "year": 2025,
+      "endYear": 2025,
+      "era": "agentic",
+      "title": "SuperSocialScore",
+      "subtitle": { "tr": "AI destekli sosyal medya analitik + NFT platformu", "en": "AI-powered social media analytics + NFT platform" },
+      "story": {
+        "tr": "Twitter/X etkileşimini Superchain ağlarıyla analiz eden, kullanıcıların sosyal etkilerini NFT olarak mint'lemesini sağlayan bir Web3 platformu. AI agent otomatik olarak son 100 X postunu analiz ediyor. Optimism Collective katkıda bulunanlar için airdrop sistemi ve cross-chain mint desteği.",
+        "en": "A Web3 platform that analyzes Twitter/X engagement with Superchain networks and enables users to mint their social influence as NFTs. AI agent automatically analyzes the last 100 X posts. Airdrop system for Optimism Collective contributors with cross-chain minting support."
+      },
+      "tech": ["Next.js", "AI/ML", "Web3", "Smart Contracts", "Optimism", "Base", "NFT"],
+      "link": "https://www.supersocialscore.xyz",
+      "status": { "tr": "Yayında", "en": "Live" },
+      "flagship": true,
+      "challenge": {
+        "tr": "Cross-chain uyumluluk ve gerçek zamanlı sosyal veri işleme pipeline'ı.",
+        "en": "Cross-chain compatibility and real-time social data processing pipeline."
+      },
+      "takeaway": {
+        "tr": "Dijital sosyal etkiyi ölçülebilir ve mint'lenebilir bir varlığa dönüştürmek, Web3'ün 'sosyal katman' vaadini somutlaştırdı.",
+        "en": "Transforming digital social influence into a measurable, mintable asset made Web3's 'social layer' promise tangible."
+      }
+    },
+    {
+      "id": "motosikletborsasi",
+      "year": 2024,
+      "endYear": "present",
+      "era": "drift",
+      "title": "MotosikletBorsası",
+      "subtitle": { "tr": "Türkiye'nin motosiklet pazaryeri — ihale + anlık satış", "en": "Turkey's motorcycle marketplace — bidding + instant purchase" },
+      "story": {
+        "tr": "Türkiye motosiklet pazarına özel bir marketplace. Next.js 14 ile SSR ve görsel optimizasyon, Tailwind ile mobile-first tasarım, gerçek zamanlı ihale sistemi. 90+ Lighthouse performans skoru, Instagram'da 75K+ takipçi ile kullanıcı kazanımı.",
+        "en": "A specialised marketplace for the Turkish motorcycle market. Next.js 14 with SSR and image optimisation, Tailwind for mobile-first design, real-time bidding system. 90+ Lighthouse performance score, 75K+ Instagram followers for user acquisition."
+      },
+      "tech": ["Next.js", "Tailwind CSS", "E-commerce", "Performance Optimization", "Mobile Development"],
+      "status": { "tr": "Yayında", "en": "Live" },
+      "flagship": true,
+      "challenge": {
+        "tr": "Mobil kullanıcı deneyimini ihale mekaniklerinin karmaşıklığıyla dengelemek.",
+        "en": "Balancing mobile UX with the complexity of bidding mechanics."
+      },
+      "takeaway": {
+        "tr": "75K organik Instagram takipçisi, doğru niş'te topluluk odaklı büyümenin gücünü gösterdi.",
+        "en": "75K organic Instagram followers proved the power of community-driven growth in the right niche."
+      },
+      "highlight": [
+        { "tr": "90+ Lighthouse skoru", "en": "90+ Lighthouse score" },
+        { "tr": "75K+ Instagram takipçi ile organik büyüme", "en": "75K+ Instagram followers for organic growth" }
+      ]
+    },
+    {
+      "id": "voice-agents",
+      "year": 2024,
+      "endYear": "present",
+      "era": "drift",
+      "title": "Voice AI ajanları",
+      "subtitle": { "tr": "Müşteri hizmetleri için ses + NLP", "en": "Voice + NLP for customer service" },
+      "story": {
+        "tr": "ElevenLabs + OpenAI ile gerçek zamanlı sesli ajanlar. İlk konuştuğum ajan kendini insandan ayırt edemediğim an, 'tamam bu mesleğin sınırı değişti' dedim.",
+        "en": "Real-time voice agents on ElevenLabs + OpenAI. The first time I couldn't tell the agent from a human, I knew the boundary of this job had moved."
+      },
+      "tech": ["ElevenLabs", "OpenAI", "Voice", "NLP"],
+      "status": { "tr": "Üretimde", "en": "In production" }
+    },
+    {
+      "id": "erp-ai",
+      "year": 2024,
+      "endYear": "present",
+      "era": "drift",
+      "title": "ERP destek hattı dönüşümü",
+      "subtitle": { "tr": "Çağrı merkezini AI ile değiştirmek", "en": "Replacing a call center with AI" },
+      "story": {
+        "tr": "Bir ERP firmasının destek hattını AI ile yeniden tasarladık. %60 operasyonel maliyet düşüşü; insan operatörler artık sadece kenar vakalarda devrede.",
+        "en": "Redesigned an ERP support line with AI. 60% lower operational cost; human operators now step in only for edge cases."
+      },
+      "tech": ["AI Chatbots", "ERP", "Process Automation"],
+      "status": { "tr": "Yayında", "en": "Deployed" }
+    },
+    {
+      "id": "mop",
+      "year": 2025,
+      "endYear": "present",
+      "parentExperienceId": "exp-khora",
+      "era": "agentic",
+      "title": "Mimarlar Odası Dijital Dönüşüm",
+      "subtitle": { "tr": "Khora — Mimarlar Odası sistem göçü ve modernizasyonu", "en": "Khora — Turkish Chamber of Architects system migration and modernisation" },
+      "story": {
+        "tr": "Mimarlar Odası'nın mevcut sisteminin MySQL'den PostgreSQL'e göçü, modüler yeniden yazımı ve dijital dönüşüm projesi. Khora altında yürütülüyor.",
+        "en": "Migration of the Turkish Chamber of Architects' existing system from MySQL to PostgreSQL, modular rewrite, and digital transformation project. Executed under Khora."
+      },
+      "tech": ["Next.js", "PostgreSQL", "TypeScript", "Railway"],
+      "status": { "tr": "Geliştiriliyor", "en": "In development" },
+      "flagship": true
+    },
+    {
+      "id": "dimens",
+      "year": 2025,
+      "endYear": "present",
+      "parentExperienceId": "exp-khora",
+      "era": "agentic",
+      "title": "Dimens",
+      "subtitle": { "tr": "Khora — Apple RoomPlan ile 3D tarama ve görselleştirme", "en": "Khora — 3D scanning and visualisation with Apple RoomPlan" },
+      "story": {
+        "tr": "Apple RoomPlan SDK kullanarak mekan tarama ve 3D görselleştirme uygulaması. Khora altında aktif olarak geliştirilmeye devam ediyor.",
+        "en": "A room-scanning and 3D visualisation app using the Apple RoomPlan SDK. Actively in development under Khora."
+      },
+      "tech": ["React Native", "Apple RoomPlan SDK", "3D Visualization"],
+      "status": { "tr": "Geliştiriliyor", "en": "In development" }
+    },
+    {
+      "id": "fatum",
+      "year": 2025,
+      "endYear": "present",
+      "era": "agentic",
+      "title": "FATUM",
+      "subtitle": { "tr": "12 mitolojik AI karakterli astroloji uygulaması", "en": "Astrology app with 12 mythological AI characters" },
+      "story": {
+        "tr": "Her burç için ayrı bir mitolojik AI karakterin rehberlik ettiği bir astroloji uygulaması. ElevenLabs ile sesli karakterler, RevenueCat ile abonelik, TR/EN/ES çoklu dil desteği. Bireysel bir girişim olarak canlı çıkışa hazırlanıyor.",
+        "en": "An astrology app where each zodiac sign is guided by a distinct mythological AI character. Voiced characters via ElevenLabs, subscriptions via RevenueCat, multi-language support (TR/EN/ES). A personal venture preparing for live launch."
+      },
+      "tech": ["React Native", "Expo", "ElevenLabs", "OpenAI", "RevenueCat", "n8n"],
+      "status": { "tr": "Geliştiriliyor", "en": "In development" },
+      "flagship": true
+    },
+    {
+      "id": "melodai",
+      "year": 2025,
+      "endYear": 2025,
+      "parentExperienceId": "exp-khora",
+      "era": "agentic",
+      "title": "Melodai",
+      "subtitle": { "tr": "Spotify bağlantılı AI müzik uygulaması — POC", "en": "Spotify-connected AI music app — POC" },
+      "story": {
+        "tr": "Spotify hesabını bağlayıp şarkı hikâyesi, mood-tabanlı playlist, sanatçı falı üreten bir mobil uygulama. POC aşamasında kaldı.",
+        "en": "A mobile app that connects your Spotify and produces song stories, mood-based playlists, artist fortunes. Remained at POC stage."
+      },
+      "tech": ["React Native", "Expo", "Spotify API", "OpenAI", "Claude", "n8n"],
+      "status": { "tr": "POC", "en": "POC" }
+    },
+    {
+      "id": "echop",
+      "year": 2026,
+      "era": "agentic",
+      "title": "EchOp",
+      "subtitle": { "tr": "İşletmeler için AI randevu asistanı — deneme", "en": "AI appointment assistant for businesses — experiment" },
+      "story": {
+        "tr": "İşletmelere yönelik sesli AI randevu asistanı. Vapi entegrasyonu, WhatsApp desteği ile tam teknik yapı kuruldu ama müşteriye bağlanmadı. Bir deneme olarak kaldı.",
+        "en": "A voice AI appointment assistant for businesses. Full technical build with Vapi integration and WhatsApp support, but never connected to a customer. Remained an experiment."
+      },
+      "tech": ["Next.js", "Vapi", "ElevenLabs", "WhatsApp Cloud API", "PostgreSQL", "Railway"],
+      "status": { "tr": "Deneme", "en": "Experiment" }
+    },
+    {
+      "id": "mesai",
+      "year": 2026,
+      "endYear": "present",
+      "parentExperienceId": "exp-khora",
+      "era": "agentic",
+      "title": "Mesai",
+      "subtitle": { "tr": "Otonom yapay zeka ajan orkestrasyonu", "en": "Autonomous AI agent orchestration" },
+      "story": {
+        "tr": "Hiyerarşik chief/specialist ajanlar, Telegram üzerinden sesli komut, Whisper + XTTS ses pipeline'ı, soft/hard cap ile maliyet kontrolü. Bir dijital ajansı tamamen otonom çalıştırmayı denediğim laboratuvar.",
+        "en": "Hierarchical chief/specialist agents, voice commands over Telegram, Whisper + XTTS pipeline, soft/hard cap cost control. The lab where I'm trying to run a digital agency fully autonomously."
+      },
+      "tech": ["Next.js 15", "PostgreSQL", "Claude Agent SDK", "Whisper", "XTTS", "Telegraf"],
+      "link": "/mesai",
+      "status": { "tr": "Geliştiriliyor", "en": "In development" },
+      "flagship": true,
+      "challenge": {
+        "tr": "Çok-ajanlı bir sistemde tutarlı bağlam paylaşımı ve token bütçesi disiplini.",
+        "en": "Consistent context sharing and token-budget discipline across a multi-agent system."
+      },
+      "takeaway": {
+        "tr": "Otonomi, kontrolün yokluğu değil; doğru zamanda doğru insanı çağırma sanatı.",
+        "en": "Autonomy isn't the absence of control; it's the art of pulling the right human in at the right moment."
+      },
+      "highlight": [
+        { "tr": "Chief delegate eder, specialist iş yapar", "en": "Chief delegates, specialists execute" },
+        { "tr": "Kritik aksiyonda Telegram onayı", "en": "Telegram approval for critical actions" },
+        { "tr": "Soft cap uyarı, hard cap dur", "en": "Soft cap warns, hard cap stops" }
+      ]
+    },
+    {
+      "id": "zekai",
+      "year": 2026,
+      "endYear": "present",
+      "era": "agentic",
+      "title": "Zekai",
+      "subtitle": { "tr": "Sky Dancer hibrit oyuncak — zaman yolculuğu evreni", "en": "Sky Dancer hybrid toy — time-travel universe" },
+      "story": {
+        "tr": "Sky Dancer hibrit oyuncak karakteriyle inşa edilen bir marka evreni. Zaman yolculuğu anlatısı, altı tarihi kostüm çağı, TikTok canlı kanalı ve Next.js web platformu. Retro-Futurist UI yönü, Three.js ile 3D deneyim.",
+        "en": "A brand universe built around a Sky Dancer hybrid toy character. Time-travel narrative, six historical costume eras, TikTok live channel, and a Next.js web platform. Retro-Futurist UI direction with Three.js 3D experience."
+      },
+      "tech": ["Next.js", "Three.js", "TikTok", "Midjourney", "Brand Design"],
+      "status": { "tr": "Geliştiriliyor", "en": "In development" }
+    },
+    {
+      "id": "yesbutaiart",
+      "year": 2026,
+      "endYear": "present",
+      "era": "agentic",
+      "title": "yesbutaiart.com",
+      "subtitle": { "tr": "AI sanat e-ticaret platformu", "en": "AI art e-commerce platform" },
+      "story": {
+        "tr": "AI ile üretilen sanat eserlerinin satıldığı bir e-ticaret platformu. BiFatura entegrasyonu, iyzico ödeme, Trendyol senkronizasyonu. Bireysel bir girişim.",
+        "en": "An e-commerce platform selling AI-generated artwork. BiFatura integration, iyzico payments, Trendyol synchronisation. A personal venture."
+      },
+      "tech": ["Next.js", "iyzico", "BiFatura", "Trendyol API", "AI Art"],
+      "link": "https://yesbutaiart.com",
+      "status": { "tr": "Yayında", "en": "Live" }
+    }
+  ],
+  "lifeChapters": [
+    {
+      "id": "lc-early-nomad",
+      "start": 2003,
+      "end": 2020,
+      "label": { "tr": "Hayatta kalma", "en": "Survival" },
+      "places": ["Türkiye"],
+      "kind": "nomad",
+      "story": {
+        "tr": "2020'ye kadar adresim yoktu. Çadırlarda kaldım, yollarda büyüdüm — sabit bir kapı yerine sürekli değişen manzaralarda kod yazdım.",
+        "en": "Until 2020 I had no fixed address. I lived in tents, grew up on the road — wrote code against a backdrop that kept changing instead of a door that stayed."
+      },
+      "accent": "#a8b4c8"
+    },
+    {
+      "id": "lc-first-car",
+      "start": 2014,
+      "end": 2014,
+      "label": { "tr": "İlk araba", "en": "First car" },
+      "places": ["İstanbul"],
+      "kind": "milestone",
+      "story": {
+        "tr": "İlk arabamı aldım. Bağımsızlığın fiziksel hali — artık bir yerden bir yere gitmek için birine ihtiyacım yoktu.",
+        "en": "Bought my first car. The physical form of independence — no longer needing anyone to get from A to B."
+      },
+      "accent": "#ff7a59"
+    },
+    {
+      "id": "lc-kibris-mugla-canakkale",
+      "start": 2020,
+      "end": 2021,
+      "label": { "tr": "Kıbrıs · Muğla · Çanakkale", "en": "Cyprus · Muğla · Çanakkale" },
+      "places": ["Kıbrıs", "Muğla", "Çanakkale"],
+      "kind": "settled",
+      "story": {
+        "tr": "Pandemi yılı: Kıbrıs, Muğla ve Çanakkale arasında salındım. Kariyer.net'te uzaktan ATS ekibinde geliştirmeye devam ettim.",
+        "en": "Pandemic year: drifted between Cyprus, Muğla and Çanakkale. Kept shipping for the Kariyer.net ATS team, fully remote."
+      },
+      "accent": "#27e0c2"
+    },
+    {
+      "id": "lc-istanbul-heybeliada",
+      "start": 2021,
+      "end": 2023,
+      "label": { "tr": "İstanbul · Heybeliada", "en": "Istanbul · Heybeliada Island" },
+      "places": ["İstanbul", "Heybeliada"],
+      "kind": "settled",
+      "story": {
+        "tr": "İstanbul'a, sonra Heybeliada'ya yerleştim. Stelyum'u 3 kez baştan yazdığım yıllar; Debite ve Kariyer.net'i paralel kotardım. Adada deniz, anakarada ekran.",
+        "en": "Settled in Istanbul, then on Heybeliada Island. The years I rewrote Stelyum three times; ran Debite and Kariyer.net in parallel. Sea on the island, screen on the mainland."
+      },
+      "accent": "#a78bfa"
+    },
+    {
+      "id": "lc-asia",
+      "start": 2023,
+      "end": 2024,
+      "label": { "tr": "Çanakkale · Muğla · Asya", "en": "Çanakkale · Muğla · Asia" },
+      "places": ["Çanakkale", "Muğla", "Tayland", "Endonezya", "Malezya"],
+      "kind": "nomad",
+      "story": {
+        "tr": "Debite'ta uzaktan çalışırken Çanakkale, Muğla, sonra Tayland, Endonezya ve Malezya. Heybeliada'dan başlayan yolculuk Asya'ya uzandı.",
+        "en": "Working remotely at Debite from Çanakkale, Muğla, then Thailand, Indonesia and Malaysia. A journey that started from Heybeliada and extended to Asia."
+      },
+      "accent": "#f472b6"
+    },
+    {
+      "id": "lc-caravan",
+      "start": 2024,
+      "end": 2025,
+      "label": { "tr": "Karavan hayatı", "en": "Caravan life" },
+      "places": ["Türkiye"],
+      "kind": "nomad",
+      "story": {
+        "tr": "Asya'dan döndükten sonra karavanda yaşamaya başladım. Web3 dünyasına girdim, Pluton oyununu geliştirdim. Debite'dan ayrıldığımda zaten karavandaydım.",
+        "en": "After returning from Asia, I started living in a caravan. Entered the Web3 world, built the Pluton game. Was already in the caravan when I left Debite."
+      },
+      "accent": "#ff7a59"
+    },
+    {
+      "id": "lc-dalyan",
+      "start": 2025,
+      "end": "present",
+      "label": { "tr": "Muğla · Dalyan köyü", "en": "Muğla · Dalyan village" },
+      "places": ["Muğla", "Dalyan"],
+      "kind": "settled",
+      "story": {
+        "tr": "Bir köye yerleştim. Khora Design Lab'da CTO, gizli bir girişimde kurucu ortak. Kahve, kümes, kod — sabit bir adres ilk kez bir tercih.",
+        "en": "Settled in a village. CTO at Khora Design Lab, co-founder of a stealth startup. Coffee, chickens, code — a fixed address as a deliberate choice for the first time."
+      },
+      "accent": "#60a5fa"
+    }
+  ]
+}
