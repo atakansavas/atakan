@@ -372,14 +372,18 @@ function EraHorizon({ eraId }: { eraId: Era }) {
           { x: 0, w: 0.5, h: 1.6, color: palette }, // tiny accent dot for life
         ] as Stamp[];
       case "enterprise":
-        // skyline silhouette — taller blocks
+        // Corporate-district skyline — tall glass towers + one blinking
+        // antenna so the office reads as part of a wider business strip.
         return [
-          { x: -14, w: 3, h: 8, color: dim },
-          { x: -10, w: 4, h: 12, color: dim },
-          { x: -5, w: 5, h: 10, color: dim },
-          { x: 1, w: 4, h: 14, color: dim },
-          { x: 6, w: 6, h: 9, color: dim },
-          { x: 13, w: 3, h: 11, color: dim },
+          { x: -16, w: 3, h: 9, color: "#101428" },
+          { x: -12, w: 4, h: 13, color: "#101428" },
+          { x: -8, w: 3, h: 10, color: "#101428" },
+          { x: -3, w: 5, h: 15, color: "#101428" },
+          { x: 2, w: 4, h: 12, color: "#101428" },
+          { x: 7, w: 6, h: 17, color: "#101428" },
+          { x: 14, w: 3, h: 11, color: "#101428" },
+          // small accent dot (city light) on top of the tallest tower
+          { x: 7, w: 0.4, h: 0.4, color: palette },
         ] as Stamp[];
       case "drift":
         // mountains + sea horizon
@@ -3049,253 +3053,1043 @@ function Pedestrian({
 
 /* =========================================================================
  * EnterpriseDiorama — Kurumsal era (2018-2022).
- * Corporate command center: triple-monitor desk, server rack with blinking
- * LED columns, whiteboard with microservices diagram, plant, thermos.
- * Cool blue-purple glow, all-business.
+ *
+ * Cross-section "dollhouse" of the Kariyer.net open office: a tiled floor
+ * facing the camera, the back wall split into three vertical bands —
+ * left = microservice diagram mural (4 cubes + Kafka message dot looping
+ * between them); centre = full-height glass curtain that reveals a
+ * Heybeliada-island silhouette in the distance (Stelyum paralel hayatı);
+ * right = scrum kanban whiteboard with post-its drifting between TODO →
+ * DOING → DONE columns. Atakan's triple-monitor desk sits dead-centre
+ * (ATS dashboard with animated bars; Slack notifications with a counter
+ * dot; code editor). A small mezzanine balcony juts off the back wall
+ * on the right, where a tiny figure works on a laptop = 2020 COVID
+ * pivotu. Cool purple lighting, all-business.
  * ========================================================================= */
 function EnterpriseDiorama() {
   const accent = ERAS.enterprise.accent; // #a78bfa
-  const ledRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  // Animation refs
+  const kafkaDotRef = useRef<THREE.Group | null>(null);
+  const stickyRefs = useRef<(THREE.Group | null)[]>([]);
+  const barRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const slackDotRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const slackRowRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const screenRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const laptopRef = useRef<THREE.MeshStandardMaterial | null>(null);
+
+  // Kafka dot path between the 4 microservice cubes (left wall, x: -5..-1.5)
+  // Cubes laid out: top-left, top-right, bottom-left, bottom-right.
+  const kafkaPath = useMemo(
+    () => [
+      { x: -4.4, y: 4.0, z: -4.7 },
+      { x: -2.2, y: 4.0, z: -4.7 },
+      { x: -2.2, y: 2.6, z: -4.7 },
+      { x: -4.4, y: 2.6, z: -4.7 },
+    ],
+    [],
+  );
+
+  // Kanban post-it columns (right wall, x: 2..5). Three columns: TODO, DOING,
+  // DONE. Each sticky animates a slow drift between columns.
+  const kanbanColumns = useMemo(
+    () => [
+      { x: 2.5 }, // TODO
+      { x: 3.5 }, // DOING
+      { x: 4.5 }, // DONE
+    ],
+    [],
+  );
+
   useFrame(() => {
     const t = performance.now() * 0.001;
-    ledRefs.current.forEach((m, i) => {
-      if (!m) return;
-      // each LED row blinks with its own offset, simulating a server alive
-      m.emissiveIntensity =
-        Math.sin(t * 4 + i * 0.7) > 0.6 ? 2.4 : 0.2;
+
+    // Kafka dot — loop between the 4 cubes
+    if (kafkaDotRef.current) {
+      const period = 6;
+      const f = ((t % period) / period) * kafkaPath.length;
+      const i0 = Math.floor(f) % kafkaPath.length;
+      const i1 = (i0 + 1) % kafkaPath.length;
+      const lerp = f - Math.floor(f);
+      const p0 = kafkaPath[i0];
+      const p1 = kafkaPath[i1];
+      kafkaDotRef.current.position.set(
+        p0.x + (p1.x - p0.x) * lerp,
+        p0.y + (p1.y - p0.y) * lerp,
+        p0.z + (p1.z - p0.z) * lerp,
+      );
+    }
+
+    // Sticky notes — slow column drift TODO → DOING → DONE → cycle
+    stickyRefs.current.forEach((g, i) => {
+      if (!g) return;
+      const period = 18;
+      const offset = i * (period / Math.max(1, stickyRefs.current.length));
+      const phase = ((t + offset) % period) / period; // 0..1
+      // Three-column drift: 0..0.33 = TODO; 0.33..0.66 = DOING; 0.66..1 = DONE
+      let colIdx = 0;
+      if (phase < 0.33) colIdx = 0;
+      else if (phase < 0.66) colIdx = 1;
+      else colIdx = 2;
+      const targetX = kanbanColumns[colIdx].x;
+      // Smooth lerp toward target
+      g.position.x += (targetX - g.position.x) * 0.06;
+      // Small bobbing
+      g.position.y =
+        2.6 + ((i * 0.35) % 1.4) + Math.sin(t * 1.6 + i) * 0.04;
     });
+
+    // ATS dashboard bars — animate each bar's height/color
+    barRefs.current.forEach((m, i) => {
+      if (!m) return;
+      const h = 0.25 + Math.abs(Math.sin(t * 0.8 + i * 0.7)) * 0.55;
+      m.scale.y = h;
+      m.position.y = 1.6 + (h * 0.4) / 2; // re-anchor so bar grows from baseline
+    });
+
+    // Slack notification counter dot pulse
+    if (slackDotRef.current) {
+      slackDotRef.current.emissiveIntensity =
+        Math.sin(t * 4) > 0.5 ? 2.4 : 0.9;
+    }
+    // Slack rows — staggered fade-in/out to feel like incoming messages
+    slackRowRefs.current.forEach((m, i) => {
+      if (!m) return;
+      const phase = (t * 0.6 + i * 0.5) % 4;
+      m.emissiveIntensity = phase < 2.2 ? 0.85 : 0.25;
+    });
+
+    // Centre desk screen flicker
     screenRefs.current.forEach((m, i) => {
       if (!m) return;
-      m.emissiveIntensity = 0.7 + Math.sin(t * 1.2 + i * 1.4) * 0.12;
+      m.emissiveIntensity = 0.7 + Math.sin(t * 1.2 + i * 1.4) * 0.1;
     });
+    // Laptop on balcony
+    if (laptopRef.current) {
+      laptopRef.current.emissiveIntensity = 0.9 + Math.sin(t * 3.4) * 0.12;
+    }
   });
 
   return (
     <group>
-      {/* Polished concrete floor — cool grey checker */}
-      <CheckerFloor size={14} cellSize={1} y={-0.5} colorA="#1d1f2a" colorB="#171924" />
-      {/* Fine grid lines on top via thin emissive ribs every 3 tiles */}
+      {/* ---- Floor: polished tile + faint accent grid ---- */}
+      <CheckerFloor
+        size={14}
+        cellSize={1}
+        y={-0.5}
+        colorA="#1d1f2a"
+        colorB="#171924"
+      />
       {Array.from({ length: 5 }).map((_, i) => (
         <mesh key={i} position={[-6 + i * 3, -0.18, 0]}>
           <boxGeometry args={[0.04, 0.02, 14]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.25} toneMapped={false} transparent opacity={0.4} />
+          <meshStandardMaterial
+            color={accent}
+            emissive={accent}
+            emissiveIntensity={0.25}
+            toneMapped={false}
+            transparent
+            opacity={0.4}
+          />
         </mesh>
       ))}
 
-      {/* L-shaped desk */}
+      {/* ---- Ceiling: thin slab + two fluorescent strips so the room reads
+       *      as "interior" without blocking the camera. */}
+      <mesh position={[0, 6.2, -1.5]}>
+        <boxGeometry args={[13, 0.2, 8]} />
+        <meshLambertMaterial color="#181a24" />
+      </mesh>
+      {[-2.2, 2.2].map((x, i) => (
+        <mesh key={i} position={[x, 6.05, -1.5]}>
+          <boxGeometry args={[0.5, 0.08, 6]} />
+          <meshStandardMaterial
+            color="#0a0a14"
+            emissive="#c4d4ff"
+            emissiveIntensity={1.4}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+
+      {/* ---- Back wall — full width, split into 3 sections.
+       *      Left band: microservice mural (-7..-1.5)
+       *      Centre band: glass curtain + Heybeliada (-1.5..1.5)
+       *      Right band: kanban board (1.5..7)
+       *      The back wall sits at z=-5 with very small thickness. */}
+      <mesh position={[0, 3, -5]} receiveShadow>
+        <boxGeometry args={[14, 6, 0.18]} />
+        <meshLambertMaterial color="#1f2230" />
+      </mesh>
+
+      {/* ---- Left band: Microservice diagram mural ---- */}
+      <MicroserviceMural kafkaDotRef={kafkaDotRef} accent={accent} />
+
+      {/* ---- Centre band: glass curtain wall + Heybeliada silhouette ---- */}
+      <CentreGlassWall />
+      <HeybeliadaDistant />
+
+      {/* ---- Right band: Kanban whiteboard + drifting stickies ---- */}
+      <KanbanBoard stickyRefs={stickyRefs} />
+
+      {/* ---- Atakan's triple-monitor desk (centre foreground) ---- */}
+      <AtakanDesk
+        accent={accent}
+        screenRefs={screenRefs}
+        barRefs={barRefs}
+        slackDotRef={slackDotRef}
+        slackRowRefs={slackRowRefs}
+      />
+
+      {/* ---- COVID-pivot mezzanine balcony (back-right outside the glass)
+       *      with a tiny figure + open laptop. */}
+      <CovidBalcony laptopRef={laptopRef} />
+
+      {/* ---- Small office life: a side desk, plant, coffee corner ---- */}
+      <SideDesk position={[-5.4, 0, 1.2]} accent={accent} />
+      <OfficePlant position={[-4.5, 0, 2.6]} />
+      <OfficePlant position={[4.5, 0, 2.6]} />
+      <CoffeeCorner position={[5.4, 0, 1.0]} accent={accent} />
+
+      {/* ---- Overhead ambient + accent point light ---- */}
+      <pointLight position={[0, 5.5, 1]} intensity={0.7} distance={14} color={accent} />
+      <pointLight position={[-3, 4, -3]} intensity={0.4} distance={6} color="#c4d4ff" />
+      <pointLight position={[3, 4, -3]} intensity={0.4} distance={6} color="#c4d4ff" />
+    </group>
+  );
+}
+
+/* ----- Enterprise helpers -------------------------------------------- */
+
+function MicroserviceMural({
+  kafkaDotRef,
+  accent,
+}: {
+  kafkaDotRef: React.MutableRefObject<THREE.Group | null>;
+  accent: string;
+}) {
+  // 4 service cubes laid out 2×2 on the back wall. Arrows connect them
+  // forming a Kafka-flavoured ring. A glowing dot loops around the ring
+  // pretending to be a message in flight.
+  const cubes: { x: number; y: number; color: string; label: string }[] = [
+    { x: -4.4, y: 4.0, color: "#7d8cff", label: "ATS" },
+    { x: -2.2, y: 4.0, color: "#ff7a59", label: "MSG" },
+    { x: -2.2, y: 2.6, color: "#22aa88", label: "EVT" },
+    { x: -4.4, y: 2.6, color: "#caa84a", label: "API" },
+  ];
+  return (
+    <group>
+      {/* Mural backplate */}
+      <mesh position={[-3.3, 3.3, -4.92]}>
+        <boxGeometry args={[3.6, 2.8, 0.04]} />
+        <meshLambertMaterial color="#0a0c18" />
+      </mesh>
+      {/* Header strip */}
+      <mesh position={[-3.3, 4.85, -4.9]}>
+        <boxGeometry args={[3.4, 0.32, 0.04]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.3}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph
+        position={[-3.3, 4.85, -4.86]}
+        text="MICROSERVICES"
+        color="#fff5e6"
+        scale={0.04}
+      />
+
+      {/* Service cubes */}
+      {cubes.map((c, i) => (
+        <group key={i} position={[c.x, c.y, -4.85]}>
+          <mesh>
+            <boxGeometry args={[0.7, 0.7, 0.16]} />
+            <meshLambertMaterial color="#15182a" />
+          </mesh>
+          <mesh position={[0, 0, 0.1]}>
+            <boxGeometry args={[0.5, 0.5, 0.04]} />
+            <meshStandardMaterial
+              color="#000"
+              emissive={c.color}
+              emissiveIntensity={1.2}
+              toneMapped={false}
+            />
+          </mesh>
+          <SignGlyph
+            position={[0, 0, 0.14]}
+            text={c.label}
+            color="#fff"
+            scale={0.022}
+          />
+        </group>
+      ))}
+
+      {/* Connecting arrows — ring style */}
+      {[
+        { x: -3.3, y: 4.0, w: 1.6, h: 0.06 }, // top
+        { x: -2.2, y: 3.3, w: 0.06, h: 1.0 }, // right
+        { x: -3.3, y: 2.6, w: 1.6, h: 0.06 }, // bottom
+        { x: -4.4, y: 3.3, w: 0.06, h: 1.0 }, // left
+      ].map((b, i) => (
+        <mesh key={i} position={[b.x, b.y, -4.83]}>
+          <boxGeometry args={[b.w, b.h, 0.02]} />
+          <meshStandardMaterial
+            color="#1a1f30"
+            emissive={accent}
+            emissiveIntensity={0.4}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+
+      {/* Kafka message dot — animated by useFrame in the parent */}
+      <group ref={kafkaDotRef} position={[-4.4, 4.0, -4.7]}>
+        <mesh>
+          <boxGeometry args={[0.18, 0.18, 0.12]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#ffffff"
+            emissiveIntensity={2.5}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* halo */}
+        <mesh>
+          <boxGeometry args={[0.34, 0.34, 0.08]} />
+          <meshBasicMaterial
+            color={accent}
+            transparent
+            opacity={0.4}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function CentreGlassWall() {
+  // Floor-to-ceiling glass curtain wall on the centre band of the back
+  // wall. Slight emissive tint suggests city/water light beyond.
+  return (
+    <group position={[0, 3, -4.92]}>
+      {/* Outer frame */}
+      <mesh>
+        <boxGeometry args={[3, 5.6, 0.04]} />
+        <meshLambertMaterial color="#0a0c18" />
+      </mesh>
+      {/* Glass pane */}
+      <mesh position={[0, 0, 0.03]}>
+        <boxGeometry args={[2.8, 5.4, 0.02]} />
+        <meshStandardMaterial
+          color="#08122a"
+          emissive="#3a8cff"
+          emissiveIntensity={0.18}
+          toneMapped={false}
+          transparent
+          opacity={0.85}
+        />
+      </mesh>
+      {/* Vertical mullions */}
+      {[-0.8, 0, 0.8].map((x, i) => (
+        <mesh key={i} position={[x, 0, 0.05]}>
+          <boxGeometry args={[0.04, 5.4, 0.02]} />
+          <meshLambertMaterial color="#1a1f30" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function HeybeliadaDistant() {
+  // Tiny silhouette of Heybeliada (Stelyum paralel hayatı) seen through
+  // the centre glass wall. A few hill cubes + one little house with a
+  // warm lit window perched on top of the rock + a thin water strip.
+  return (
+    <group position={[0, 1.5, -9]}>
+      {/* Distant deep-blue sea strip */}
+      <mesh position={[0, -0.4, 0]}>
+        <planeGeometry args={[14, 1.2]} />
+        <meshBasicMaterial color="#0a1428" toneMapped={false} />
+      </mesh>
+      {/* Two tiny lit moonlit wave crests on the sea */}
+      <mesh position={[-1.8, -0.35, 0.01]}>
+        <boxGeometry args={[1.2, 0.04, 0.04]} />
+        <meshStandardMaterial
+          color="#1a2848"
+          emissive="#a4b8e8"
+          emissiveIntensity={0.5}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh position={[1.5, -0.35, 0.01]}>
+        <boxGeometry args={[0.9, 0.04, 0.04]} />
+        <meshStandardMaterial
+          color="#1a2848"
+          emissive="#a4b8e8"
+          emissiveIntensity={0.4}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Heybeliada island mass — a low hill silhouette */}
+      <mesh position={[0, 0.2, 0]}>
+        <boxGeometry args={[2.4, 1.0, 0.4]} />
+        <meshLambertMaterial color="#10142a" />
+      </mesh>
+      <mesh position={[-0.5, 0.6, 0]}>
+        <boxGeometry args={[1.6, 0.7, 0.4]} />
+        <meshLambertMaterial color="#10142a" />
+      </mesh>
+      <mesh position={[0.7, 0.5, 0]}>
+        <boxGeometry args={[1.2, 0.5, 0.4]} />
+        <meshLambertMaterial color="#10142a" />
+      </mesh>
+      {/* Single tiny house on the hill */}
+      <mesh position={[-0.5, 1.1, 0.05]}>
+        <boxGeometry args={[0.32, 0.32, 0.18]} />
+        <meshLambertMaterial color="#1a1d2a" />
+      </mesh>
+      {/* Pitched roof */}
+      <mesh position={[-0.5, 1.32, 0.05]} rotation={[0, 0, Math.PI / 4]}>
+        <boxGeometry args={[0.22, 0.22, 0.18]} />
+        <meshLambertMaterial color="#2a1818" />
+      </mesh>
+      {/* Lit window */}
+      <mesh position={[-0.5, 1.08, 0.16]}>
+        <boxGeometry args={[0.1, 0.1, 0.02]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive="#ffd28a"
+          emissiveIntensity={1.6}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Soft sky strip behind */}
+      <mesh position={[0, 1.4, -0.1]}>
+        <planeGeometry args={[14, 4]} />
+        <meshBasicMaterial color="#0c1130" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 2.5, -0.09]}>
+        <planeGeometry args={[14, 1.4]} />
+        <meshBasicMaterial color="#1a2454" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function KanbanBoard({
+  stickyRefs,
+}: {
+  stickyRefs: React.MutableRefObject<(THREE.Group | null)[]>;
+}) {
+  // Whiteboard with three column dividers and a handful of post-its that
+  // drift across the board over time. Sits on the right band of the back
+  // wall, lit cool.
+  const COLS = [
+    { x: 2.5, label: "TODO", color: "#ff6a8a" },
+    { x: 3.5, label: "DOING", color: "#caa84a" },
+    { x: 4.5, label: "DONE", color: "#62ffaa" },
+  ];
+  const STICKY_COUNT = 6;
+  return (
+    <group>
+      {/* Whiteboard backplate */}
+      <mesh position={[3.5, 3.4, -4.92]}>
+        <boxGeometry args={[3.6, 2.8, 0.04]} />
+        <meshLambertMaterial color="#e8e8ea" />
+      </mesh>
+      {/* Header strip */}
+      <mesh position={[3.5, 4.85, -4.9]}>
+        <boxGeometry args={[3.4, 0.32, 0.04]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive="#a78bfa"
+          emissiveIntensity={1.3}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph
+        position={[3.5, 4.85, -4.86]}
+        text="SCRUM BOARD"
+        color="#fff5e6"
+        scale={0.04}
+      />
+      {/* Column dividers */}
+      {COLS.map((c, i) =>
+        i > 0 ? (
+          <mesh key={i} position={[c.x - 0.5, 3.4, -4.89]}>
+            <boxGeometry args={[0.04, 2.4, 0.02]} />
+            <meshLambertMaterial color="#9a9ca6" />
+          </mesh>
+        ) : null,
+      )}
+      {/* Column headers */}
+      {COLS.map((c, i) => (
+        <group key={i}>
+          <mesh position={[c.x, 4.45, -4.88]}>
+            <boxGeometry args={[0.9, 0.2, 0.02]} />
+            <meshStandardMaterial
+              color="#000"
+              emissive={c.color}
+              emissiveIntensity={1.0}
+              toneMapped={false}
+            />
+          </mesh>
+          <SignGlyph
+            position={[c.x, 4.45, -4.85]}
+            text={c.label}
+            color="#fff"
+            scale={0.022}
+          />
+        </group>
+      ))}
+
+      {/* Post-it stickies (animated by useFrame) */}
+      {Array.from({ length: STICKY_COUNT }).map((_, i) => (
+        <group
+          key={i}
+          ref={(el) => {
+            stickyRefs.current[i] = el;
+          }}
+          position={[2.5, 2.6 + ((i * 0.35) % 1.4), -4.86]}
+        >
+          <mesh>
+            <boxGeometry args={[0.42, 0.28, 0.04]} />
+            <meshLambertMaterial
+              color={
+                ["#ffd86a", "#ff9a6a", "#aaffba", "#9ad4ff", "#ffd86a", "#ff9a6a"][i % 6]
+              }
+            />
+          </mesh>
+          {/* tiny scribble bars on the post-it */}
+          {[0.06, 0, -0.06].map((dy, j) => (
+            <mesh key={j} position={[0, dy, 0.025]}>
+              <boxGeometry args={[0.26, 0.02, 0.01]} />
+              <meshLambertMaterial color="#3a2418" />
+            </mesh>
+          ))}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function AtakanDesk({
+  accent,
+  screenRefs,
+  barRefs,
+  slackDotRef,
+  slackRowRefs,
+}: {
+  accent: string;
+  screenRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
+  barRefs: React.MutableRefObject<(THREE.Mesh | null)[]>;
+  slackDotRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+  slackRowRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
+}) {
+  return (
+    <group position={[0, 0, 0.4]}>
+      {/* Desk surface */}
       <mesh position={[0, 1.25, 0]} castShadow receiveShadow>
-        <boxGeometry args={[7, 0.2, 2.6]} />
+        <boxGeometry args={[5, 0.18, 2.4]} />
         <meshLambertMaterial color="#2a2d3a" />
       </mesh>
-      <mesh position={[3.6, 1.25, -1.7]} castShadow receiveShadow>
-        <boxGeometry args={[1.6, 0.2, 2]} />
-        <meshLambertMaterial color="#2a2d3a" />
+      {/* Edge accent */}
+      <mesh position={[0, 1.36, 1.18]}>
+        <boxGeometry args={[5, 0.04, 0.04]} />
+        <meshStandardMaterial
+          color={accent}
+          emissive={accent}
+          emissiveIntensity={0.7}
+          toneMapped={false}
+        />
       </mesh>
-      {/* desk edge accent */}
-      <mesh position={[0, 1.36, 1.3]}>
-        <boxGeometry args={[7, 0.04, 0.04]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.7} toneMapped={false} />
-      </mesh>
-      {/* legs */}
+      {/* Legs */}
       {([
-        [-3.3, 0.6, 1.2],
-        [3.3, 0.6, 1.2],
-        [-3.3, 0.6, -1.2],
-        [3.3, 0.6, -1.2],
+        [-2.3, 0.6, 1.05],
+        [2.3, 0.6, 1.05],
+        [-2.3, 0.6, -1.05],
+        [2.3, 0.6, -1.05],
       ] as [number, number, number][]).map((p, i) => (
         <mesh key={i} position={p} castShadow>
-          <boxGeometry args={[0.2, 1.2, 0.2]} />
+          <boxGeometry args={[0.18, 1.2, 0.18]} />
           <meshLambertMaterial color="#1a1d28" />
         </mesh>
       ))}
 
-      {/* Three monitors */}
-      {[-2.4, 0, 2.4].map((mx, i) => (
-        <group key={i} position={[mx, 2.6, -0.5]} rotation={[0, mx * 0.15, 0]}>
-          {/* bezel */}
-          <mesh castShadow>
-            <boxGeometry args={[2.0, 1.3, 0.18]} />
-            <meshLambertMaterial color="#0a0b14" />
-          </mesh>
-          {/* screen */}
-          <mesh position={[0, 0, 0.1]}>
-            <boxGeometry args={[1.85, 1.15, 0.04]} />
+      {/* LEFT monitor — ATS Dashboard with animated bars */}
+      <group position={[-1.7, 2.45, -0.4]} rotation={[0, 0.18, 0]}>
+        {/* bezel */}
+        <mesh castShadow>
+          <boxGeometry args={[1.6, 1.05, 0.14]} />
+          <meshLambertMaterial color="#0a0b14" />
+        </mesh>
+        {/* screen */}
+        <mesh position={[0, 0, 0.08]}>
+          <boxGeometry args={[1.48, 0.92, 0.04]} />
+          <meshStandardMaterial
+            ref={(el) => {
+              screenRefs.current[0] = el;
+            }}
+            color="#0a1430"
+            emissive={accent}
+            emissiveIntensity={0.7}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* Header */}
+        <mesh position={[0, 0.38, 0.11]}>
+          <boxGeometry args={[1.3, 0.08, 0.01]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#fff"
+            emissiveIntensity={1.4}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* Animated bar chart */}
+        {Array.from({ length: 6 }).map((_, i) => (
+          <mesh
+            key={i}
+            ref={(el) => {
+              barRefs.current[i] = el;
+            }}
+            position={[-0.55 + i * 0.22, 0, 0.12]}
+          >
+            <boxGeometry args={[0.14, 0.4, 0.02]} />
             <meshStandardMaterial
-              ref={(el) => {
-                screenRefs.current[i] = el;
-              }}
-              color="#0a1a2a"
-              emissive={accent}
-              emissiveIntensity={0.7}
+              color="#000"
+              emissive={
+                i % 3 === 0 ? "#62ffaa" : i % 3 === 1 ? accent : "#ff7a59"
+              }
+              emissiveIntensity={1.4}
               toneMapped={false}
             />
           </mesh>
-          {/* code lines on screen */}
-          {Array.from({ length: 5 }).map((_, j) => (
-            <mesh
-              key={j}
-              position={[
-                -0.6 + (j % 3) * 0.4,
-                0.4 - j * 0.2,
-                0.13,
-              ]}
-            >
-              <boxGeometry args={[0.5 + (j * 0.13) % 0.7, 0.06, 0.01]} />
-              <meshStandardMaterial color="#000" emissive="#fff" emissiveIntensity={1.3} toneMapped={false} transparent opacity={0.85} />
-            </mesh>
-          ))}
-          {/* monitor stand */}
-          <mesh position={[0, -0.9, 0]}>
-            <boxGeometry args={[0.4, 0.5, 0.18]} />
-            <meshLambertMaterial color="#1a1a25" />
-          </mesh>
-          <mesh position={[0, -1.2, 0]}>
-            <boxGeometry args={[0.9, 0.08, 0.5]} />
-            <meshLambertMaterial color="#1a1a25" />
-          </mesh>
-        </group>
-      ))}
+        ))}
+        {/* baseline */}
+        <mesh position={[0, -0.25, 0.11]}>
+          <boxGeometry args={[1.3, 0.02, 0.01]} />
+          <meshLambertMaterial color="#5a5d6e" />
+        </mesh>
+        {/* stand */}
+        <mesh position={[0, -0.7, 0]}>
+          <boxGeometry args={[0.35, 0.4, 0.14]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+        <mesh position={[0, -0.96, 0]}>
+          <boxGeometry args={[0.8, 0.08, 0.4]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+      </group>
 
-      {/* Mechanical keyboard (RGB underglow) */}
-      <mesh position={[0, 1.48, 0.7]} castShadow>
-        <boxGeometry args={[2.2, 0.16, 0.85]} />
+      {/* CENTRE monitor — code editor */}
+      <group position={[0, 2.45, -0.5]}>
+        <mesh castShadow>
+          <boxGeometry args={[1.8, 1.15, 0.14]} />
+          <meshLambertMaterial color="#0a0b14" />
+        </mesh>
+        <mesh position={[0, 0, 0.08]}>
+          <boxGeometry args={[1.66, 1.02, 0.04]} />
+          <meshStandardMaterial
+            ref={(el) => {
+              screenRefs.current[1] = el;
+            }}
+            color="#0e0f1c"
+            emissive={accent}
+            emissiveIntensity={0.6}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* code lines */}
+        {Array.from({ length: 7 }).map((_, j) => (
+          <mesh
+            key={j}
+            position={[
+              -0.55 + (j % 3) * 0.4,
+              0.36 - j * 0.13,
+              0.11,
+            ]}
+          >
+            <boxGeometry
+              args={[0.35 + ((j * 0.13) % 0.9), 0.04, 0.01]}
+            />
+            <meshStandardMaterial
+              color="#000"
+              emissive={j % 3 === 0 ? accent : "#fff"}
+              emissiveIntensity={1.3}
+              toneMapped={false}
+              transparent
+              opacity={0.9}
+            />
+          </mesh>
+        ))}
+        <mesh position={[0, -0.78, 0]}>
+          <boxGeometry args={[0.38, 0.42, 0.14]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+        <mesh position={[0, -1.08, 0]}>
+          <boxGeometry args={[0.9, 0.08, 0.45]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+      </group>
+
+      {/* RIGHT monitor — Slack notifications */}
+      <group position={[1.7, 2.45, -0.4]} rotation={[0, -0.18, 0]}>
+        <mesh castShadow>
+          <boxGeometry args={[1.6, 1.05, 0.14]} />
+          <meshLambertMaterial color="#0a0b14" />
+        </mesh>
+        <mesh position={[0, 0, 0.08]}>
+          <boxGeometry args={[1.48, 0.92, 0.04]} />
+          <meshStandardMaterial
+            ref={(el) => {
+              screenRefs.current[2] = el;
+            }}
+            color="#1a0a14"
+            emissive="#7a2a4a"
+            emissiveIntensity={0.55}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* Header */}
+        <mesh position={[0, 0.38, 0.11]}>
+          <boxGeometry args={[1.3, 0.08, 0.01]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#fff"
+            emissiveIntensity={1.2}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* Notification rows */}
+        {Array.from({ length: 4 }).map((_, i) => (
+          <group key={i} position={[0, 0.18 - i * 0.18, 0.11]}>
+            {/* avatar dot */}
+            <mesh position={[-0.6, 0, 0]}>
+              <boxGeometry args={[0.08, 0.08, 0.02]} />
+              <meshStandardMaterial
+                color="#000"
+                emissive={["#62ffaa", "#caa84a", "#ff7a59", "#7d8cff"][i]}
+                emissiveIntensity={1.6}
+                toneMapped={false}
+              />
+            </mesh>
+            {/* text bar */}
+            <mesh position={[0.05, 0, 0]}>
+              <boxGeometry args={[1.0, 0.06, 0.02]} />
+              <meshStandardMaterial
+                ref={(el) => {
+                  slackRowRefs.current[i] = el;
+                }}
+                color="#000"
+                emissive="#fff"
+                emissiveIntensity={0.85}
+                toneMapped={false}
+              />
+            </mesh>
+          </group>
+        ))}
+        {/* Notification badge */}
+        <mesh position={[0.62, 0.4, 0.13]}>
+          <boxGeometry args={[0.16, 0.16, 0.02]} />
+          <meshStandardMaterial
+            ref={slackDotRef}
+            color="#000"
+            emissive="#ff3050"
+            emissiveIntensity={2.2}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* stand */}
+        <mesh position={[0, -0.7, 0]}>
+          <boxGeometry args={[0.35, 0.4, 0.14]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+        <mesh position={[0, -0.96, 0]}>
+          <boxGeometry args={[0.8, 0.08, 0.4]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+      </group>
+
+      {/* Keyboard + RGB glow */}
+      <mesh position={[0, 1.46, 0.55]} castShadow>
+        <boxGeometry args={[1.9, 0.14, 0.7]} />
         <meshLambertMaterial color="#15171f" />
       </mesh>
-      {Array.from({ length: 14 }).map((_, k) => (
-        <mesh key={k} position={[-1 + k * 0.16, 1.6, 0.55]}>
-          <boxGeometry args={[0.12, 0.06, 0.12]} />
-          <meshLambertMaterial color="#23262d" />
-        </mesh>
-      ))}
-      {/* RGB strip under keyboard */}
-      <mesh position={[0, 1.42, 0.7]}>
-        <boxGeometry args={[2.18, 0.02, 0.83]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.2} toneMapped={false} />
+      <mesh position={[0, 1.4, 0.55]}>
+        <boxGeometry args={[1.88, 0.02, 0.68]} />
+        <meshStandardMaterial
+          color={accent}
+          emissive={accent}
+          emissiveIntensity={1.2}
+          toneMapped={false}
+        />
       </mesh>
 
-      {/* Office chair */}
-      <group position={[0, 0, 2.2]}>
+      {/* Office chair (front of desk) */}
+      <group position={[0, 0, 2.0]}>
         <mesh position={[0, 0.95, 0]} castShadow>
-          <boxGeometry args={[1.4, 0.18, 1.2]} />
+          <boxGeometry args={[1.3, 0.18, 1.1]} />
           <meshLambertMaterial color="#15171f" />
         </mesh>
-        <mesh position={[0, 1.85, 0.5]} castShadow>
-          <boxGeometry args={[1.4, 1.6, 0.18]} />
+        <mesh position={[0, 1.8, 0.46]} castShadow>
+          <boxGeometry args={[1.3, 1.5, 0.16]} />
           <meshLambertMaterial color="#1a1c26" />
         </mesh>
-        {/* chair base */}
         <mesh position={[0, 0.4, 0]}>
           <cylinderGeometry args={[0.05, 0.05, 0.7, 6]} />
           <meshLambertMaterial color="#1a1a25" />
         </mesh>
       </group>
+    </group>
+  );
+}
 
-      {/* Server rack — full height, blinking LED columns */}
-      <group position={[-5.5, 0, -1.5]}>
-        <mesh position={[0, 2.5, 0]} castShadow>
-          <boxGeometry args={[1.8, 5.2, 1.2]} />
-          <meshLambertMaterial color="#0a0b13" />
+function CovidBalcony({
+  laptopRef,
+}: {
+  laptopRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  // Small balcony platform jutting out from behind the back glass on the
+  // right side, raised on a slim column so it reads as a mezzanine. A
+  // tiny seated figure works on a laptop = pandemic-pivot moment.
+  return (
+    <group position={[3.6, 0, -7]}>
+      {/* Support column */}
+      <mesh position={[0, 2.2, 0]} castShadow>
+        <boxGeometry args={[0.4, 4.4, 0.4]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      {/* Balcony platform */}
+      <mesh position={[0.4, 4.3, 0.3]} castShadow>
+        <boxGeometry args={[2.2, 0.16, 1.6]} />
+        <meshLambertMaterial color="#2a2d3a" />
+      </mesh>
+      {/* Glass railing — three transparent slabs */}
+      {([
+        [0.4, 4.7, 1.1, 2.2, 0.6, 0.02],
+        [-0.7, 4.7, 0.3, 0.02, 0.6, 1.6],
+        [1.5, 4.7, 0.3, 0.02, 0.6, 1.6],
+      ] as [number, number, number, number, number, number][]).map((b, i) => (
+        <mesh key={i} position={[b[0], b[1], b[2]]}>
+          <boxGeometry args={[b[3], b[4], b[5]]} />
+          <meshStandardMaterial
+            color="#1a2a40"
+            emissive="#7d8cff"
+            emissiveIntensity={0.25}
+            toneMapped={false}
+            transparent
+            opacity={0.6}
+          />
         </mesh>
-        {/* rack rails */}
-        {Array.from({ length: 8 }).map((_, row) => {
-          // each row has a row of 6 small LEDs
-          return (
-            <group key={row} position={[0, 0.6 + row * 0.55, 0.62]}>
-              <mesh>
-                <boxGeometry args={[1.6, 0.36, 0.04]} />
-                <meshLambertMaterial color="#15161e" />
-              </mesh>
-              {Array.from({ length: 6 }).map((_, col) => (
-                <mesh key={col} position={[-0.55 + col * 0.22, 0, 0.02]}>
-                  <boxGeometry args={[0.06, 0.06, 0.02]} />
-                  <meshStandardMaterial
-                    ref={(el) => {
-                      ledRefs.current[row * 6 + col] = el;
-                    }}
-                    color="#000"
-                    emissive={col % 3 === 0 ? "#22ff66" : col % 3 === 1 ? accent : "#ff5a3c"}
-                    emissiveIntensity={2}
-                    toneMapped={false}
-                  />
-                </mesh>
-              ))}
-            </group>
-          );
-        })}
-        {/* faint vent slots */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <mesh key={i} position={[0, 5 - i * 0.1, -0.62]}>
-            <boxGeometry args={[1.2, 0.02, 0.02]} />
-            <meshLambertMaterial color="#1a1c26" />
-          </mesh>
-        ))}
+      ))}
+      {/* Railing top rail */}
+      <mesh position={[0.4, 5.05, 1.1]}>
+        <boxGeometry args={[2.3, 0.05, 0.05]} />
+        <meshLambertMaterial color="#3a3a48" />
+      </mesh>
+
+      {/* Tiny voxel figure — Atakan sitting cross-legged with a laptop.
+       *  Kept very small to read as a distant detail. */}
+      <group position={[0.3, 4.45, 0.4]}>
+        {/* legs */}
+        <mesh position={[0, 0.15, 0]}>
+          <boxGeometry args={[0.32, 0.16, 0.4]} />
+          <meshLambertMaterial color="#1a1f30" />
+        </mesh>
+        {/* torso */}
+        <mesh position={[0, 0.4, -0.1]}>
+          <boxGeometry args={[0.32, 0.34, 0.2]} />
+          <meshLambertMaterial color="#3a4a5a" />
+        </mesh>
+        {/* head */}
+        <mesh position={[0, 0.7, -0.1]}>
+          <boxGeometry args={[0.22, 0.22, 0.22]} />
+          <meshLambertMaterial color="#d8b48a" />
+        </mesh>
+        {/* hair cap */}
+        <mesh position={[0, 0.82, -0.1]}>
+          <boxGeometry args={[0.24, 0.06, 0.24]} />
+          <meshLambertMaterial color="#2a1810" />
+        </mesh>
+        {/* laptop on legs */}
+        <mesh position={[0, 0.28, 0.18]}>
+          <boxGeometry args={[0.3, 0.04, 0.22]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+        {/* laptop screen */}
+        <mesh position={[0, 0.42, 0.08]} rotation={[-Math.PI / 2.6, 0, 0]}>
+          <boxGeometry args={[0.3, 0.22, 0.02]} />
+          <meshStandardMaterial
+            ref={laptopRef}
+            color="#000"
+            emissive="#7d8cff"
+            emissiveIntensity={1.1}
+            toneMapped={false}
+          />
+        </mesh>
       </group>
 
-      {/* Whiteboard with microservices diagram boxes */}
-      <group position={[5.4, 3, -2]} rotation={[0, -0.2, 0]}>
+      {/* Tiny "EVDEN" sign hanging on the railing */}
+      <mesh position={[0.4, 4.55, 1.1]}>
+        <boxGeometry args={[0.8, 0.18, 0.02]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive="#a78bfa"
+          emissiveIntensity={1.0}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph
+        position={[0.4, 4.55, 1.13]}
+        text="EVDEN"
+        color="#fff5e6"
+        scale={0.024}
+      />
+    </group>
+  );
+}
+
+function SideDesk({
+  position,
+  accent,
+}: {
+  position: [number, number, number];
+  accent: string;
+}) {
+  // A second, smaller desk to the side — empty (suggests a teammate's
+  // workstation). Adds depth without crowding.
+  return (
+    <group position={position}>
+      <mesh position={[0, 1.2, 0]} castShadow>
+        <boxGeometry args={[2, 0.16, 1.2]} />
+        <meshLambertMaterial color="#2a2d3a" />
+      </mesh>
+      <mesh position={[0, 1.3, 0.6]}>
+        <boxGeometry args={[2, 0.04, 0.04]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.5} toneMapped={false} />
+      </mesh>
+      {([
+        [-0.85, 0.6, 0.5],
+        [0.85, 0.6, 0.5],
+        [-0.85, 0.6, -0.5],
+        [0.85, 0.6, -0.5],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh key={i} position={p}>
+          <boxGeometry args={[0.14, 1.2, 0.14]} />
+          <meshLambertMaterial color="#1a1d28" />
+        </mesh>
+      ))}
+      {/* idle monitor */}
+      <group position={[0, 2.3, -0.4]} rotation={[0, 0.2, 0]}>
         <mesh castShadow>
-          <boxGeometry args={[3.2, 2.2, 0.12]} />
-          <meshLambertMaterial color="#e8e8ea" />
+          <boxGeometry args={[1.1, 0.78, 0.12]} />
+          <meshLambertMaterial color="#0a0b14" />
         </mesh>
-        {/* diagram boxes */}
-        {([
-          [-0.9, 0.4, 0.07, "#7a8aff"],
-          [0.0, 0.4, 0.07, "#ff7a59"],
-          [0.9, 0.4, 0.07, "#22aa88"],
-          [-0.5, -0.3, 0.07, "#7a8aff"],
-          [0.6, -0.3, 0.07, "#ff7a59"],
-        ] as [number, number, number, string][]).map((d, i) => (
-          <mesh key={i} position={[d[0], d[1], d[2]]}>
-            <boxGeometry args={[0.5, 0.32, 0.04]} />
-            <meshLambertMaterial color={d[3]} />
-          </mesh>
-        ))}
-        {/* connecting "arrows" — thin bars */}
-        {([
-          [-0.45, 0.4, 0.07, 0.36],
-          [0.45, 0.4, 0.07, 0.36],
-          [-0.5, 0.05, 0.07, 0.7],
-        ] as [number, number, number, number][]).map((d, i) => (
-          <mesh key={i} position={[d[0], d[1], d[2]]}>
-            <boxGeometry args={[d[3], 0.04, 0.02]} />
-            <meshLambertMaterial color="#5a5d6e" />
-          </mesh>
-        ))}
-      </group>
-
-      {/* Coffee thermos */}
-      <mesh position={[2, 1.62, 0.6]} castShadow>
-        <cylinderGeometry args={[0.18, 0.16, 0.6, 8]} />
-        <meshLambertMaterial color="#252830" />
-      </mesh>
-      <mesh position={[2, 1.93, 0.6]}>
-        <cylinderGeometry args={[0.16, 0.18, 0.05, 8]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.6} toneMapped={false} />
-      </mesh>
-
-      {/* Office plant — wide pot + leaf cubes */}
-      <group position={[5, 0.5, 1.4]}>
-        <mesh castShadow>
-          <boxGeometry args={[0.7, 0.6, 0.7]} />
-          <meshLambertMaterial color="#3a2a1a" />
+        <mesh position={[0, 0, 0.07]}>
+          <boxGeometry args={[1.0, 0.68, 0.04]} />
+          <meshStandardMaterial
+            color="#0a1024"
+            emissive={accent}
+            emissiveIntensity={0.25}
+            toneMapped={false}
+          />
         </mesh>
-        {[[0.0, 1.2, 0.0], [-0.25, 1.05, 0.2], [0.25, 1.0, -0.2], [0.0, 1.5, 0.15]].map((p, i) => (
-          <mesh key={i} position={[p[0], p[1], p[2]]} rotation={[0, i * 0.7, 0.1 * (i % 2 === 0 ? 1 : -1)]} castShadow>
-            <boxGeometry args={[0.45, 0.5, 0.45]} />
-            <meshLambertMaterial color={["#2a6a4a", "#3a8a5a", "#1a5a3a"][i % 3]} />
-          </mesh>
-        ))}
+        <mesh position={[0, -0.6, 0]}>
+          <boxGeometry args={[0.6, 0.08, 0.3]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
       </group>
+      {/* chair */}
+      <group position={[0, 0, 1.8]}>
+        <mesh position={[0, 0.85, 0]} castShadow>
+          <boxGeometry args={[1.0, 0.14, 0.9]} />
+          <meshLambertMaterial color="#15171f" />
+        </mesh>
+        <mesh position={[0, 1.6, 0.4]} castShadow>
+          <boxGeometry args={[1.0, 1.2, 0.12]} />
+          <meshLambertMaterial color="#1a1c26" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
 
-      {/* Glass partition silhouette behind */}
-      <mesh position={[0, 4.5, -3.5]}>
-        <boxGeometry args={[10, 4, 0.1]} />
-        <meshStandardMaterial color="#0a0e1a" emissive={accent} emissiveIntensity={0.05} toneMapped={false} transparent opacity={0.45} />
+function CoffeeCorner({
+  position,
+  accent,
+}: {
+  position: [number, number, number];
+  accent: string;
+}) {
+  // A tall espresso/water station against the right wall. Tiny detail
+  // that makes the floor read as "open office" rather than "cubicle".
+  return (
+    <group position={position}>
+      {/* Cabinet */}
+      <mesh position={[0, 0.6, 0]} castShadow>
+        <boxGeometry args={[1.2, 1.2, 0.7]} />
+        <meshLambertMaterial color="#1a1d28" />
       </mesh>
+      <mesh position={[0, 1.25, 0]}>
+        <boxGeometry args={[1.24, 0.06, 0.74]} />
+        <meshLambertMaterial color="#2a2d3a" />
+      </mesh>
+      {/* Coffee machine */}
+      <mesh position={[-0.3, 1.55, 0]} castShadow>
+        <boxGeometry args={[0.46, 0.5, 0.42]} />
+        <meshLambertMaterial color="#15171f" />
+      </mesh>
+      <mesh position={[-0.3, 1.45, 0.22]}>
+        <boxGeometry args={[0.3, 0.06, 0.04]} />
+        <meshStandardMaterial color="#000" emissive={accent} emissiveIntensity={1.2} toneMapped={false} />
+      </mesh>
+      {/* Water bottle */}
+      <mesh position={[0.35, 1.6, 0]} castShadow>
+        <boxGeometry args={[0.3, 0.6, 0.3]} />
+        <meshStandardMaterial
+          color="#aac4d6"
+          emissive="#aac4d6"
+          emissiveIntensity={0.25}
+          transparent
+          opacity={0.6}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Mug stack */}
+      <mesh position={[0.36, 1.34, 0.25]} castShadow>
+        <cylinderGeometry args={[0.07, 0.07, 0.1, 8]} />
+        <meshLambertMaterial color="#caa84a" />
+      </mesh>
+    </group>
+  );
+}
 
-      {/* Cool overhead light */}
-      <pointLight position={[0, 6, 2]} intensity={0.7} distance={14} color={accent} />
+function OfficePlant({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, 0.4, 0]} castShadow>
+        <boxGeometry args={[0.55, 0.5, 0.55]} />
+        <meshLambertMaterial color="#3a2a1a" />
+      </mesh>
+      {([
+        [0, 1.0, 0],
+        [-0.2, 0.85, 0.15],
+        [0.2, 0.8, -0.15],
+        [0, 1.3, 0.12],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh
+          key={i}
+          position={p}
+          rotation={[0, i * 0.7, 0.1 * (i % 2 === 0 ? 1 : -1)]}
+          castShadow
+        >
+          <boxGeometry args={[0.4, 0.42, 0.4]} />
+          <meshLambertMaterial color={["#2a6a4a", "#3a8a5a", "#1a5a3a"][i % 3]} />
+        </mesh>
+      ))}
     </group>
   );
 }
