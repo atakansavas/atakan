@@ -356,13 +356,20 @@ function EraHorizon({ eraId }: { eraId: Era }) {
           { x: 14, w: 3, h: 3, color: "#3a2a24" },
         ] as Stamp[];
       case "agency":
-        // workshop block + chimney
+        // Far Istanbul ridgeline silhouette across the strait — chunky
+        // buildings + minaret + tower. Dim navy so they sink behind the
+        // mid-distance buildings rendered inside the diorama itself.
         return [
-          { x: -12, w: 6, h: 4, color: dim },
-          { x: -5, w: 8, h: 6, color: dim },
-          { x: -2, w: 1, h: 9, color: dim }, // chimney
-          { x: 4, w: 6, h: 5, color: dim },
-          { x: 11, w: 3, h: 3, color: palette },
+          { x: -16, w: 4, h: 4, color: "#101428" },
+          { x: -11, w: 5, h: 6, color: "#101428" },
+          { x: -7, w: 3, h: 8, color: "#101428" },
+          { x: -3, w: 4, h: 5, color: "#101428" },
+          { x: 0.5, w: 0.6, h: 9, color: "#101428" }, // minaret
+          { x: 3, w: 5, h: 6, color: "#101428" },
+          { x: 8, w: 3, h: 9, color: "#101428" },
+          { x: 12, w: 5, h: 5, color: "#101428" },
+          { x: 16, w: 4, h: 4, color: "#101428" },
+          { x: 0, w: 0.5, h: 1.6, color: palette }, // tiny accent dot for life
         ] as Stamp[];
       case "enterprise":
         // skyline silhouette — taller blocks
@@ -548,202 +555,1183 @@ function EraTintLight({ scrollRef }: Props) {
 }
 
 /* =========================================================================
- * Atölye (Atelier) diorama — first prototype.
- * CRT desk in a small workshop room, neon agency sign overhead.
- * Built entirely from box primitives so it stays in the pixel-art family.
+ * Atölye (Atelier) era — İstanbul iki yakası + Boğaz.
+ *
+ * Concept: the three agencies Atakan worked at sat on opposite shores of
+ * the Bosphorus. The right shore holds SSCTur + XeusMedia (commercial,
+ * crowded, AXIS-less). The left shore holds Improde and AXIS AVM (more
+ * corporate). A dark-green '96 Renault R19 loops between them via the
+ * Bosphorus Bridge. Two ferries glide in opposite directions; sailboats
+ * dot the horizon; seagulls track the bridge lights; the water carries
+ * a soft, animated reflection of the bridge's red towers.
+ *
+ * All clickable photo/posters use the same FramedPhoto helper as Genesis,
+ * which routes clicks to the global lightbox.
  * ========================================================================= */
 function AtelierDiorama() {
-  const accent = ERAS.agency.accent; // #7d8cff
-  const screenRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const accent = ERAS.agency.accent; // #7d8cff cool-blue
+  // Animated material refs for night flickers
+  const cgScreenRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const mapScreenRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const avmLogoRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const bridgeLightRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  // Animated group refs for moving entities
+  const carRef = useRef<THREE.Group | null>(null);
+  const ferry1Ref = useRef<THREE.Group | null>(null);
+  const ferry2Ref = useRef<THREE.Group | null>(null);
+  const sailboatRefs = useRef<(THREE.Group | null)[]>([]);
+  const seagullRefs = useRef<(THREE.Group | null)[]>([]);
 
-  // Screen flicker — subtle CRT tone variation
+  // R19 path waypoints — sağ yakadan girip, sağ yol boyu ilerler, köprüye
+  // çıkar, köprüyü geçer, sol yakaya iner, sol yol boyu döner, U-turn, geri
+  // dönüş aynı yolu izler. Tek loop ~28sn.
+  const carPath = useMemo<{
+    x: number;
+    y: number;
+    z: number;
+    rotY: number;
+  }[]>(
+    () => [
+      // Start: right shore, near SSCTur (z= +3 cadde başı)
+      { x: 5.0, y: 0.0, z: 3.5, rotY: Math.PI }, // facing -Z
+      { x: 5.0, y: 0.0, z: 0.5, rotY: Math.PI },
+      { x: 5.0, y: 0.0, z: -1.0, rotY: Math.PI }, // approaching bridge
+      // Bridge entrance on right side (x=3, deck height y=4.2)
+      { x: 3.2, y: 0.6, z: -1.2, rotY: Math.PI * 0.75 }, // ramp up
+      { x: 3.0, y: 4.2, z: -1.2, rotY: Math.PI * 0.5 }, // turn west onto bridge
+      // Across the bridge
+      { x: 0, y: 4.2, z: -1.2, rotY: Math.PI * 0.5 },
+      { x: -3.0, y: 4.2, z: -1.2, rotY: Math.PI * 0.5 }, // bridge end
+      { x: -3.2, y: 0.6, z: -1.2, rotY: Math.PI * 0.25 }, // ramp down
+      // Left shore drive — past Improde (z down toward camera)
+      { x: -5.0, y: 0.0, z: -1.0, rotY: 0 }, // facing +Z
+      { x: -5.0, y: 0.0, z: 1.5, rotY: 0 },
+      { x: -5.0, y: 0.0, z: 3.5, rotY: 0 },
+      // U-turn loop end — slight pause at end of left road; rotY swings
+      { x: -5.0, y: 0.0, z: 3.8, rotY: Math.PI }, // turn around
+      // Return path: left shore back toward bridge
+      { x: -5.0, y: 0.0, z: -1.0, rotY: Math.PI },
+      { x: -3.2, y: 0.6, z: -1.2, rotY: Math.PI * 1.25 },
+      { x: -3.0, y: 4.2, z: -1.2, rotY: Math.PI * 1.5 },
+      // Cross back over bridge eastbound
+      { x: 0, y: 4.2, z: -1.2, rotY: Math.PI * 1.5 },
+      { x: 3.0, y: 4.2, z: -1.2, rotY: Math.PI * 1.5 },
+      { x: 3.2, y: 0.6, z: -1.2, rotY: Math.PI * 1.75 },
+      // Right shore back to start
+      { x: 5.0, y: 0.0, z: -1.0, rotY: 0 },
+      { x: 5.0, y: 0.0, z: 3.5, rotY: 0 },
+    ],
+    [],
+  );
+
   useFrame(() => {
-    if (!screenRef.current) return;
     const t = performance.now() * 0.001;
-    screenRef.current.emissiveIntensity =
-      0.85 + Math.sin(t * 7.2) * 0.05 + Math.sin(t * 3.4) * 0.04;
+    // CG (XeusMedia) — green-ish phosphor with periodic refresh
+    if (cgScreenRef.current) {
+      cgScreenRef.current.emissiveIntensity =
+        0.7 + Math.sin(t * 5) * 0.1 + (Math.sin(t * 23) > 0.92 ? -0.3 : 0);
+    }
+    // Improde 3D map — slow scanning pulse
+    if (mapScreenRef.current) {
+      mapScreenRef.current.emissiveIntensity = 0.65 + Math.sin(t * 1.6) * 0.18;
+    }
+    // AXIS logo gentle breathing
+    if (avmLogoRef.current) {
+      avmLogoRef.current.emissiveIntensity = 1.3 + Math.sin(t * 1.1) * 0.12;
+    }
+    // Bridge tower aircraft-warning lights flicker
+    bridgeLightRefs.current.forEach((m, i) => {
+      if (!m) return;
+      m.emissiveIntensity = (Math.sin(t * 2.4 + i * 1.7) > 0 ? 2.4 : 0.6);
+    });
+
+    // R19 — sample the polyline path at a loop fraction
+    if (carRef.current) {
+      const period = 28; // seconds full loop
+      const f = ((t % period) / period) * carPath.length;
+      const i0 = Math.floor(f) % carPath.length;
+      const i1 = (i0 + 1) % carPath.length;
+      const lerp = f - Math.floor(f);
+      const p0 = carPath[i0];
+      const p1 = carPath[i1];
+      carRef.current.position.set(
+        p0.x + (p1.x - p0.x) * lerp,
+        p0.y + (p1.y - p0.y) * lerp,
+        p0.z + (p1.z - p0.z) * lerp,
+      );
+      // Shortest-angle interpolation for rotation
+      let dr = p1.rotY - p0.rotY;
+      if (dr > Math.PI) dr -= Math.PI * 2;
+      if (dr < -Math.PI) dr += Math.PI * 2;
+      carRef.current.rotation.y = p0.rotY + dr * lerp;
+    }
+
+    // Ferries — opposite directions through the strait
+    if (ferry1Ref.current) {
+      const span = 14;
+      const z = ((t * 0.35) % span) - span / 2 + 3;
+      ferry1Ref.current.position.set(-0.6, -0.2, z);
+      ferry1Ref.current.rotation.y = Math.PI; // bow toward +Z (toward camera)
+      ferry1Ref.current.position.y = -0.2 + Math.sin(t * 1.2) * 0.04; // bob
+    }
+    if (ferry2Ref.current) {
+      const span = 14;
+      const z = -(((t * 0.28) % span) - span / 2) - 1;
+      ferry2Ref.current.position.set(0.7, -0.2, z);
+      ferry2Ref.current.rotation.y = 0; // bow toward -Z
+      ferry2Ref.current.position.y = -0.2 + Math.sin(t * 1.4 + 1.1) * 0.04;
+    }
+
+    // Sailboats — slow lateral drift
+    sailboatRefs.current.forEach((g, i) => {
+      if (!g) return;
+      const speed = 0.08 + i * 0.02;
+      const span = 12;
+      const z = ((t * speed + i * 4) % span) - span / 2;
+      g.position.z = z;
+      g.position.y = -0.18 + Math.sin(t * 0.9 + i * 1.3) * 0.05;
+    });
+
+    // Seagulls — drift in a flat ring above the bridge
+    seagullRefs.current.forEach((g, i) => {
+      if (!g) return;
+      const speed = 0.4 + i * 0.07;
+      const phase = i * 0.9;
+      const r = 4.5 + (i % 2) * 0.6;
+      g.position.set(
+        Math.cos(t * speed + phase) * r,
+        5.2 + Math.sin(t * 1.6 + phase) * 0.25,
+        Math.sin(t * speed + phase) * 1.6 - 1.0,
+      );
+      g.rotation.y = -t * speed - phase + Math.PI / 2;
+      // wing flap (scale Y)
+      const flap = 1 + Math.sin(t * 12 + phase) * 0.25;
+      g.scale.set(1, flap, 1);
+    });
   });
 
   return (
     <group>
-      {/* ---------- ground tile ---------- */}
-      <CheckerFloor size={14} cellSize={1} y={-0.5} colorA="#2a2018" colorB="#221912" />
+      {/* Night sky tint behind the diorama — bluish-violet to support neon */}
+      <AtelierSky />
 
-      {/* ---------- back wall slab ---------- */}
-      <mesh position={[0, 4, -5]} receiveShadow>
-        <boxGeometry args={[14, 9, 0.6]} />
-        <meshLambertMaterial color="#1d1812" />
-      </mesh>
+      {/* Background skyline silhouette */}
+      <AtelierBackgroundSkyline />
 
-      {/* ---------- neon sign on the wall ---------- */}
-      <NeonSign
-        position={[-3.6, 6.2, -4.6]}
-        text="XEUS"
-        accent={accent}
-        bgColor="#13111a"
+      {/* Distant city lights across the Bosphorus on the far shore */}
+
+      {/* ---- Bosphorus water surface (animated ripples via emissive bars) ---- */}
+      <BosphorusWater />
+
+      {/* ---- Right shore ground + road ---- */}
+      <Shore side="right" />
+
+      {/* ---- Left shore ground + road ---- */}
+      <Shore side="left" />
+
+      {/* ---- Bosphorus Bridge ---- */}
+      <BosphorusBridge bridgeLightRefs={bridgeLightRefs} />
+
+      {/* ---- Buildings: right shore (SSCTur + XeusMedia) ---- */}
+      <Suspense fallback={null}>
+        <SSCTurShop position={[5.6, 0, 3.2]} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <XeusMediaShop position={[7.0, 0, -2.0]} cgScreenRef={cgScreenRef} />
+      </Suspense>
+      {/* Right-shore small stand: freelance portfolio (under SSCTur era) */}
+      <ProjectStand
+        position={[4.4, 0, 1.4]}
+        accent="#ffcd5c"
+        label1="JQUERY"
+        label2="WORDPRESS"
       />
-      <NeonSign
-        position={[3.4, 5.5, -4.6]}
-        text="IMPRODE"
-        accent="#27e0c2"
-        bgColor="#13111a"
+      {/* Right-shore small stand: Playout Web Client (XeusMedia) */}
+      <ProjectStand
+        position={[5.6, 0, -3.6]}
+        accent="#62ffaa"
+        label1="PLAYOUT"
+        label2="SIGNALR"
       />
 
-      {/* ---------- desk ---------- */}
-      {/* top */}
-      <mesh position={[0, 1.55, 0]} castShadow receiveShadow>
-        <boxGeometry args={[7, 0.35, 3]} />
-        <meshLambertMaterial color="#7a4a2b" />
-      </mesh>
-      {/* edge highlight to sell pixel art */}
-      <mesh position={[0, 1.74, 0]}>
-        <boxGeometry args={[7.02, 0.04, 3.02]} />
-        <meshLambertMaterial color="#a06a40" />
-      </mesh>
-      {/* legs */}
-      {([
-        [-3.2, 0.7, 1.2],
-        [3.2, 0.7, 1.2],
-        [-3.2, 0.7, -1.2],
-        [3.2, 0.7, -1.2],
-      ] as [number, number, number][]).map((p, i) => (
-        <mesh key={i} position={p} castShadow>
-          <boxGeometry args={[0.35, 1.4, 0.35]} />
-          <meshLambertMaterial color="#4f311b" />
-        </mesh>
-      ))}
+      {/* ---- Buildings: left shore (Improde + AXIS AVM + BiSesVar stand) ---- */}
+      <Suspense fallback={null}>
+        <ImprodeShop position={[-5.6, 0, 3.2]} mapScreenRef={mapScreenRef} />
+      </Suspense>
+      <AxisAVM position={[-7.4, 0, -2.5]} logoRef={avmLogoRef} accent={accent} />
+      <ProjectStand
+        position={[-4.4, 0, 1.4]}
+        accent="#ff6aa9"
+        label1="BISESVAR"
+        label2="MOBILE"
+      />
 
-      {/* ---------- CRT monitor ---------- */}
-      {/* back/body */}
-      <mesh position={[-1, 2.85, -0.8]} castShadow>
-        <boxGeometry args={[2.6, 2.2, 1.9]} />
-        <meshLambertMaterial color="#d6cfb3" />
-      </mesh>
-      {/* bezel front */}
-      <mesh position={[-1, 2.85, 0.16]}>
-        <boxGeometry args={[2.4, 2.0, 0.06]} />
-        <meshLambertMaterial color="#c1b78f" />
-      </mesh>
-      {/* glowing screen */}
-      <mesh position={[-1, 2.85, 0.21]}>
-        <boxGeometry args={[1.95, 1.55, 0.04]} />
-        <meshStandardMaterial
-          ref={screenRef}
-          color="#1f3658"
-          emissive={accent}
-          emissiveIntensity={0.85}
-          toneMapped={false}
-        />
-      </mesh>
-      {/* power LED */}
-      <mesh position={[-1.92, 1.95, 0.2]}>
-        <boxGeometry args={[0.1, 0.1, 0.06]} />
-        <meshStandardMaterial color="#000" emissive="#ff5a3c" emissiveIntensity={2.5} toneMapped={false} />
-      </mesh>
+      {/* ---- Water life: ferries, sailboats, seagulls ---- */}
+      <group ref={ferry1Ref}>
+        <Ferry name="ŞEHIR HATLARI" />
+      </group>
+      <group ref={ferry2Ref}>
+        <Ferry name="DENIZ" />
+      </group>
 
-      {/* ---------- keyboard ---------- */}
-      <mesh position={[-1, 1.82, 1.05]} castShadow>
-        <boxGeometry args={[2.6, 0.15, 0.85]} />
-        <meshLambertMaterial color="#e6dec3" />
-      </mesh>
-      {/* row of pixel keys (cosmetic) */}
-      {Array.from({ length: 12 }).map((_, k) => (
-        <mesh key={k} position={[-2.1 + k * 0.2, 1.93, 0.85]} castShadow>
-          <boxGeometry args={[0.15, 0.08, 0.15]} />
-          <meshLambertMaterial color="#bdb597" />
-        </mesh>
-      ))}
-
-      {/* ---------- coffee mug ---------- */}
-      <mesh position={[2.2, 1.95, 0.6]} castShadow>
-        <cylinderGeometry args={[0.22, 0.2, 0.42, 8]} />
-        <meshLambertMaterial color="#9b3a2a" />
-      </mesh>
-      {/* mug handle */}
-      <mesh position={[2.45, 1.95, 0.6]} castShadow>
-        <torusGeometry args={[0.12, 0.04, 6, 10]} />
-        <meshLambertMaterial color="#9b3a2a" />
-      </mesh>
-      {/* steam — three thin chunks */}
       {[0, 1, 2].map((i) => (
-        <mesh key={i} position={[2.2 + Math.sin(i * 1.4) * 0.1, 2.45 + i * 0.18, 0.6]}>
-          <boxGeometry args={[0.08, 0.08, 0.08]} />
+        <group
+          key={i}
+          ref={(el) => {
+            sailboatRefs.current[i] = el;
+          }}
+          position={[i === 1 ? -1.3 : 1.4, 0, 0]}
+        >
+          <Sailboat scale={0.9 - i * 0.1} />
+        </group>
+      ))}
+
+      {Array.from({ length: 5 }).map((_, i) => (
+        <group
+          key={i}
+          ref={(el) => {
+            seagullRefs.current[i] = el;
+          }}
+        >
+          <Seagull />
+        </group>
+      ))}
+
+      {/* ---- Renault R19 ---- */}
+      <group ref={carRef}>
+        <Renault19 />
+      </group>
+
+      {/* ---- Helpful per-era accent lights ---- */}
+      <pointLight position={[0, 5.2, 0]} intensity={0.6} distance={10} color={accent} />
+      <pointLight position={[6, 2.5, 1]} intensity={0.5} distance={8} color="#ffcd5c" />
+      <pointLight position={[-6, 2.5, 1]} intensity={0.5} distance={8} color={accent} />
+    </group>
+  );
+}
+
+/* =====================================================================
+ * Atelier helpers — sky, water, shore, bridge, buildings, ferry, sailboat,
+ * seagull, R19. Kept inside this file so the diorama is self-contained.
+ * ===================================================================== */
+
+function AtelierSky() {
+  // Deep blue-violet wash + neon-ish horizon strip so the night reads warm
+  // enough to make the bridge red towers and shop neons pop.
+  return (
+    <group position={[0, 5, -16]}>
+      <mesh position={[0, 4, 0]}>
+        <planeGeometry args={[60, 14]} />
+        <meshBasicMaterial color="#0a0e2a" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -2, 0.05]}>
+        <planeGeometry args={[60, 6]} />
+        <meshBasicMaterial color="#1a2050" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -6, 0.1]}>
+        <planeGeometry args={[60, 6]} />
+        <meshBasicMaterial color="#0e1230" toneMapped={false} />
+      </mesh>
+      {/* A faint crescent moon */}
+      <mesh position={[-9, 6, 0.05]}>
+        <circleGeometry args={[0.7, 18]} />
+        <meshBasicMaterial color="#f4e6c4" toneMapped={false} />
+      </mesh>
+      <mesh position={[-8.65, 6.15, 0.06]}>
+        <circleGeometry args={[0.65, 18]} />
+        <meshBasicMaterial color="#0a0e2a" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function AtelierBackgroundSkyline() {
+  // Far rows of voxel buildings on both shores. Lit windows form a tiny
+  // night skyline reminiscent of Istanbul's silhouette across the strait.
+  type B = {
+    x: number;
+    z: number;
+    w: number;
+    h: number;
+    d: number;
+    color: string;
+  };
+  const right: B[] = [
+    { x: 10, z: -7, w: 3, h: 8, d: 3, color: "#1a1a2a" },
+    { x: 13, z: -7, w: 2.4, h: 11, d: 3, color: "#1f1f30" },
+    { x: 15.5, z: -6.5, w: 2.6, h: 7, d: 3, color: "#1a1a2a" },
+  ];
+  const left: B[] = [
+    { x: -10, z: -7, w: 2.6, h: 9, d: 3, color: "#1a1a2a" },
+    { x: -13, z: -7, w: 3.2, h: 12, d: 3, color: "#1f1f30" },
+    { x: -16, z: -6.5, w: 2.4, h: 7, d: 3, color: "#1a1a2a" },
+  ];
+  return (
+    <group>
+      {[...right, ...left].map((b, i) => (
+        <group key={i} position={[b.x, 0, b.z]}>
+          <mesh position={[0, b.h / 2, 0]}>
+            <boxGeometry args={[b.w, b.h, b.d]} />
+            <meshLambertMaterial color={b.color} />
+          </mesh>
+          {/* lit windows grid */}
+          {Array.from({ length: Math.min(4, Math.floor(b.h / 2)) }).map((_, r) => (
+            <group key={r}>
+              {Array.from({ length: 2 }).map((_, c) => (
+                <mesh
+                  key={c}
+                  position={[
+                    -b.w / 4 + c * (b.w / 2),
+                    1.0 + r * 1.7,
+                    b.d / 2 + 0.02,
+                  ]}
+                >
+                  <boxGeometry args={[b.w * 0.18, 0.6, 0.04]} />
+                  <meshStandardMaterial
+                    color="#0a0a14"
+                    emissive={(r + c + i) % 3 === 0 ? "#ffd28a" : "#7d8cff"}
+                    emissiveIntensity={(r + c + i) % 3 === 0 ? 0.85 : 0.35}
+                    toneMapped={false}
+                  />
+                </mesh>
+              ))}
+            </group>
+          ))}
+        </group>
+      ))}
+      {/* A radio tower on a far hill, right side, to break the skyline */}
+      <group position={[17, 0, -7]}>
+        <mesh position={[0, 5, 0]} castShadow>
+          <boxGeometry args={[0.3, 10, 0.3]} />
+          <meshLambertMaterial color="#2a2a3a" />
+        </mesh>
+        <mesh position={[0, 10.3, 0]}>
+          <boxGeometry args={[0.18, 0.5, 0.18]} />
           <meshStandardMaterial
-            color="#fff"
-            emissive="#fff"
-            emissiveIntensity={0.5}
-            transparent
-            opacity={0.55 - i * 0.13}
+            color="#000"
+            emissive="#ff3a3a"
+            emissiveIntensity={2}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function BosphorusWater() {
+  // Long water plane runs in Z direction between the two shores. We layer
+  // a couple of slightly different-shade strips + thin emissive bars that
+  // imitate wave crests catching bridge light.
+  const wavePositions = useMemo(() => {
+    const out: { x: number; z: number; w: number; rot: number }[] = [];
+    for (let i = 0; i < 22; i++) {
+      out.push({
+        x: -1.8 + Math.random() * 3.6,
+        z: -6 + i * 0.6 + Math.random() * 0.4,
+        w: 0.4 + Math.random() * 0.6,
+        rot: (Math.random() - 0.5) * 0.4,
+      });
+    }
+    return out;
+  }, []);
+  return (
+    <group>
+      {/* base water */}
+      <mesh position={[0, -0.5, 0]} receiveShadow>
+        <boxGeometry args={[5.4, 0.05, 14]} />
+        <meshLambertMaterial color="#0a1838" />
+      </mesh>
+      {/* darker centre channel */}
+      <mesh position={[0, -0.495, 0]}>
+        <boxGeometry args={[3.6, 0.03, 14]} />
+        <meshLambertMaterial color="#06122a" />
+      </mesh>
+      {/* shimmering wave crests catching tower light */}
+      {wavePositions.map((w, i) => (
+        <mesh key={i} position={[w.x, -0.46, w.z]} rotation={[0, w.rot, 0]}>
+          <boxGeometry args={[w.w, 0.02, 0.08]} />
+          <meshStandardMaterial
+            color="#3a4060"
+            emissive="#7da0ff"
+            emissiveIntensity={i % 3 === 0 ? 0.6 : 0.25}
             toneMapped={false}
           />
         </mesh>
       ))}
+      {/* bridge tower reflection — two soft red strips directly below towers */}
+      <mesh position={[0, -0.47, -1.2]}>
+        <boxGeometry args={[0.4, 0.02, 2.4]} />
+        <meshStandardMaterial
+          color="#1a0a0e"
+          emissive="#ff3030"
+          emissiveIntensity={0.35}
+          toneMapped={false}
+          transparent
+          opacity={0.6}
+        />
+      </mesh>
+    </group>
+  );
+}
 
-      {/* ---------- floppy stack ---------- */}
-      {[0, 1, 2].map((i) => (
-        <mesh
-          key={i}
-          position={[2.4, 1.78 + i * 0.06, -0.7]}
-          rotation={[0, 0.2, 0]}
-          castShadow
-        >
-          <boxGeometry args={[0.7, 0.05, 0.7]} />
-          <meshLambertMaterial color={["#1d1d27", "#2a2532", "#1f1f2a"][i]} />
+function Shore({ side }: { side: "left" | "right" }) {
+  // Each shore is a chunky waterfront slab with a road running in Z and a
+  // pavement edge.
+  const sign = side === "left" ? -1 : 1;
+  return (
+    <group position={[sign * 5, 0, 0]}>
+      {/* Asphalt road strip running in Z */}
+      <mesh position={[0, -0.45, 0]} receiveShadow>
+        <boxGeometry args={[2.4, 0.1, 12]} />
+        <meshLambertMaterial color="#2a2a32" />
+      </mesh>
+      {/* Lane stripes */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh key={i} position={[0, -0.39, -5 + i * 1.4]}>
+          <boxGeometry args={[0.16, 0.02, 0.7]} />
+          <meshBasicMaterial color="#e6c66a" toneMapped={false} />
         </mesh>
       ))}
-
-      {/* ---------- floor lamp glow ---------- */}
-      <mesh position={[5, 0.5, 2.4]}>
-        <boxGeometry args={[0.3, 1, 0.3]} />
-        <meshLambertMaterial color="#222" />
+      {/* Inner pavement (away from the water) */}
+      <mesh position={[sign * 1.8, -0.42, 0]} receiveShadow>
+        <boxGeometry args={[1.4, 0.14, 12]} />
+        <meshLambertMaterial color="#5a5a64" />
       </mesh>
-      <mesh position={[5, 1.4, 2.4]}>
-        <boxGeometry args={[0.7, 0.5, 0.7]} />
+      {/* Outer pavement (toward the water) */}
+      <mesh position={[sign * -1.4, -0.42, 0]} receiveShadow>
+        <boxGeometry args={[0.6, 0.14, 12]} />
+        <meshLambertMaterial color="#5a5a64" />
+      </mesh>
+      {/* Sea wall — small kerb facing the water */}
+      <mesh position={[sign * -1.75, -0.3, 0]}>
+        <boxGeometry args={[0.18, 0.4, 12]} />
+        <meshLambertMaterial color="#3a3a44" />
+      </mesh>
+      {/* Sodium-vapor street lamps along the road */}
+      {[-4, 0, 4].map((z, i) => (
+        <ShoreLamp key={i} position={[sign * 1.0, 0, z]} />
+      ))}
+    </group>
+  );
+}
+
+function ShoreLamp({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      <mesh position={[0, 1.6, 0]} castShadow>
+        <boxGeometry args={[0.12, 3.2, 0.12]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      <mesh position={[0, 3.18, 0]}>
+        <boxGeometry args={[0.36, 0.16, 0.36]} />
         <meshStandardMaterial
-          color="#ffe7a0"
-          emissive="#ffb648"
+          color="#1a1a1a"
+          emissive="#ffae5a"
           emissiveIntensity={1.4}
           toneMapped={false}
         />
       </mesh>
-      <pointLight position={[5, 1.6, 2.4]} intensity={1.0} distance={9} color="#ffb648" />
+      <pointLight position={[0, 3.1, 0]} intensity={0.45} distance={4} color="#ffae5a" />
+    </group>
+  );
+}
 
-      {/* ---------- chair stub behind the desk ---------- */}
-      <mesh position={[-1, 1.0, 2.2]} castShadow>
-        <boxGeometry args={[1.6, 0.2, 1.4]} />
-        <meshLambertMaterial color="#3b3b48" />
+type BridgeRefs = {
+  bridgeLightRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
+};
+
+function BosphorusBridge({ bridgeLightRefs }: BridgeRefs) {
+  // Two red towers + horizontal deck + cable fans + aircraft-warning
+  // lights blinking at the tower tops.
+  const towerColor = "#a32525"; // classic Bosphorus tower red
+  return (
+    <group>
+      {/* Deck (the road across) */}
+      <mesh position={[0, 4.2, -1.2]} castShadow>
+        <boxGeometry args={[7.0, 0.18, 1.2]} />
+        <meshLambertMaterial color="#1a1a22" />
       </mesh>
-      <mesh position={[-1, 1.95, 2.7]} castShadow>
-        <boxGeometry args={[1.6, 1.7, 0.2]} />
-        <meshLambertMaterial color="#3b3b48" />
+      {/* Deck under-trusses */}
+      <mesh position={[0, 4.05, -1.2]}>
+        <boxGeometry args={[7.2, 0.1, 0.04]} />
+        <meshLambertMaterial color="#2a2a36" />
+      </mesh>
+      {/* Approach ramps */}
+      <mesh
+        position={[3.4, 2.4, -1.2]}
+        rotation={[0, 0, Math.atan2(4.2 - 0, 0.8) - Math.PI / 2]}
+      >
+        <boxGeometry args={[2.6, 0.16, 1.2]} />
+        <meshLambertMaterial color="#1a1a22" />
+      </mesh>
+      <mesh
+        position={[-3.4, 2.4, -1.2]}
+        rotation={[0, 0, -(Math.atan2(4.2 - 0, 0.8) - Math.PI / 2)]}
+      >
+        <boxGeometry args={[2.6, 0.16, 1.2]} />
+        <meshLambertMaterial color="#1a1a22" />
       </mesh>
 
-      {/* ---------- side accent block (stack of CRT box) ---------- */}
-      <mesh position={[-5.2, 1.4, -1.5]} castShadow>
-        <boxGeometry args={[1.6, 1.6, 1.6]} />
-        <meshLambertMaterial color="#1c1c25" />
+      {/* Towers */}
+      {[-3, 3].map((x, i) => (
+        <group key={i} position={[x, 0, -1.2]}>
+          {/* base piers */}
+          <mesh position={[0, 0.5, 0]} castShadow>
+            <boxGeometry args={[0.7, 1, 0.7]} />
+            <meshLambertMaterial color="#3a1818" />
+          </mesh>
+          {/* main vertical legs (two parallel) */}
+          {[-0.35, 0.35].map((dx, j) => (
+            <mesh key={j} position={[dx, 4.0, 0]} castShadow>
+              <boxGeometry args={[0.4, 7.6, 0.4]} />
+              <meshLambertMaterial color={towerColor} />
+            </mesh>
+          ))}
+          {/* Cross beams */}
+          <mesh position={[0, 4.2, 0]}>
+            <boxGeometry args={[0.9, 0.22, 0.5]} />
+            <meshLambertMaterial color={towerColor} />
+          </mesh>
+          <mesh position={[0, 6.4, 0]}>
+            <boxGeometry args={[0.9, 0.22, 0.5]} />
+            <meshLambertMaterial color={towerColor} />
+          </mesh>
+          <mesh position={[0, 7.6, 0]}>
+            <boxGeometry args={[0.9, 0.22, 0.5]} />
+            <meshLambertMaterial color={towerColor} />
+          </mesh>
+          {/* Tower top caps */}
+          <mesh position={[0, 7.9, 0]}>
+            <boxGeometry args={[1.0, 0.16, 0.6]} />
+            <meshLambertMaterial color="#4a1818" />
+          </mesh>
+          {/* Aircraft-warning red blinker */}
+          <mesh position={[0, 8.05, 0]}>
+            <boxGeometry args={[0.18, 0.18, 0.18]} />
+            <meshStandardMaterial
+              ref={(el) => {
+                bridgeLightRefs.current[i] = el;
+              }}
+              color="#1a0606"
+              emissive="#ff2a2a"
+              emissiveIntensity={2}
+              toneMapped={false}
+            />
+          </mesh>
+          {/* tower point light helps water reflection sell */}
+          <pointLight position={[0, 6, 0.5]} intensity={0.7} distance={10} color="#ff5a4a" />
+        </group>
+      ))}
+
+      {/* Suspension cables — thin diagonal slats fanning from tower tops to
+       *  the deck. Approximated as a few slanted thin boxes per side. */}
+      {[-3, 3].map((tx, i) =>
+        Array.from({ length: 8 }).map((_, j) => {
+          const dir = tx < 0 ? 1 : -1;
+          const t = (j + 1) / 9;
+          // X at deck side
+          const dx = tx + dir * t * 3;
+          const dy = 4.3;
+          const ty = 7.4;
+          // mid-point + rotation
+          const cx = (tx + dx) / 2;
+          const cy = (ty + dy) / 2;
+          const len = Math.sqrt((dx - tx) ** 2 + (dy - ty) ** 2);
+          const rot = Math.atan2(dy - ty, dx - tx);
+          return (
+            <mesh
+              key={`${i}-${j}`}
+              position={[cx, cy, -1.2]}
+              rotation={[0, 0, rot]}
+            >
+              <boxGeometry args={[len, 0.04, 0.04]} />
+              <meshStandardMaterial
+                color="#2a2030"
+                emissive="#ffae8a"
+                emissiveIntensity={0.25}
+                toneMapped={false}
+              />
+            </mesh>
+          );
+        }),
+      )}
+      {/* Main suspension cable arc — simulated with 6 box segments */}
+      {Array.from({ length: 12 }).map((_, i) => {
+        const x = -3 + (i + 1) * (6 / 13);
+        const local = (x + 3) / 6; // 0..1
+        const sag = Math.sin(local * Math.PI) * 1.6; // arch
+        const y = 7.4 - 0.8 + sag;
+        return (
+          <mesh key={i} position={[x, y, -1.2]}>
+            <boxGeometry args={[0.55, 0.07, 0.07]} />
+            <meshLambertMaterial color="#3a3340" />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function SSCTurShop({ position }: { position: [number, number, number] }) {
+  // Small ground-floor office — '.NET' green sign, ticket-stub poster.
+  return (
+    <group position={position}>
+      {/* Building shell */}
+      <mesh position={[0, 1.3, -1.1]} castShadow>
+        <boxGeometry args={[3.2, 2.6, 2.2]} />
+        <meshLambertMaterial color="#b8a484" />
       </mesh>
-      <mesh position={[-5.2, 2.6, -1.5]} castShadow>
-        <boxGeometry args={[1.4, 1, 1.4]} />
-        <meshLambertMaterial color="#3a3a55" />
+      {/* Roof slab */}
+      <mesh position={[0, 2.7, -1.1]}>
+        <boxGeometry args={[3.4, 0.18, 2.3]} />
+        <meshLambertMaterial color="#3a2418" />
       </mesh>
-      <mesh position={[-5.2, 3.25, -1.4]}>
-        <boxGeometry args={[0.3, 0.3, 0.04]} />
+      {/* Window */}
+      <mesh position={[-0.7, 1.5, 0.01]}>
+        <boxGeometry args={[1.4, 1.4, 0.06]} />
+        <meshStandardMaterial
+          color="#1a2a4a"
+          emissive="#3a8cff"
+          emissiveIntensity={0.45}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Door */}
+      <mesh position={[0.9, 1.1, 0.01]}>
+        <boxGeometry args={[0.8, 2.0, 0.06]} />
+        <meshLambertMaterial color="#2a1810" />
+      </mesh>
+      <mesh position={[0.9, 1.45, 0.04]}>
+        <boxGeometry args={[0.6, 1.0, 0.02]} />
+        <meshStandardMaterial color="#1a3050" emissive="#3a8cff" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+      {/* Sign */}
+      <mesh position={[0, 2.4, 0.02]}>
+        <boxGeometry args={[3.0, 0.55, 0.06]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[0, 2.4, 0.06]}>
+        <boxGeometry args={[2.6, 0.36, 0.04]} />
         <meshStandardMaterial
           color="#000"
+          emissive="#62ffaa"
+          emissiveIntensity={1.5}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph position={[0, 2.42, 0.1]} text="SSCTUR" color="#0a1a14" scale={0.06} />
+      {/* "ALOBILETHATTI" smaller line */}
+      <SignGlyph position={[0, 1.95, 0.06]} text="ALOBILETHATTI" color="#3a2418" scale={0.034} />
+    </group>
+  );
+}
+
+function XeusMediaShop({
+  position,
+  cgScreenRef,
+}: {
+  position: [number, number, number];
+  cgScreenRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  // Bigger building (2 floors). Vitrininde Character Generator ekranı
+  // — flagship project, large clickable lightbox image stand inside.
+  return (
+    <group position={position}>
+      {/* Two-floor building */}
+      <mesh position={[0, 2.3, -1.1]} castShadow>
+        <boxGeometry args={[4.0, 4.6, 2.2]} />
+        <meshLambertMaterial color="#3a3550" />
+      </mesh>
+      {/* Roof */}
+      <mesh position={[0, 4.7, -1.1]}>
+        <boxGeometry args={[4.2, 0.2, 2.3]} />
+        <meshLambertMaterial color="#1a1822" />
+      </mesh>
+      {/* Floor divider */}
+      <mesh position={[0, 2.4, 0.02]}>
+        <boxGeometry args={[4.0, 0.12, 0.03]} />
+        <meshLambertMaterial color="#1a1822" />
+      </mesh>
+      {/* Upper-floor windows */}
+      {[-1.0, 0.0, 1.0].map((x, i) => (
+        <mesh key={i} position={[x, 3.4, 0.02]}>
+          <boxGeometry args={[0.7, 1.1, 0.06]} />
+          <meshStandardMaterial
+            color="#1a2a4a"
+            emissive="#7d8cff"
+            emissiveIntensity={0.6}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {/* Ground floor — large vitrine */}
+      <mesh position={[-0.8, 1.35, 0.02]} castShadow>
+        <boxGeometry args={[2.4, 2.0, 0.06]} />
+        <meshLambertMaterial color="#0a0a14" />
+      </mesh>
+      {/* Big CRT-style screen inside vitrine showing Character Generator */}
+      <mesh position={[-0.8, 1.35, 0.07]}>
+        <boxGeometry args={[2.2, 1.8, 0.04]} />
+        <meshStandardMaterial
+          ref={cgScreenRef}
+          color="#0a1a14"
+          emissive="#62ffaa"
+          emissiveIntensity={0.7}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Mock CG UI strips on the screen */}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <mesh key={i} position={[-0.8, 0.7 + i * 0.32, 0.09]}>
+          <boxGeometry args={[2.0, 0.05, 0.01]} />
+          <meshStandardMaterial
+            color="#0a1a14"
+            emissive={i === 2 ? "#fff" : "#22aa88"}
+            emissiveIntensity={i === 2 ? 1.4 : 0.6}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {/* Crawl text strip */}
+      <mesh position={[-0.8, 0.45, 0.09]}>
+        <boxGeometry args={[2.0, 0.1, 0.01]} />
+        <meshStandardMaterial color="#1a1a30" emissive="#7d8cff" emissiveIntensity={1.0} toneMapped={false} />
+      </mesh>
+      {/* Door on the right */}
+      <mesh position={[1.2, 1.1, 0.02]}>
+        <boxGeometry args={[0.8, 2.0, 0.06]} />
+        <meshLambertMaterial color="#1a1822" />
+      </mesh>
+      <mesh position={[1.2, 1.45, 0.05]}>
+        <boxGeometry args={[0.6, 1.0, 0.02]} />
+        <meshStandardMaterial color="#1a3050" emissive="#7d8cff" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+      {/* Big neon sign */}
+      <mesh position={[0, 4.45, 0.02]}>
+        <boxGeometry args={[3.8, 0.55, 0.06]} />
+        <meshLambertMaterial color="#0a0a12" />
+      </mesh>
+      <mesh position={[0, 4.45, 0.06]}>
+        <boxGeometry args={[3.3, 0.36, 0.04]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive="#7d8cff"
+          emissiveIntensity={1.7}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph position={[0, 4.47, 0.1]} text="XEUSMEDIA" color="#fff5e6" scale={0.052} />
+      <SignGlyph position={[0, 2.55, 0.05]} text="BROADCAST" color="#7d8cff" scale={0.032} />
+    </group>
+  );
+}
+
+function ImprodeShop({
+  position,
+  mapScreenRef,
+}: {
+  position: [number, number, number];
+  mapScreenRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  // Two-floor building. Vitrininde 3D harita ekranı (Cesium-mock).
+  return (
+    <group position={position}>
+      <mesh position={[0, 2.3, -1.1]} castShadow>
+        <boxGeometry args={[4.0, 4.6, 2.2]} />
+        <meshLambertMaterial color="#404858" />
+      </mesh>
+      <mesh position={[0, 4.7, -1.1]}>
+        <boxGeometry args={[4.2, 0.2, 2.3]} />
+        <meshLambertMaterial color="#1a1822" />
+      </mesh>
+      <mesh position={[0, 2.4, 0.02]}>
+        <boxGeometry args={[4.0, 0.12, 0.03]} />
+        <meshLambertMaterial color="#1a1822" />
+      </mesh>
+      {[-1.0, 0.0, 1.0].map((x, i) => (
+        <mesh key={i} position={[x, 3.4, 0.02]}>
+          <boxGeometry args={[0.7, 1.1, 0.06]} />
+          <meshStandardMaterial
+            color="#1a2a4a"
+            emissive="#27e0c2"
+            emissiveIntensity={0.6}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {/* Vitrine */}
+      <mesh position={[-0.8, 1.35, 0.02]} castShadow>
+        <boxGeometry args={[2.4, 2.0, 0.06]} />
+        <meshLambertMaterial color="#0a0a14" />
+      </mesh>
+      {/* Map screen */}
+      <mesh position={[-0.8, 1.35, 0.07]}>
+        <boxGeometry args={[2.2, 1.8, 0.04]} />
+        <meshStandardMaterial
+          ref={mapScreenRef}
+          color="#062420"
+          emissive="#27e0c2"
+          emissiveIntensity={0.6}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Cesium-mock: a few terrain block silhouettes on the screen */}
+      {([
+        [-0.6, 0.05, 0.4, 0.3],
+        [-0.2, 0.1, 0.45, 0.45],
+        [0.2, 0.2, 0.55, 0.55],
+        [0.5, 0.12, 0.5, 0.4],
+        [-0.4, 0.45, 0.3, 0.25],
+      ] as [number, number, number, number][]).map((b, i) => (
+        <mesh
+          key={i}
+          position={[-0.8 + b[0], 0.95 + b[1], 0.09]}
+        >
+          <boxGeometry args={[b[2], b[3], 0.02]} />
+          <meshStandardMaterial
+            color="#0a3a30"
+            emissive="#27e0c2"
+            emissiveIntensity={1.1 - i * 0.1}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {/* "3D" badge */}
+      <SignGlyph position={[-0.45, 2.05, 0.1]} text="3D" color="#fff" scale={0.05} />
+      {/* Door */}
+      <mesh position={[1.2, 1.1, 0.02]}>
+        <boxGeometry args={[0.8, 2.0, 0.06]} />
+        <meshLambertMaterial color="#1a1822" />
+      </mesh>
+      <mesh position={[1.2, 1.45, 0.05]}>
+        <boxGeometry args={[0.6, 1.0, 0.02]} />
+        <meshStandardMaterial color="#1a3050" emissive="#27e0c2" emissiveIntensity={0.45} toneMapped={false} />
+      </mesh>
+      {/* Sign */}
+      <mesh position={[0, 4.45, 0.02]}>
+        <boxGeometry args={[3.8, 0.55, 0.06]} />
+        <meshLambertMaterial color="#0a0a12" />
+      </mesh>
+      <mesh position={[0, 4.45, 0.06]}>
+        <boxGeometry args={[3.3, 0.36, 0.04]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive="#27e0c2"
+          emissiveIntensity={1.6}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph position={[0, 4.47, 0.1]} text="IMPRODE" color="#fff5e6" scale={0.052} />
+      <SignGlyph position={[0, 2.55, 0.05]} text="IMARSORGULAMA" color="#27e0c2" scale={0.028} />
+    </group>
+  );
+}
+
+function AxisAVM({
+  position,
+  logoRef,
+  accent,
+}: {
+  position: [number, number, number];
+  logoRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+  accent: string;
+}) {
+  // 4-floor mall with glass facade + giant AXIS logo on the roof.
+  return (
+    <group position={position}>
+      {/* main block */}
+      <mesh position={[0, 3.2, -1.4]} castShadow>
+        <boxGeometry args={[5.0, 6.4, 3.0]} />
+        <meshLambertMaterial color="#1a1f30" />
+      </mesh>
+      {/* glass facade strips */}
+      {Array.from({ length: 4 }).map((_, r) => (
+        <group key={r}>
+          {Array.from({ length: 5 }).map((_, c) => (
+            <mesh
+              key={c}
+              position={[
+                -2 + c * 1,
+                1.0 + r * 1.5,
+                0.11,
+              ]}
+            >
+              <boxGeometry args={[0.8, 1.1, 0.06]} />
+              <meshStandardMaterial
+                color="#1a2030"
+                emissive={(r * 5 + c) % 4 === 0 ? "#7d8cff" : "#aab5e8"}
+                emissiveIntensity={(r * 5 + c) % 4 === 0 ? 0.8 : 0.45}
+                toneMapped={false}
+              />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      {/* Vertical accent strip */}
+      <mesh position={[1.9, 3.2, 0.13]}>
+        <boxGeometry args={[0.18, 6.0, 0.04]} />
+        <meshStandardMaterial
+          color="#0a0a14"
           emissive={accent}
           emissiveIntensity={1.4}
           toneMapped={false}
         />
       </mesh>
+      <mesh position={[-1.9, 3.2, 0.13]}>
+        <boxGeometry args={[0.18, 6.0, 0.04]} />
+        <meshStandardMaterial
+          color="#0a0a14"
+          emissive={accent}
+          emissiveIntensity={1.4}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Roof + giant logo */}
+      <mesh position={[0, 6.5, -1.4]}>
+        <boxGeometry args={[5.2, 0.2, 3.1]} />
+        <meshLambertMaterial color="#0a0a14" />
+      </mesh>
+      <mesh position={[0, 7.0, 0.05]}>
+        <boxGeometry args={[3.2, 0.7, 0.16]} />
+        <meshLambertMaterial color="#0a0a14" />
+      </mesh>
+      <mesh position={[0, 7.0, 0.14]}>
+        <boxGeometry args={[2.6, 0.48, 0.04]} />
+        <meshStandardMaterial
+          ref={logoRef}
+          color="#000"
+          emissive="#ff7a59"
+          emissiveIntensity={1.4}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph position={[0, 7.02, 0.2]} text="AXIS AVM" color="#fff5e6" scale={0.062} />
+    </group>
+  );
+}
 
-      {/* ---------- screen-light cast onto the desk (subtle) ---------- */}
-      <pointLight
-        position={[-1, 2.7, 1.2]}
-        intensity={0.55}
-        distance={7}
-        color={accent}
-      />
+function ProjectStand({
+  position,
+  accent,
+  label1,
+  label2,
+}: {
+  position: [number, number, number];
+  accent: string;
+  label1: string;
+  label2: string;
+}) {
+  // Sidewalk billboard: two-pole stand with a vertical board, neon-rimmed
+  // sign with project tag + tech keyword underneath. Sits at sidewalk
+  // height so it doesn't clash with shopfronts.
+  return (
+    <group position={position}>
+      {/* Two legs */}
+      {[-0.4, 0.4].map((x, i) => (
+        <mesh key={i} position={[x, 0.55, 0]} castShadow>
+          <boxGeometry args={[0.1, 1.1, 0.1]} />
+          <meshLambertMaterial color="#2a2a30" />
+        </mesh>
+      ))}
+      {/* Board backplate */}
+      <mesh position={[0, 1.5, 0]} castShadow>
+        <boxGeometry args={[1.2, 0.9, 0.08]} />
+        <meshLambertMaterial color="#0a0a12" />
+      </mesh>
+      {/* Neon strip background */}
+      <mesh position={[0, 1.5, 0.045]}>
+        <boxGeometry args={[1.05, 0.72, 0.03]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.2}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Text */}
+      <SignGlyph position={[0, 1.62, 0.08]} text={label1} color="#fff5e6" scale={0.038} />
+      <SignGlyph position={[0, 1.35, 0.08]} text={label2} color="#fff5e6" scale={0.028} />
+    </group>
+  );
+}
+
+function Ferry({ name }: { name: string }) {
+  // Voxel city ferry — broad hull, white superstructure, smoke stack with
+  // emissive top, a row of yellow window dots.
+  void name; // future hook: could render name on the side
+  return (
+    <group>
+      {/* lower hull */}
+      <mesh position={[0, 0.18, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.36, 2.2]} />
+        <meshLambertMaterial color="#2a3040" />
+      </mesh>
+      {/* upper hull (white) */}
+      <mesh position={[0, 0.48, 0.05]} castShadow>
+        <boxGeometry args={[0.78, 0.28, 1.9]} />
+        <meshLambertMaterial color="#e8e6dc" />
+      </mesh>
+      {/* cabin */}
+      <mesh position={[0, 0.78, 0.15]} castShadow>
+        <boxGeometry args={[0.62, 0.36, 1.2]} />
+        <meshLambertMaterial color="#cfcdc0" />
+      </mesh>
+      {/* wheelhouse */}
+      <mesh position={[0, 1.05, -0.45]}>
+        <boxGeometry args={[0.5, 0.24, 0.4]} />
+        <meshLambertMaterial color="#e8e6dc" />
+      </mesh>
+      {/* smoke stack */}
+      <mesh position={[0, 1.2, -0.25]}>
+        <boxGeometry args={[0.18, 0.4, 0.18]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[0, 1.4, -0.25]}>
+        <boxGeometry args={[0.22, 0.08, 0.22]} />
+        <meshStandardMaterial color="#ff5a3a" emissive="#ff5a3a" emissiveIntensity={1.0} toneMapped={false} />
+      </mesh>
+      {/* row of windows */}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <mesh key={i} position={[0.32, 0.78, -0.4 + i * 0.18]}>
+          <boxGeometry args={[0.02, 0.18, 0.12]} />
+          <meshStandardMaterial color="#000" emissive="#ffd86a" emissiveIntensity={1.3} toneMapped={false} />
+        </mesh>
+      ))}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <mesh key={i} position={[-0.32, 0.78, -0.4 + i * 0.18]}>
+          <boxGeometry args={[0.02, 0.18, 0.12]} />
+          <meshStandardMaterial color="#000" emissive="#ffd86a" emissiveIntensity={1.3} toneMapped={false} />
+        </mesh>
+      ))}
+      {/* mast light */}
+      <mesh position={[0, 1.55, -0.25]}>
+        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <meshStandardMaterial color="#000" emissive="#ffffff" emissiveIntensity={2} toneMapped={false} />
+      </mesh>
+      <pointLight position={[0, 1.55, -0.25]} intensity={0.5} distance={3} color="#fff5d0" />
+    </group>
+  );
+}
+
+function Sailboat({ scale = 1 }: { scale?: number }) {
+  return (
+    <group scale={[scale, scale, scale]}>
+      <mesh position={[0, 0.06, 0]}>
+        <boxGeometry args={[0.18, 0.1, 0.55]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[0, 0.4, 0]}>
+        <boxGeometry args={[0.04, 0.7, 0.04]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[0, 0.42, 0.12]} rotation={[0, 0, 0.15]}>
+        <boxGeometry args={[0.02, 0.55, 0.36]} />
+        <meshStandardMaterial color="#f8efd6" emissive="#fff5d8" emissiveIntensity={0.25} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function Seagull() {
+  return (
+    <group>
+      {/* body */}
+      <mesh>
+        <boxGeometry args={[0.16, 0.08, 0.18]} />
+        <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+      {/* wings — wider than body, scale Y is flapped externally */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[0.6, 0.04, 0.1]} />
+        <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function Renault19() {
+  // Stocky '96 hatchback in dark green. Slight downward grille, two
+  // round-ish headlights, simple boxy proportions.
+  const body = "#1f3a2a"; // dark green
+  return (
+    <group>
+      {/* lower body */}
+      <mesh position={[0, 0.32, 0]} castShadow>
+        <boxGeometry args={[1.4, 0.4, 0.6]} />
+        <meshLambertMaterial color={body} />
+      </mesh>
+      {/* hood (short front) */}
+      <mesh position={[0.5, 0.45, 0]} castShadow>
+        <boxGeometry args={[0.42, 0.16, 0.55]} />
+        <meshLambertMaterial color={body} />
+      </mesh>
+      {/* cabin */}
+      <mesh position={[-0.1, 0.7, 0]} castShadow>
+        <boxGeometry args={[0.85, 0.36, 0.55]} />
+        <meshLambertMaterial color={body} />
+      </mesh>
+      {/* hatch back slope */}
+      <mesh position={[-0.55, 0.55, 0]} rotation={[0, 0, 0.35]} castShadow>
+        <boxGeometry args={[0.32, 0.32, 0.55]} />
+        <meshLambertMaterial color={body} />
+      </mesh>
+      {/* Side windows */}
+      <mesh position={[-0.1, 0.74, 0.28]}>
+        <boxGeometry args={[0.7, 0.26, 0.02]} />
+        <meshStandardMaterial color="#0a1018" emissive="#7d8cff" emissiveIntensity={0.18} toneMapped={false} />
+      </mesh>
+      <mesh position={[-0.1, 0.74, -0.28]}>
+        <boxGeometry args={[0.7, 0.26, 0.02]} />
+        <meshStandardMaterial color="#0a1018" emissive="#7d8cff" emissiveIntensity={0.18} toneMapped={false} />
+      </mesh>
+      {/* Windshield */}
+      <mesh position={[0.28, 0.74, 0]} rotation={[0, 0, -0.18]}>
+        <boxGeometry args={[0.3, 0.3, 0.5]} />
+        <meshStandardMaterial color="#0a1018" emissive="#aac4e6" emissiveIntensity={0.25} toneMapped={false} />
+      </mesh>
+      {/* Headlights */}
+      <mesh position={[0.72, 0.4, 0.2]}>
+        <boxGeometry args={[0.04, 0.1, 0.14]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={2} toneMapped={false} />
+      </mesh>
+      <mesh position={[0.72, 0.4, -0.2]}>
+        <boxGeometry args={[0.04, 0.1, 0.14]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={2} toneMapped={false} />
+      </mesh>
+      {/* Grille */}
+      <mesh position={[0.72, 0.28, 0]}>
+        <boxGeometry args={[0.04, 0.08, 0.42]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      {/* Tail lights */}
+      <mesh position={[-0.72, 0.4, 0.2]}>
+        <boxGeometry args={[0.04, 0.12, 0.16]} />
+        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.9} toneMapped={false} />
+      </mesh>
+      <mesh position={[-0.72, 0.4, -0.2]}>
+        <boxGeometry args={[0.04, 0.12, 0.16]} />
+        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.9} toneMapped={false} />
+      </mesh>
+      {/* Wheels */}
+      {([
+        [0.45, 0.0, 0.34],
+        [-0.45, 0.0, 0.34],
+        [0.45, 0.0, -0.34],
+        [-0.45, 0.0, -0.34],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh key={i} position={p}>
+          <boxGeometry args={[0.26, 0.26, 0.14]} />
+          <meshLambertMaterial color="#1a1a1a" />
+        </mesh>
+      ))}
+      {/* small Renault badge dot */}
+      <mesh position={[0.74, 0.5, 0]}>
+        <boxGeometry args={[0.02, 0.06, 0.06]} />
+        <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      {/* Headlight cones — two small accent point lights ahead of the car */}
+      <pointLight position={[1.4, 0.5, 0]} intensity={0.6} distance={3.5} color="#fff5d0" />
     </group>
   );
 }
