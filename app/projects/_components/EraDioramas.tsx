@@ -4704,40 +4704,48 @@ function DriftDiorama() {
         <HeybeliadaIsland boatRef={boatRef} />
       </Suspense>
 
-      {/* Sand floor (foreground beach) */}
-      <CheckerFloor size={22} cellSize={1} y={-0.5} colorA="#e8d8b4" colorB="#dcc89c" />
+      {/* Sand floor (foreground beach) — softer checker so the diorama
+       *  reads as a beach, not a tiled patio. */}
+      <CheckerFloor size={24} cellSize={1} y={-0.5} colorA="#dccfaa" colorB="#d4c5a0" />
 
       {/* Damp / wet sand strip near the water */}
       <mesh position={[0, -0.46, -2.2]}>
-        <boxGeometry args={[22, 0.06, 1.4]} />
+        <boxGeometry args={[24, 0.06, 1.4]} />
         <meshLambertMaterial color="#b8a884" />
       </mesh>
 
       {/* Coastal road (z ≈ -1.5): asphalt strip + faded centerline dashes */}
       <CoastalRoad />
 
-      {/* Sprinter caravan parked at the camp spot */}
+      {/* ----- 3 zones along X — clean, non-overlapping boxes -----
+       *
+       *   LEFT  (x ≈ -10..-3) : caravan camp
+       *   CENTER (x ≈ -2..+5) : Bali umbrella + hammock + palms
+       *   RIGHT (x ≈ +6..+12) : Heybeliada island (rendered separately
+       *                         in HeybeliadaIsland above)
+       *
+       * All foreground objects sit on the camp side of the road (z>0).
+       */}
+
+      {/* LEFT — caravan camp */}
       <Suspense fallback={null}>
-        <SprinterCaravan accent={accent} />
+        <SprinterCaravan position={[-6.5, 0, 0.4]} accent={accent} />
       </Suspense>
+      <Surfboard position={[-9.6, 0, 0.6]} accent={accent} />
+      <DriftBicycle position={[-9.8, 0, -0.6]} />
+      <Bonfire fireRefs={fireRefs} position={[-3.8, -0.3, 2.4]} />
+      <DriftPalm position={[-2.4, 0, 0.4]} variant={1} />
 
-      {/* Bali bamboo umbrella + rattan swing */}
-      <BaliCorner />
+      {/* CENTER — beach lounge */}
+      <Hammock
+        position={[1.2, 0, 1.4]}
+        figureRef={hammockFigureRef}
+        laptopRef={laptopRef}
+      />
+      <BaliCorner position={[3.8, 0, 2.4]} />
 
-      {/* Palms — three around the camp */}
-      <DriftPalm position={[3.6, 0, 0.6]} variant={0} />
-      <DriftPalm position={[-5.0, 0, 1.8]} variant={1} />
-      <DriftPalm position={[-1.5, 0, 1.8]} variant={2} />
-
-      {/* Hammock between two palms with tiny Atakan figure */}
-      <Hammock figureRef={hammockFigureRef} laptopRef={laptopRef} />
-
-      {/* Bonfire next to the caravan */}
-      <Bonfire fireRefs={fireRefs} />
-
-      {/* Surfboard leaning on caravan + bicycle behind */}
-      <Surfboard position={[-3.2, 0, 0.4]} accent={accent} />
-      <DriftBicycle position={[-5.8, 0, -0.4]} />
+      {/* RIGHT — Heybeliada island is positioned internally inside
+       *  HeybeliadaIsland (x ≈ +8, z ≈ -5). */}
 
       {/* Vespa-style scooter looping on the road */}
       <group ref={scooterRef}>
@@ -4746,8 +4754,8 @@ function DriftDiorama() {
 
       {/* Sunset glow filler */}
       <pointLight position={[0, 3, -8]} intensity={1.4} distance={28} color="#ff8a4a" />
-      <pointLight position={[-2, 1.5, 0]} intensity={0.6} distance={9} color="#ff7050" />
-      <pointLight position={[6, 1.5, -3]} intensity={0.6} distance={9} color={accent} />
+      <pointLight position={[-5, 1.5, 0]} intensity={0.6} distance={9} color="#ff7050" />
+      <pointLight position={[8, 1.5, -3]} intensity={0.6} distance={9} color={accent} />
     </group>
   );
 }
@@ -4951,12 +4959,18 @@ function CoastalRoad() {
   );
 }
 
-function SprinterCaravan({ accent }: { accent: string }) {
+function SprinterCaravan({
+  position,
+  accent,
+}: {
+  position: [number, number, number];
+  accent: string;
+}) {
   // Modern white box-shape Sprinter. Side door open with karavan.MOV
   // playing on the back wall inside the van so the interior glows.
   void accent;
   return (
-    <group position={[-2.0, 0, -0.1]} rotation={[0, 0.18, 0]}>
+    <group position={position} rotation={[0, 0.18, 0]}>
       {/* main body */}
       <mesh position={[0, 1.4, 0]} castShadow>
         <boxGeometry args={[5.2, 2.6, 2.2]} />
@@ -5008,23 +5022,45 @@ function SprinterCaravan({ accent }: { accent: string }) {
         />
       </mesh>
 
-      {/* SIDE DOOR open — sliding door swung outward */}
-      {/* Door cavity (interior visible) */}
+      {/* SIDE DOOR — sliding door opened; van wall cut visually with
+       *  a recessed dark cavity + a doorway frame so it reads as a
+       *  real opening, not a TV mounted on the side. */}
+      {/* Dark cavity backplate (deeper into the van) */}
       <mesh position={[0.4, 1.35, 1.11]}>
         <boxGeometry args={[1.4, 1.9, 0.02]} />
-        <meshLambertMaterial color="#1a1a1f" />
+        <meshLambertMaterial color="#0a0a14" />
       </mesh>
-      {/* Door panel pushed out toward camera */}
-      <mesh position={[0.0, 1.35, 1.8]} rotation={[0, 0.4, 0]} castShadow>
-        <boxGeometry args={[1.4, 1.9, 0.06]} />
-        <meshLambertMaterial color="#e8e6dd" />
+      {/* Top header */}
+      <mesh position={[0.4, 2.35, 1.13]}>
+        <boxGeometry args={[1.55, 0.12, 0.05]} />
+        <meshLambertMaterial color="#bcbab2" />
+      </mesh>
+      {/* Door track rail */}
+      <mesh position={[0.4, 2.45, 1.13]}>
+        <boxGeometry args={[1.7, 0.05, 0.05]} />
+        <meshLambertMaterial color="#3a3a40" />
+      </mesh>
+      {/* Left jamb */}
+      <mesh position={[-0.34, 1.4, 1.13]}>
+        <boxGeometry args={[0.08, 1.95, 0.05]} />
+        <meshLambertMaterial color="#bcbab2" />
+      </mesh>
+      {/* Right jamb */}
+      <mesh position={[1.14, 1.4, 1.13]}>
+        <boxGeometry args={[0.08, 1.95, 0.05]} />
+        <meshLambertMaterial color="#bcbab2" />
+      </mesh>
+      {/* Step / threshold at the floor of the doorway */}
+      <mesh position={[0.4, 0.42, 1.18]}>
+        <boxGeometry args={[1.4, 0.08, 0.12]} />
+        <meshLambertMaterial color="#3a3a40" />
       </mesh>
       {/* Karavan interior video — visible through the open door */}
       <VideoScreen
         position={[0.4, 1.4, 1.13]}
         src="/assets/karavan-web.mp4"
-        width={1.1}
-        height={1.4}
+        width={1.2}
+        height={1.5}
         frameColor="#1a1a1f"
         glow
         caption={{
@@ -5097,10 +5133,14 @@ function SprinterCaravan({ accent }: { accent: string }) {
   );
 }
 
-function BaliCorner() {
+function BaliCorner({
+  position = [5, 0, 1.6] as [number, number, number],
+}: {
+  position?: [number, number, number];
+} = {}) {
   // Bamboo umbrella + rattan swing on the right side of the camp.
   return (
-    <group position={[5, 0, 1.6]}>
+    <group position={position}>
       {/* Bamboo pole */}
       <mesh position={[0, 1.6, 0]} castShadow>
         <boxGeometry args={[0.16, 3.2, 0.16]} />
@@ -5231,33 +5271,44 @@ function DriftPalm({
 }
 
 function Hammock({
+  position = [1.0, 0, 1.2] as [number, number, number],
   figureRef,
   laptopRef,
 }: {
+  position?: [number, number, number];
   figureRef: React.MutableRefObject<THREE.Group | null>;
   laptopRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
 }) {
-  // Hung between the two palms at (-1.5, *, 1.8) and (3.6, *, 0.6).
-  // We just render the hammock + figure here; positions tuned to land
-  // between those palms.
+  // Hammock with its OWN posts so the ropes never float; the posts read
+  // like bamboo stakes driven into the sand. Spans ~2.4 wide.
   return (
-    <group position={[1.0, 0, 1.2]}>
-      {/* hammock fabric (drooping) */}
-      <mesh position={[0, 1.4, 0]} castShadow>
+    <group position={position}>
+      {/* Left bamboo post */}
+      <mesh position={[-1.6, 1.2, 0]} castShadow>
+        <boxGeometry args={[0.12, 2.4, 0.12]} />
+        <meshLambertMaterial color="#caa84a" />
+      </mesh>
+      {/* Right bamboo post */}
+      <mesh position={[1.6, 1.2, 0]} castShadow>
+        <boxGeometry args={[0.12, 2.4, 0.12]} />
+        <meshLambertMaterial color="#caa84a" />
+      </mesh>
+      {/* Hammock fabric (drooping) */}
+      <mesh position={[0, 1.35, 0]} castShadow>
         <boxGeometry args={[2.4, 0.08, 0.8]} />
         <meshLambertMaterial color="#d44a7a" />
       </mesh>
-      <mesh position={[0, 1.32, 0]}>
+      <mesh position={[0, 1.27, 0]}>
         <boxGeometry args={[2.0, 0.06, 0.6]} />
         <meshLambertMaterial color="#a23a4a" />
       </mesh>
-      {/* ropes to palms */}
-      <mesh position={[-1.4, 2.0, 0]} rotation={[0, 0, -0.5]}>
-        <boxGeometry args={[1.4, 0.04, 0.04]} />
+      {/* Ropes from posts down to hammock ends */}
+      <mesh position={[-1.5, 1.7, 0]} rotation={[0, 0, -0.5]}>
+        <boxGeometry args={[0.9, 0.04, 0.04]} />
         <meshLambertMaterial color="#3a2418" />
       </mesh>
-      <mesh position={[1.4, 2.0, 0]} rotation={[0, 0, 0.5]}>
-        <boxGeometry args={[1.4, 0.04, 0.04]} />
+      <mesh position={[1.5, 1.7, 0]} rotation={[0, 0, 0.5]}>
+        <boxGeometry args={[0.9, 0.04, 0.04]} />
         <meshLambertMaterial color="#3a2418" />
       </mesh>
 
@@ -5304,12 +5355,14 @@ function Hammock({
 }
 
 function Bonfire({
+  position = [-3.6, -0.3, 2.0] as [number, number, number],
   fireRefs,
 }: {
+  position?: [number, number, number];
   fireRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
 }) {
   return (
-    <group position={[-3.6, -0.3, 2.0]}>
+    <group position={position}>
       {/* 3 stones around */}
       {Array.from({ length: 6 }).map((_, i) => {
         const a = (i / 6) * Math.PI * 2;
@@ -5598,31 +5651,41 @@ function HeybeliadaIsland({
         </mesh>
       </group>
 
-      {/* Pier (wooden boards extending toward the camera from the island) */}
-      <group position={[-2.8, -0.45, 1.4]}>
-        {/* planks */}
+      {/* Pier (wooden boards extending TOWARD the camera, +Z, from the
+       *  island's near edge). Posts and planks now run along Z so the
+       *  pier reads as a walkway out into the strait, not a board that
+       *  cuts across the diorama. */}
+      <group position={[-1.6, -0.45, 1.4]}>
+        {/* planks — long axis along Z */}
         <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[3.0, 0.08, 0.7]} />
+          <boxGeometry args={[0.7, 0.08, 3.0]} />
           <meshLambertMaterial color="#5a3a1f" />
         </mesh>
-        <mesh position={[0, 0.06, 0]}>
-          <boxGeometry args={[3.0, 0.02, 0.04]} />
+        <mesh position={[-0.2, 0.06, 0]}>
+          <boxGeometry args={[0.04, 0.02, 3.0]} />
           <meshLambertMaterial color="#3a2418" />
         </mesh>
-        <mesh position={[0, 0.06, 0.2]}>
-          <boxGeometry args={[3.0, 0.02, 0.04]} />
+        <mesh position={[0.2, 0.06, 0]}>
+          <boxGeometry args={[0.04, 0.02, 3.0]} />
           <meshLambertMaterial color="#3a2418" />
         </mesh>
-        {/* posts */}
-        {[-1.2, 0, 1.2].map((x, i) => (
-          <mesh key={i} position={[x, -0.3, 0.3]}>
+        {/* posts along the pier length */}
+        {[-1.2, 0, 1.2].map((z, i) => (
+          <mesh key={i} position={[0.3, -0.3, z]}>
+            <boxGeometry args={[0.12, 0.7, 0.12]} />
+            <meshLambertMaterial color="#3a2418" />
+          </mesh>
+        ))}
+        {[-1.2, 0, 1.2].map((z, i) => (
+          <mesh key={i} position={[-0.3, -0.3, z]}>
             <boxGeometry args={[0.12, 0.7, 0.12]} />
             <meshLambertMaterial color="#3a2418" />
           </mesh>
         ))}
 
-        {/* Heybeliada mini video screen on a sign post — clickable */}
-        <group position={[-1.0, 0.55, -0.3]}>
+        {/* Heybeliada mini video screen on a sign post at the far
+         *  (camera-facing) end of the pier — clickable. */}
+        <group position={[0, 0.55, 1.3]}>
           <mesh position={[0, 0, 0]}>
             <boxGeometry args={[0.08, 1.0, 0.08]} />
             <meshLambertMaterial color="#3a2418" />
@@ -5642,18 +5705,18 @@ function HeybeliadaIsland({
         </group>
 
         {/* Tied kayak on the water next to the pier — bobs gently */}
-        <group ref={boatRef} position={[1.5, -0.18, 0.5]}>
+        <group ref={boatRef} position={[0.9, -0.18, 0.4]}>
           <mesh position={[0, 0, 0]}>
-            <boxGeometry args={[1.2, 0.16, 0.36]} />
+            <boxGeometry args={[0.36, 0.16, 1.2]} />
             <meshLambertMaterial color="#caa84a" />
           </mesh>
           <mesh position={[0, 0.12, 0]}>
-            <boxGeometry args={[0.9, 0.06, 0.26]} />
+            <boxGeometry args={[0.26, 0.06, 0.9]} />
             <meshLambertMaterial color="#8a6a4a" />
           </mesh>
           {/* paddle */}
-          <mesh position={[0.5, 0.16, 0.2]} rotation={[0, 0, 0.2]}>
-            <boxGeometry args={[0.06, 0.04, 0.7]} />
+          <mesh position={[0.2, 0.16, 0.5]} rotation={[0, 0, 0.2]}>
+            <boxGeometry args={[0.7, 0.04, 0.06]} />
             <meshLambertMaterial color="#3a2418" />
           </mesh>
         </group>
