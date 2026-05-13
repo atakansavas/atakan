@@ -386,12 +386,17 @@ function EraHorizon({ eraId }: { eraId: Era }) {
           { x: 7, w: 0.4, h: 0.4, color: palette },
         ] as Stamp[];
       case "drift":
-        // mountains + sea horizon
+        // Distant tropical ridge — tall jungle peaks fading into the sunset.
+        // The diorama itself already paints a vivid foreground, so the
+        // horizon stays low and dim so it reads as backdrop only.
         return [
-          { x: -16, w: 8, h: 6, color: dim },
-          { x: -8, w: 10, h: 9, color: dim },
-          { x: 2, w: 9, h: 7, color: dim },
-          { x: 12, w: 6, h: 5, color: dim },
+          { x: -18, w: 8, h: 6, color: "#2a1428" },
+          { x: -10, w: 9, h: 10, color: "#2a1428" },
+          { x: -1, w: 11, h: 8, color: "#2a1428" },
+          { x: 10, w: 8, h: 7, color: "#2a1428" },
+          { x: 17, w: 5, h: 4, color: "#2a1428" },
+          // small accent dot in palette (Drift hot pink)
+          { x: -4, w: 0.5, h: 1.6, color: palette },
         ] as Stamp[];
       case "agentic":
         // angular cyber towers
@@ -4607,271 +4612,1052 @@ function TrophyDisplay() {
 
 /* =========================================================================
  * DriftDiorama — Geçiş era (2022-2025).
- * Caravan + beach + bonfire + Web3 coin floating + palm + hammock under
- * a star-bright sky. Warm sunset palette.
+ *
+ * "Açık yol yolculuğu" composition: a coastal road runs across the
+ * scene; Atakan's modern white Sprinter is parked at a scenic camp
+ * spot just off the road. A small Vespa-style scooter loops along the
+ * road as the only moving vehicle. The beach is white sand with palms
+ * and a Bali bamboo umbrella + rattan swing. Between two palms a tiny
+ * Atakan figure lies in a hammock with an open laptop = Debite remote
+ * life. A bonfire burns next to the camp; a surfboard leans on the
+ * caravan side; a bicycle is parked behind it. The sea catches a
+ * pink-orange golden-hour reflection; a Thai temple silhouette and
+ * mountains rise in the far distance; two lotus lanterns float on
+ * the water. On the far right, Heybeliada island sits with a small
+ * wooden pier + a tied kayak + a clickable mini screen that plays
+ * heybeliada-web.mp4. Inside the open side door of the caravan,
+ * karavan-web.mp4 glows like a TV — also clickable.
  * ========================================================================= */
 function DriftDiorama() {
-  const accent = ERAS.drift.accent; // #f472b6
+  const accent = ERAS.drift.accent; // #f472b6 hot pink
+  // Animated refs
   const fireRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
-  const coinRef = useRef<THREE.Group | null>(null);
-  const lapScreenRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const scooterRef = useRef<THREE.Group | null>(null);
+  const hammockFigureRef = useRef<THREE.Group | null>(null);
+  const laptopRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const waveRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const lanternRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const boatRef = useRef<THREE.Group | null>(null);
 
   useFrame(() => {
     const t = performance.now() * 0.001;
+    // Bonfire flicker
     fireRefs.current.forEach((m, i) => {
       if (!m) return;
-      m.emissiveIntensity = 1.2 + Math.sin(t * 6 + i) * 0.4;
+      m.emissiveIntensity = 1.4 + Math.sin(t * 6 + i) * 0.45;
     });
-    if (coinRef.current) {
-      coinRef.current.rotation.y = t * 1.4;
-      coinRef.current.position.y = 4.2 + Math.sin(t * 1.2) * 0.18;
+    // Scooter loop on the coastal road (x oscillates left ↔ right, z fixed)
+    if (scooterRef.current) {
+      const period = 18;
+      const f = (t % period) / period;
+      const x = -9 + f * 18;
+      scooterRef.current.position.set(x, 0, -1.5);
+      scooterRef.current.rotation.y = Math.PI / 2; // facing +X, moving along X
+      // gentle bob
+      scooterRef.current.position.y = Math.sin(t * 3) * 0.03;
     }
-    if (lapScreenRef.current) {
-      lapScreenRef.current.emissiveIntensity =
-        0.8 + Math.sin(t * 3) * 0.08;
+    // Hammock bob
+    if (hammockFigureRef.current) {
+      hammockFigureRef.current.position.y = 1.45 + Math.sin(t * 1.4) * 0.04;
+      hammockFigureRef.current.rotation.z = Math.sin(t * 1.2) * 0.02;
+    }
+    // Laptop screen pulse
+    if (laptopRef.current) {
+      laptopRef.current.emissiveIntensity = 0.85 + Math.sin(t * 3) * 0.08;
+    }
+    // Wave crests shimmer
+    waveRefs.current.forEach((m, i) => {
+      if (!m) return;
+      m.emissiveIntensity = 0.4 + Math.sin(t * 1.6 + i * 0.4) * 0.25;
+    });
+    // Lotus lanterns gently breathe
+    lanternRefs.current.forEach((m, i) => {
+      if (!m) return;
+      m.emissiveIntensity = 1.3 + Math.sin(t * 1.0 + i * 0.6) * 0.2;
+    });
+    // Boat at Heybeliada pier bobs slowly
+    if (boatRef.current) {
+      boatRef.current.position.y = -0.18 + Math.sin(t * 1.1) * 0.04;
+      boatRef.current.rotation.z = Math.sin(t * 0.9) * 0.03;
     }
   });
 
   return (
     <group>
-      {/* Sandy beach floor — warm yellow + dark patches */}
-      <CheckerFloor size={14} cellSize={1} y={-0.5} colorA="#b89870" colorB="#a08458" />
-      {/* Wave line at far edge (ocean ribbon) */}
-      <mesh position={[0, -0.35, -5.5]}>
-        <boxGeometry args={[14, 0.08, 1.5]} />
-        <meshStandardMaterial color="#1a4a6a" emissive="#3a8aaa" emissiveIntensity={0.25} toneMapped={false} transparent opacity={0.75} />
-      </mesh>
-      <mesh position={[0, -0.45, -6.4]}>
-        <boxGeometry args={[14, 0.08, 1.4]} />
-        <meshStandardMaterial color="#0e3550" emissive="#246680" emissiveIntensity={0.18} toneMapped={false} transparent opacity={0.7} />
+      {/* Golden-hour sky + far horizon */}
+      <DriftSky />
+
+      {/* Far horizon: Thai temple silhouette + jungle/mountains + lotus
+       *  reflection — sits deep behind the sea (z ≈ -14). */}
+      <DriftHorizon />
+
+      {/* Sea ribbon (z ≈ -7..-3): pink-orange reflection band with crests */}
+      <DriftSea waveRefs={waveRefs} />
+
+      {/* Lotus lanterns floating on the sea */}
+      <LotusLantern position={[-2.4, -0.42, -5.5]} lanternRef={(el) => { lanternRefs.current[0] = el; }} />
+      <LotusLantern position={[1.4, -0.42, -6.2]} lanternRef={(el) => { lanternRefs.current[1] = el; }} />
+      <LotusLantern position={[3.2, -0.42, -4.6]} lanternRef={(el) => { lanternRefs.current[2] = el; }} />
+
+      {/* Heybeliada island on the right + small pier + boat + click video */}
+      <Suspense fallback={null}>
+        <HeybeliadaIsland boatRef={boatRef} />
+      </Suspense>
+
+      {/* Sand floor (foreground beach) */}
+      <CheckerFloor size={22} cellSize={1} y={-0.5} colorA="#e8d8b4" colorB="#dcc89c" />
+
+      {/* Damp / wet sand strip near the water */}
+      <mesh position={[0, -0.46, -2.2]}>
+        <boxGeometry args={[22, 0.06, 1.4]} />
+        <meshLambertMaterial color="#b8a884" />
       </mesh>
 
-      {/* Caravan / campervan — boxy with curved-feel rounded windows */}
-      <group position={[-3.2, 0, -0.2]}>
-        {/* body */}
-        <mesh position={[0, 1.5, 0]} castShadow>
-          <boxGeometry args={[4.2, 2.4, 2.2]} />
-          <meshLambertMaterial color="#e6dcc6" />
-        </mesh>
-        {/* lower stripe */}
-        <mesh position={[0, 0.8, 0]}>
-          <boxGeometry args={[4.22, 0.5, 2.22]} />
-          <meshLambertMaterial color="#9a3a4a" />
-        </mesh>
-        {/* roof curve */}
-        <mesh position={[0, 2.85, 0]}>
-          <boxGeometry args={[4, 0.4, 2]} />
-          <meshLambertMaterial color="#dccfb4" />
-        </mesh>
-        {/* windows */}
-        <mesh position={[-1.1, 1.7, 1.115]}>
-          <boxGeometry args={[1.2, 0.9, 0.04]} />
-          <meshStandardMaterial color="#0e2030" emissive="#ffb070" emissiveIntensity={0.5} toneMapped={false} />
-        </mesh>
-        <mesh position={[1.1, 1.7, 1.115]}>
-          <boxGeometry args={[1.2, 0.9, 0.04]} />
-          <meshStandardMaterial color="#0e2030" emissive="#ffb070" emissiveIntensity={0.5} toneMapped={false} />
-        </mesh>
-        {/* door handle */}
-        <mesh position={[1.7, 1.5, 1.13]}>
-          <boxGeometry args={[0.1, 0.18, 0.05]} />
-          <meshLambertMaterial color="#2a2520" />
-        </mesh>
-        {/* wheels */}
-        <mesh position={[-1.4, 0.4, 1.0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.4, 8]} />
-          <meshLambertMaterial color="#1a1a1a" />
-        </mesh>
-        <mesh position={[1.4, 0.4, 1.0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.4, 8]} />
-          <meshLambertMaterial color="#1a1a1a" />
-        </mesh>
-        <mesh position={[-1.4, 0.4, -1.0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.4, 8]} />
-          <meshLambertMaterial color="#1a1a1a" />
-        </mesh>
-        <mesh position={[1.4, 0.4, -1.0]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.4, 0.4, 0.4, 8]} />
-          <meshLambertMaterial color="#1a1a1a" />
-        </mesh>
-        {/* surfboard leaning on side */}
-        <mesh position={[-2.3, 1.2, 0.8]} rotation={[0, 0, 0.3]} castShadow>
-          <boxGeometry args={[0.3, 2.4, 0.7]} />
-          <meshLambertMaterial color="#f9e8c4" />
-        </mesh>
-        <mesh position={[-2.3, 1.2, 0.8]} rotation={[0, 0, 0.3]}>
-          <boxGeometry args={[0.31, 2.4, 0.1]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.6} toneMapped={false} />
-        </mesh>
+      {/* Coastal road (z ≈ -1.5): asphalt strip + faded centerline dashes */}
+      <CoastalRoad />
+
+      {/* Sprinter caravan parked at the camp spot */}
+      <Suspense fallback={null}>
+        <SprinterCaravan accent={accent} />
+      </Suspense>
+
+      {/* Bali bamboo umbrella + rattan swing */}
+      <BaliCorner />
+
+      {/* Palms — three around the camp */}
+      <DriftPalm position={[3.6, 0, 0.6]} variant={0} />
+      <DriftPalm position={[-5.0, 0, 1.8]} variant={1} />
+      <DriftPalm position={[-1.5, 0, 1.8]} variant={2} />
+
+      {/* Hammock between two palms with tiny Atakan figure */}
+      <Hammock figureRef={hammockFigureRef} laptopRef={laptopRef} />
+
+      {/* Bonfire next to the caravan */}
+      <Bonfire fireRefs={fireRefs} />
+
+      {/* Surfboard leaning on caravan + bicycle behind */}
+      <Surfboard position={[-3.2, 0, 0.4]} accent={accent} />
+      <DriftBicycle position={[-5.8, 0, -0.4]} />
+
+      {/* Vespa-style scooter looping on the road */}
+      <group ref={scooterRef}>
+        <Scooter accent={accent} />
       </group>
 
-      {/* Foldable beach table + laptop */}
-      <group position={[0.3, 0, 1]}>
-        <mesh position={[0, 0.7, 0]} castShadow>
-          <boxGeometry args={[1.3, 0.1, 0.85]} />
-          <meshLambertMaterial color="#3a2a1a" />
+      {/* Sunset glow filler */}
+      <pointLight position={[0, 3, -8]} intensity={1.4} distance={28} color="#ff8a4a" />
+      <pointLight position={[-2, 1.5, 0]} intensity={0.6} distance={9} color="#ff7050" />
+      <pointLight position={[6, 1.5, -3]} intensity={0.6} distance={9} color={accent} />
+    </group>
+  );
+}
+
+/* ===== Drift helpers ============================================== */
+
+function DriftSky() {
+  // Golden-hour gradient: deep violet up top → pink → orange → soft yellow
+  // just above the horizon. Sun disc sits low on the right so the right
+  // half of the world catches the warmest light.
+  return (
+    <group position={[0, 6, -16]}>
+      <mesh position={[0, 6, 0]}>
+        <planeGeometry args={[60, 14]} />
+        <meshBasicMaterial color="#3a2050" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 1, 0.05]}>
+        <planeGeometry args={[60, 6]} />
+        <meshBasicMaterial color="#d44a7a" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -3, 0.1]}>
+        <planeGeometry args={[60, 4]} />
+        <meshBasicMaterial color="#ff8a3a" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -6, 0.15]}>
+        <planeGeometry args={[60, 4]} />
+        <meshBasicMaterial color="#ffce7a" toneMapped={false} />
+      </mesh>
+      {/* sun */}
+      <mesh position={[6, -3, 0.2]}>
+        <circleGeometry args={[1.4, 22]} />
+        <meshBasicMaterial color="#fff0c0" toneMapped={false} />
+      </mesh>
+      {/* sun's inner halo */}
+      <mesh position={[6, -3, 0.18]}>
+        <circleGeometry args={[2.2, 24]} />
+        <meshBasicMaterial color="#ffd49a" transparent opacity={0.4} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function DriftHorizon() {
+  // Far jungle ridge + Thai temple silhouette + mountain stack. Pushed
+  // deep (z=-13) so it reads as distance behind the sea.
+  return (
+    <group position={[0, 0, -13]}>
+      {/* Mountain ridge */}
+      <mesh position={[-7, 2.2, 0]}>
+        <boxGeometry args={[7, 4.4, 1]} />
+        <meshLambertMaterial color="#3a1a3a" />
+      </mesh>
+      <mesh position={[-4, 3.8, 0]}>
+        <boxGeometry args={[4.5, 7.6, 1]} />
+        <meshLambertMaterial color="#2a1430" />
+      </mesh>
+      <mesh position={[-1, 2.5, 0]}>
+        <boxGeometry args={[3.5, 5, 1]} />
+        <meshLambertMaterial color="#3a1a3a" />
+      </mesh>
+      <mesh position={[2.5, 1.6, 0]}>
+        <boxGeometry args={[2.5, 3.2, 1]} />
+        <meshLambertMaterial color="#3a1a3a" />
+      </mesh>
+
+      {/* Thai temple silhouette — stepped pyramid with a tall spire */}
+      <group position={[-3, 5.0, 0.5]}>
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[2.4, 0.4, 1.2]} />
+          <meshLambertMaterial color="#5a2a18" />
         </mesh>
-        {/* legs */}
-        {([
-          [-0.5, 0.35, 0.3],
-          [0.5, 0.35, 0.3],
-          [-0.5, 0.35, -0.3],
-          [0.5, 0.35, -0.3],
-        ] as [number, number, number][]).map((p, i) => (
-          <mesh key={i} position={p}>
-            <boxGeometry args={[0.06, 0.7, 0.06]} />
-            <meshLambertMaterial color="#1f1a14" />
-          </mesh>
-        ))}
-        {/* laptop base */}
-        <mesh position={[0, 0.78, 0]} castShadow>
-          <boxGeometry args={[0.85, 0.04, 0.5]} />
-          <meshLambertMaterial color="#a0a8b0" />
+        <mesh position={[0, 0.4, 0]}>
+          <boxGeometry args={[1.8, 0.5, 0.9]} />
+          <meshLambertMaterial color="#6a3018" />
         </mesh>
-        {/* laptop screen */}
-        <mesh position={[0, 1.05, -0.25]} rotation={[Math.PI / 8, 0, 0]} castShadow>
-          <boxGeometry args={[0.85, 0.55, 0.04]} />
-          <meshLambertMaterial color="#1a1a22" />
+        <mesh position={[0, 0.95, 0]}>
+          <boxGeometry args={[1.2, 0.6, 0.7]} />
+          <meshLambertMaterial color="#7a3818" />
         </mesh>
-        <mesh position={[0, 1.05, -0.215]} rotation={[Math.PI / 8, 0, 0]}>
-          <boxGeometry args={[0.78, 0.48, 0.02]} />
+        {/* Golden spire */}
+        <mesh position={[0, 1.7, 0]}>
+          <boxGeometry args={[0.3, 1.0, 0.3]} />
           <meshStandardMaterial
-            ref={lapScreenRef}
-            color="#00131e"
-            emissive={accent}
-            emissiveIntensity={0.85}
+            color="#caa84a"
+            emissive="#ffd28a"
+            emissiveIntensity={1.0}
+            toneMapped={false}
+          />
+        </mesh>
+        <mesh position={[0, 2.4, 0]}>
+          <coneGeometry args={[0.18, 0.55, 6]} />
+          <meshStandardMaterial
+            color="#caa84a"
+            emissive="#ffd28a"
+            emissiveIntensity={1.2}
             toneMapped={false}
           />
         </mesh>
       </group>
 
-      {/* Bonfire — closer fire pit */}
-      <group position={[2.6, -0.3, 1.6]}>
-        {Array.from({ length: 6 }).map((_, i) => {
-          const a = (i / 6) * Math.PI * 2;
-          return (
-            <mesh
-              key={i}
-              position={[Math.cos(a) * 0.55, 0.15, Math.sin(a) * 0.55]}
-              castShadow
-            >
-              <boxGeometry args={[0.32, 0.3, 0.32]} />
-              <meshLambertMaterial color="#5a4a3a" />
+      {/* Background palms on the far ridge */}
+      {[[-9, 1.6], [-6.3, 1.4], [-1.8, 1.4], [3.2, 1.2], [5.6, 1.0]].map(
+        (p, i) => (
+          <group key={i} position={[p[0], 4, 0.3]}>
+            <mesh position={[0, p[1] / 2, 0]}>
+              <boxGeometry args={[0.18, p[1], 0.18]} />
+              <meshLambertMaterial color="#10142a" />
             </mesh>
-          );
-        })}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              Math.sin(i * 1.7) * 0.2,
-              0.45 + Math.cos(i * 1.3) * 0.18,
-              Math.cos(i * 1.7) * 0.2,
-            ]}
-          >
-            <boxGeometry args={[0.32, 0.5, 0.32]} />
+            <mesh position={[0, p[1], 0]}>
+              <boxGeometry args={[1.0, 0.16, 1.0]} />
+              <meshLambertMaterial color="#10142a" />
+            </mesh>
+          </group>
+        ),
+      )}
+    </group>
+  );
+}
+
+function DriftSea({
+  waveRefs,
+}: {
+  waveRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
+}) {
+  // Sea ribbon: warm dark base + orange-pink crests, runs along x.
+  return (
+    <group>
+      {/* base sea */}
+      <mesh position={[0, -0.48, -5]} receiveShadow>
+        <boxGeometry args={[24, 0.06, 4.4]} />
+        <meshLambertMaterial color="#1a2a4a" />
+      </mesh>
+      {/* warmer near-shore band catching sun */}
+      <mesh position={[3, -0.46, -3.2]}>
+        <boxGeometry args={[20, 0.06, 1.6]} />
+        <meshLambertMaterial color="#3a3458" />
+      </mesh>
+      {/* deeper distant band */}
+      <mesh position={[0, -0.48, -6.8]}>
+        <boxGeometry args={[24, 0.06, 1.0]} />
+        <meshLambertMaterial color="#0e1a36" />
+      </mesh>
+      {/* Wave crests shimmering — emissive bars */}
+      {Array.from({ length: 18 }).map((_, i) => {
+        const x = -11 + (i * 22) / 18 + (i * 0.31) % 1.4;
+        const z = -6.6 + (i * 0.5) % 4;
+        const w = 0.5 + ((i * 0.27) % 0.7);
+        const isHot = i % 3 === 0;
+        return (
+          <mesh key={i} position={[x, -0.43, z]}>
+            <boxGeometry args={[w, 0.02, 0.06]} />
             <meshStandardMaterial
               ref={(el) => {
-                fireRefs.current[i] = el;
+                waveRefs.current[i] = el;
               }}
-              color="#ff8a3a"
-              emissive="#ffa050"
-              emissiveIntensity={1.5}
+              color="#1a2848"
+              emissive={isHot ? "#ff9a6a" : "#a4b8e8"}
+              emissiveIntensity={isHot ? 0.7 : 0.35}
               toneMapped={false}
             />
           </mesh>
-        ))}
-        <pointLight position={[0, 0.6, 0]} intensity={1.6} distance={9} color="#ff8a3a" />
-      </group>
+        );
+      })}
+      {/* Reflection of the sun on the sea — vertical pink-orange streak */}
+      <mesh position={[5.5, -0.44, -5]}>
+        <boxGeometry args={[1.2, 0.02, 3.4]} />
+        <meshStandardMaterial
+          color="#3a2440"
+          emissive="#ff9a4a"
+          emissiveIntensity={0.6}
+          toneMapped={false}
+          transparent
+          opacity={0.7}
+        />
+      </mesh>
+    </group>
+  );
+}
 
-      {/* Palm tree (voxel) */}
-      <group position={[5, 0, 0.5]}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <mesh
-            key={i}
-            position={[Math.sin(i * 0.4) * 0.2, 0.4 + i * 0.6, Math.cos(i * 0.4) * 0.1]}
-            castShadow
-          >
-            <boxGeometry args={[0.32, 0.6, 0.32]} />
-            <meshLambertMaterial color="#3a2818" />
-          </mesh>
-        ))}
-        {/* fronds */}
-        {[0, 1, 2, 3, 4, 5].map((i) => {
-          const a = (i / 6) * Math.PI * 2;
-          return (
-            <mesh
-              key={i}
-              position={[Math.cos(a) * 0.9, 3.6 - i * 0.05, Math.sin(a) * 0.9]}
-              rotation={[0, a, -0.4]}
-              castShadow
-            >
-              <boxGeometry args={[1.4, 0.18, 0.4]} />
-              <meshLambertMaterial color={i % 2 === 0 ? "#2a6a3a" : "#1f5a2a"} />
-            </mesh>
-          );
-        })}
-        {/* coconuts */}
-        <mesh position={[0.2, 3.5, 0.2]} castShadow>
-          <boxGeometry args={[0.22, 0.22, 0.22]} />
-          <meshLambertMaterial color="#2a1a10" />
+function CoastalRoad() {
+  return (
+    <group>
+      {/* asphalt */}
+      <mesh position={[0, -0.45, -1.5]} receiveShadow>
+        <boxGeometry args={[24, 0.08, 1.5]} />
+        <meshLambertMaterial color="#2a2a32" />
+      </mesh>
+      {/* dashed centerline */}
+      {Array.from({ length: 11 }).map((_, i) => (
+        <mesh key={i} position={[-11 + i * 2.2, -0.4, -1.5]}>
+          <boxGeometry args={[1.0, 0.02, 0.12]} />
+          <meshBasicMaterial color="#e6c66a" toneMapped={false} />
         </mesh>
-        <mesh position={[-0.2, 3.55, -0.1]} castShadow>
-          <boxGeometry args={[0.2, 0.2, 0.2]} />
-          <meshLambertMaterial color="#2a1a10" />
-        </mesh>
-      </group>
+      ))}
+      {/* small curb to the beach side */}
+      <mesh position={[0, -0.35, -0.7]}>
+        <boxGeometry args={[24, 0.18, 0.16]} />
+        <meshLambertMaterial color="#9a8a6a" />
+      </mesh>
+    </group>
+  );
+}
 
-      {/* Hammock between two posts */}
-      <group position={[2, 0, -1.8]}>
-        <mesh position={[-1.5, 1.4, 0]}>
-          <boxGeometry args={[0.18, 2.6, 0.18]} />
-          <meshLambertMaterial color="#2a1a10" />
-        </mesh>
-        <mesh position={[1.5, 1.4, 0]}>
-          <boxGeometry args={[0.18, 2.6, 0.18]} />
-          <meshLambertMaterial color="#2a1a10" />
-        </mesh>
-        {/* sag-shaped hammock — three slabs */}
-        <mesh position={[0, 1.6, 0]}>
-          <boxGeometry args={[2.8, 0.1, 0.7]} />
-          <meshLambertMaterial color="#c44a5a" />
-        </mesh>
-        <mesh position={[0, 1.5, 0]}>
-          <boxGeometry args={[2.4, 0.08, 0.5]} />
-          <meshLambertMaterial color="#a23a4a" />
-        </mesh>
-      </group>
-
-      {/* Web3 coin floating above */}
-      <group ref={coinRef} position={[0.5, 4.2, -1]}>
-        <mesh castShadow>
-          <cylinderGeometry args={[0.55, 0.55, 0.18, 16]} />
-          <meshStandardMaterial color="#ffd24a" emissive="#ffb24a" emissiveIntensity={1.4} toneMapped={false} />
-        </mesh>
-        {/* "₿" / coin face — three little bars */}
-        <mesh position={[0, 0, 0.1]}>
-          <boxGeometry args={[0.1, 0.4, 0.04]} />
-          <meshStandardMaterial color="#000" emissive="#ff7a3a" emissiveIntensity={1} toneMapped={false} />
-        </mesh>
-        <mesh position={[0, 0.12, 0.1]}>
-          <boxGeometry args={[0.32, 0.08, 0.04]} />
-          <meshStandardMaterial color="#000" emissive="#ff7a3a" emissiveIntensity={1} toneMapped={false} />
-        </mesh>
-        <mesh position={[0, -0.12, 0.1]}>
-          <boxGeometry args={[0.32, 0.08, 0.04]} />
-          <meshStandardMaterial color="#000" emissive="#ff7a3a" emissiveIntensity={1} toneMapped={false} />
-        </mesh>
-      </group>
-
-      {/* Driftwood */}
-      <mesh position={[-0.5, -0.2, 2.5]} rotation={[0, 0.4, 0.1]}>
-        <boxGeometry args={[1.6, 0.25, 0.25]} />
-        <meshLambertMaterial color="#5a4a3a" />
+function SprinterCaravan({ accent }: { accent: string }) {
+  // Modern white box-shape Sprinter. Side door open with karavan.MOV
+  // playing on the back wall inside the van so the interior glows.
+  void accent;
+  return (
+    <group position={[-2.0, 0, -0.1]} rotation={[0, 0.18, 0]}>
+      {/* main body */}
+      <mesh position={[0, 1.4, 0]} castShadow>
+        <boxGeometry args={[5.2, 2.6, 2.2]} />
+        <meshLambertMaterial color="#f4f3ee" />
+      </mesh>
+      {/* roof */}
+      <mesh position={[0, 2.78, 0]}>
+        <boxGeometry args={[5.0, 0.18, 2.0]} />
+        <meshLambertMaterial color="#e2e0d8" />
+      </mesh>
+      {/* lower trim */}
+      <mesh position={[0, 0.45, 0]}>
+        <boxGeometry args={[5.22, 0.6, 2.22]} />
+        <meshLambertMaterial color="#b8b6ae" />
+      </mesh>
+      {/* cab front (sloped) */}
+      <mesh position={[2.7, 1.5, 0]}>
+        <boxGeometry args={[0.5, 2.0, 2.0]} />
+        <meshLambertMaterial color="#f4f3ee" />
+      </mesh>
+      {/* windshield */}
+      <mesh position={[2.95, 1.7, 0]}>
+        <boxGeometry args={[0.04, 1.0, 1.7]} />
+        <meshStandardMaterial
+          color="#0a1430"
+          emissive="#ff9a6a"
+          emissiveIntensity={0.4}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* driver door window */}
+      <mesh position={[1.6, 1.7, 1.115]}>
+        <boxGeometry args={[1.0, 0.8, 0.04]} />
+        <meshStandardMaterial
+          color="#0e2030"
+          emissive="#ffb070"
+          emissiveIntensity={0.35}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* side window (back of cabin) */}
+      <mesh position={[-1.4, 1.7, 1.115]}>
+        <boxGeometry args={[1.6, 0.7, 0.04]} />
+        <meshStandardMaterial
+          color="#0e2030"
+          emissive="#ffb070"
+          emissiveIntensity={0.4}
+          toneMapped={false}
+        />
       </mesh>
 
-      {/* Sunset glow on the horizon */}
-      <pointLight position={[0, 1.5, -5]} intensity={0.8} distance={20} color="#ff8a4a" />
+      {/* SIDE DOOR open — sliding door swung outward */}
+      {/* Door cavity (interior visible) */}
+      <mesh position={[0.4, 1.35, 1.11]}>
+        <boxGeometry args={[1.4, 1.9, 0.02]} />
+        <meshLambertMaterial color="#1a1a1f" />
+      </mesh>
+      {/* Door panel pushed out toward camera */}
+      <mesh position={[0.0, 1.35, 1.8]} rotation={[0, 0.4, 0]} castShadow>
+        <boxGeometry args={[1.4, 1.9, 0.06]} />
+        <meshLambertMaterial color="#e8e6dd" />
+      </mesh>
+      {/* Karavan interior video — visible through the open door */}
+      <VideoScreen
+        position={[0.4, 1.4, 1.13]}
+        src="/assets/karavan-web.mp4"
+        width={1.1}
+        height={1.4}
+        frameColor="#1a1a1f"
+        glow
+        caption={{
+          tr: "Karavanda yaşam — Çanakkale → Muğla",
+          en: "Caravan life — Çanakkale → Muğla",
+        }}
+      />
+      {/* Interior warm light pool spilling out of the door */}
+      <pointLight position={[0.4, 1.4, 1.2]} intensity={1.4} distance={4} color="#ffae5a" />
+
+      {/* Headlights */}
+      <mesh position={[3, 1.05, 0.8]}>
+        <boxGeometry args={[0.06, 0.18, 0.32]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={1.8} toneMapped={false} />
+      </mesh>
+      <mesh position={[3, 1.05, -0.8]}>
+        <boxGeometry args={[0.06, 0.18, 0.32]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={1.8} toneMapped={false} />
+      </mesh>
+      {/* Tail lights */}
+      <mesh position={[-2.65, 1.6, 0.8]}>
+        <boxGeometry args={[0.06, 0.2, 0.32]} />
+        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      <mesh position={[-2.65, 1.6, -0.8]}>
+        <boxGeometry args={[0.06, 0.2, 0.32]} />
+        <meshStandardMaterial color="#9a1a1a" emissive="#ff3a3a" emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+
+      {/* Wheels (4) */}
+      {([
+        [1.8, 0.0, 1.05],
+        [-1.6, 0.0, 1.05],
+        [1.8, 0.0, -1.05],
+        [-1.6, 0.0, -1.05],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh key={i} position={p}>
+          <boxGeometry args={[0.6, 0.6, 0.4]} />
+          <meshLambertMaterial color="#1a1a1a" />
+        </mesh>
+      ))}
+
+      {/* Awning extended on the back side (the side facing away from
+       *  the camera) so we can see the open camp without it covering
+       *  the door video. Render as a thin slanted slab. */}
+      <mesh position={[0, 3.0, -1.4]} rotation={[0.25, 0, 0]}>
+        <boxGeometry args={[3.6, 0.04, 1.6]} />
+        <meshLambertMaterial color="#d44a7a" />
+      </mesh>
+      {/* awning poles */}
+      <mesh position={[-1.6, 1.6, -2.1]}>
+        <boxGeometry args={[0.04, 3.2, 0.04]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[1.6, 1.6, -2.1]}>
+        <boxGeometry args={[0.04, 3.2, 0.04]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+
+      {/* Roof-rack solar panels — small detail */}
+      <mesh position={[-1.4, 2.92, 0]}>
+        <boxGeometry args={[1.6, 0.06, 1.0]} />
+        <meshStandardMaterial color="#0a1428" emissive="#3a8cff" emissiveIntensity={0.3} toneMapped={false} />
+      </mesh>
+      <mesh position={[0.6, 2.92, 0]}>
+        <boxGeometry args={[1.0, 0.06, 1.0]} />
+        <meshStandardMaterial color="#0a1428" emissive="#3a8cff" emissiveIntensity={0.3} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function BaliCorner() {
+  // Bamboo umbrella + rattan swing on the right side of the camp.
+  return (
+    <group position={[5, 0, 1.6]}>
+      {/* Bamboo pole */}
+      <mesh position={[0, 1.6, 0]} castShadow>
+        <boxGeometry args={[0.16, 3.2, 0.16]} />
+        <meshLambertMaterial color="#caa84a" />
+      </mesh>
+      {/* Umbrella canopy — three radial slabs */}
+      {[0, 1, 2, 3].map((i) => {
+        const a = (i / 4) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(a) * 0.8, 3.2, Math.sin(a) * 0.8]}
+            rotation={[0, a, -0.25]}
+            castShadow
+          >
+            <boxGeometry args={[1.8, 0.08, 0.7]} />
+            <meshLambertMaterial color={i % 2 === 0 ? "#7a3a24" : "#8a4528"} />
+          </mesh>
+        );
+      })}
+      {/* Cap */}
+      <mesh position={[0, 3.45, 0]}>
+        <boxGeometry args={[0.4, 0.14, 0.4]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+
+      {/* Small wooden side table */}
+      <mesh position={[0.7, 0.55, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.08, 0.7]} />
+        <meshLambertMaterial color="#5a3a1f" />
+      </mesh>
+      {[-0.25, 0.25].map((dx, i) => (
+        <mesh key={i} position={[0.7 + dx, 0.27, 0.25]}>
+          <boxGeometry args={[0.06, 0.55, 0.06]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+      ))}
+      {/* Coconut drink */}
+      <mesh position={[0.7, 0.7, 0]} castShadow>
+        <boxGeometry args={[0.2, 0.2, 0.2]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[0.7, 0.78, 0.06]}>
+        <boxGeometry args={[0.06, 0.18, 0.02]} />
+        <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+
+      {/* Rattan swing — woven seat hanging from the umbrella post */}
+      <group position={[-1.0, 0, 0.6]}>
+        {/* hanging ropes */}
+        <mesh position={[-0.5, 2.2, 0]}>
+          <boxGeometry args={[0.04, 2.4, 0.04]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        <mesh position={[0.5, 2.2, 0]}>
+          <boxGeometry args={[0.04, 2.4, 0.04]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        {/* rattan seat (round-ish) */}
+        <mesh position={[0, 1.0, 0]} castShadow>
+          <boxGeometry args={[1.2, 0.16, 0.9]} />
+          <meshLambertMaterial color="#caa84a" />
+        </mesh>
+        <mesh position={[0, 1.45, -0.4]} castShadow>
+          <boxGeometry args={[1.2, 1.0, 0.12]} />
+          <meshLambertMaterial color="#8a6a4a" />
+        </mesh>
+        {/* cushion */}
+        <mesh position={[0, 1.16, 0.1]}>
+          <boxGeometry args={[1.0, 0.16, 0.7]} />
+          <meshLambertMaterial color="#f4a8b8" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function DriftPalm({
+  position,
+  variant,
+}: {
+  position: [number, number, number];
+  variant: 0 | 1 | 2;
+}) {
+  const palettes = [
+    { trunk: "#3a2818", frondA: "#2a6a3a", frondB: "#1f5a2a" },
+    { trunk: "#4a3220", frondA: "#3a7a44", frondB: "#2a6a34" },
+    { trunk: "#2a1810", frondA: "#1a5a2a", frondB: "#0e4a1c" },
+  ];
+  const p = palettes[variant];
+  return (
+    <group position={position}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.sin(i * 0.4) * 0.2,
+            0.4 + i * 0.6,
+            Math.cos(i * 0.4) * 0.1,
+          ]}
+          castShadow
+        >
+          <boxGeometry args={[0.32, 0.6, 0.32]} />
+          <meshLambertMaterial color={p.trunk} />
+        </mesh>
+      ))}
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const a = (i / 6) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(a) * 0.9, 3.6 - i * 0.05, Math.sin(a) * 0.9]}
+            rotation={[0, a, -0.4]}
+            castShadow
+          >
+            <boxGeometry args={[1.4, 0.18, 0.4]} />
+            <meshLambertMaterial color={i % 2 === 0 ? p.frondA : p.frondB} />
+          </mesh>
+        );
+      })}
+      {/* coconuts */}
+      <mesh position={[0.2, 3.5, 0.2]} castShadow>
+        <boxGeometry args={[0.22, 0.22, 0.22]} />
+        <meshLambertMaterial color="#2a1a10" />
+      </mesh>
+    </group>
+  );
+}
+
+function Hammock({
+  figureRef,
+  laptopRef,
+}: {
+  figureRef: React.MutableRefObject<THREE.Group | null>;
+  laptopRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  // Hung between the two palms at (-1.5, *, 1.8) and (3.6, *, 0.6).
+  // We just render the hammock + figure here; positions tuned to land
+  // between those palms.
+  return (
+    <group position={[1.0, 0, 1.2]}>
+      {/* hammock fabric (drooping) */}
+      <mesh position={[0, 1.4, 0]} castShadow>
+        <boxGeometry args={[2.4, 0.08, 0.8]} />
+        <meshLambertMaterial color="#d44a7a" />
+      </mesh>
+      <mesh position={[0, 1.32, 0]}>
+        <boxGeometry args={[2.0, 0.06, 0.6]} />
+        <meshLambertMaterial color="#a23a4a" />
+      </mesh>
+      {/* ropes to palms */}
+      <mesh position={[-1.4, 2.0, 0]} rotation={[0, 0, -0.5]}>
+        <boxGeometry args={[1.4, 0.04, 0.04]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[1.4, 2.0, 0]} rotation={[0, 0, 0.5]}>
+        <boxGeometry args={[1.4, 0.04, 0.04]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+
+      {/* Tiny Atakan figure lying — head + torso visible from the side. */}
+      <group ref={figureRef} position={[0, 1.45, 0.05]}>
+        {/* legs/feet */}
+        <mesh position={[0.7, 0.05, 0]}>
+          <boxGeometry args={[0.7, 0.18, 0.36]} />
+          <meshLambertMaterial color="#1a1f30" />
+        </mesh>
+        {/* torso */}
+        <mesh position={[0, 0.1, 0]}>
+          <boxGeometry args={[0.7, 0.22, 0.4]} />
+          <meshLambertMaterial color="#3a4a5a" />
+        </mesh>
+        {/* head */}
+        <mesh position={[-0.5, 0.18, 0]}>
+          <boxGeometry args={[0.24, 0.24, 0.26]} />
+          <meshLambertMaterial color="#d8b48a" />
+        </mesh>
+        {/* hair */}
+        <mesh position={[-0.5, 0.3, 0]}>
+          <boxGeometry args={[0.26, 0.06, 0.28]} />
+          <meshLambertMaterial color="#2a1810" />
+        </mesh>
+        {/* laptop on chest */}
+        <mesh position={[0.0, 0.32, 0]} rotation={[0, 0, 0.1]}>
+          <boxGeometry args={[0.32, 0.04, 0.22]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+        <mesh position={[-0.15, 0.42, 0]} rotation={[0, 0, 1.4]}>
+          <boxGeometry args={[0.32, 0.22, 0.02]} />
+          <meshStandardMaterial
+            ref={laptopRef}
+            color="#000"
+            emissive="#f472b6"
+            emissiveIntensity={1.0}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function Bonfire({
+  fireRefs,
+}: {
+  fireRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
+}) {
+  return (
+    <group position={[-3.6, -0.3, 2.0]}>
+      {/* 3 stones around */}
+      {Array.from({ length: 6 }).map((_, i) => {
+        const a = (i / 6) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(a) * 0.55, 0.15, Math.sin(a) * 0.55]}
+            castShadow
+          >
+            <boxGeometry args={[0.32, 0.3, 0.32]} />
+            <meshLambertMaterial color="#5a4a3a" />
+          </mesh>
+        );
+      })}
+      {/* logs */}
+      <mesh position={[-0.18, 0.22, 0]} rotation={[0, 0.4, 0]}>
+        <boxGeometry args={[0.6, 0.12, 0.12]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[0.2, 0.22, 0.1]} rotation={[0, -0.5, 0]}>
+        <boxGeometry args={[0.6, 0.12, 0.12]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      {/* Flames */}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.sin(i * 1.7) * 0.18,
+            0.5 + Math.cos(i * 1.3) * 0.18,
+            Math.cos(i * 1.7) * 0.18,
+          ]}
+        >
+          <boxGeometry args={[0.3, 0.45, 0.3]} />
+          <meshStandardMaterial
+            ref={(el) => {
+              fireRefs.current[i] = el;
+            }}
+            color="#ff8a3a"
+            emissive="#ffa050"
+            emissiveIntensity={1.5}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      <pointLight position={[0, 0.6, 0]} intensity={1.8} distance={8} color="#ff8a3a" />
+    </group>
+  );
+}
+
+function Surfboard({
+  position,
+  accent,
+}: {
+  position: [number, number, number];
+  accent: string;
+}) {
+  return (
+    <group position={position} rotation={[0, 0, 0.3]}>
+      <mesh castShadow>
+        <boxGeometry args={[0.32, 2.6, 0.6]} />
+        <meshLambertMaterial color="#f9e8c4" />
+      </mesh>
+      {/* accent stripe */}
+      <mesh position={[0.17, 0, 0]}>
+        <boxGeometry args={[0.02, 2.6, 0.16]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.7} toneMapped={false} />
+      </mesh>
+      {/* fin */}
+      <mesh position={[0, -1.0, -0.16]}>
+        <boxGeometry args={[0.08, 0.2, 0.18]} />
+        <meshLambertMaterial color="#1a1810" />
+      </mesh>
+    </group>
+  );
+}
+
+function DriftBicycle({ position }: { position: [number, number, number] }) {
+  // Simplified bike (reusing the Genesis voxel pattern at a smaller scale)
+  return (
+    <group position={position} rotation={[0, 0.5, 0.06]}>
+      {/* two wheels */}
+      {[-0.5, 0.5].map((dx, i) => (
+        <group key={i} position={[dx, 0.36, 0]}>
+          {Array.from({ length: 10 }).map((_, j) => {
+            const a = (j / 10) * Math.PI * 2;
+            return (
+              <mesh
+                key={j}
+                position={[Math.cos(a) * 0.3, Math.sin(a) * 0.3, 0]}
+                rotation={[0, 0, a]}
+              >
+                <boxGeometry args={[0.1, 0.06, 0.06]} />
+                <meshLambertMaterial color="#1a1a1a" />
+              </mesh>
+            );
+          })}
+        </group>
+      ))}
+      <mesh position={[0, 0.62, 0]}>
+        <boxGeometry args={[0.95, 0.06, 0.06]} />
+        <meshLambertMaterial color="#3a8aaa" />
+      </mesh>
+      <mesh position={[-0.42, 0.78, 0]} castShadow>
+        <boxGeometry args={[0.06, 0.32, 0.05]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      <mesh position={[-0.42, 0.96, 0]}>
+        <boxGeometry args={[0.3, 0.08, 0.16]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[0.42, 0.78, 0]} castShadow>
+        <boxGeometry args={[0.06, 0.32, 0.05]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+      <mesh position={[0.42, 0.96, 0]}>
+        <boxGeometry args={[0.06, 0.06, 0.4]} />
+        <meshLambertMaterial color="#2a2a30" />
+      </mesh>
+    </group>
+  );
+}
+
+function Scooter({ accent }: { accent: string }) {
+  // Vespa-style scooter — voxel approximation, sitting on the road,
+  // facing +X (driven by the parent's rotation/position via useFrame).
+  return (
+    <group>
+      {/* body shell (round-ish, but voxel-blocky) */}
+      <mesh position={[0, 0.45, 0]} castShadow>
+        <boxGeometry args={[0.46, 0.7, 0.7]} />
+        <meshLambertMaterial color={accent} />
+      </mesh>
+      {/* lower deck */}
+      <mesh position={[-0.2, 0.3, 0]}>
+        <boxGeometry args={[0.6, 0.16, 0.5]} />
+        <meshLambertMaterial color={accent} />
+      </mesh>
+      {/* front shield + headlight stem */}
+      <mesh position={[0.35, 0.55, 0]} castShadow>
+        <boxGeometry args={[0.18, 0.45, 0.45]} />
+        <meshLambertMaterial color={accent} />
+      </mesh>
+      {/* headlight */}
+      <mesh position={[0.46, 0.65, 0]}>
+        <boxGeometry args={[0.05, 0.16, 0.2]} />
+        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={2} toneMapped={false} />
+      </mesh>
+      {/* handlebars */}
+      <mesh position={[0.36, 0.85, 0]}>
+        <boxGeometry args={[0.08, 0.06, 0.5]} />
+        <meshLambertMaterial color="#1a1a25" />
+      </mesh>
+      {/* seat */}
+      <mesh position={[-0.05, 0.8, 0]}>
+        <boxGeometry args={[0.5, 0.1, 0.3]} />
+        <meshLambertMaterial color="#1a1820" />
+      </mesh>
+      {/* wheels */}
+      <mesh position={[0.34, 0.16, 0]}>
+        <boxGeometry args={[0.18, 0.32, 0.32]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      <mesh position={[-0.34, 0.16, 0]}>
+        <boxGeometry args={[0.18, 0.32, 0.32]} />
+        <meshLambertMaterial color="#1a1a1a" />
+      </mesh>
+      {/* rider */}
+      <group position={[-0.05, 1.05, 0]}>
+        {/* torso */}
+        <mesh position={[0, 0.2, 0]}>
+          <boxGeometry args={[0.3, 0.38, 0.3]} />
+          <meshLambertMaterial color="#3a4a5a" />
+        </mesh>
+        {/* head */}
+        <mesh position={[0, 0.5, 0]}>
+          <boxGeometry args={[0.22, 0.22, 0.22]} />
+          <meshLambertMaterial color="#d8b48a" />
+        </mesh>
+        {/* helmet shell */}
+        <mesh position={[0, 0.58, 0]}>
+          <boxGeometry args={[0.26, 0.14, 0.26]} />
+          <meshLambertMaterial color="#1a1a25" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function LotusLantern({
+  position,
+  lanternRef,
+}: {
+  position: [number, number, number];
+  lanternRef: (el: THREE.MeshStandardMaterial | null) => void;
+}) {
+  return (
+    <group position={position}>
+      {/* lotus petals (4 around) */}
+      {[0, 1, 2, 3].map((i) => {
+        const a = (i / 4) * Math.PI * 2;
+        return (
+          <mesh
+            key={i}
+            position={[Math.cos(a) * 0.18, 0, Math.sin(a) * 0.18]}
+            rotation={[0, a, -0.3]}
+          >
+            <boxGeometry args={[0.16, 0.08, 0.32]} />
+            <meshLambertMaterial color="#f4a8b8" />
+          </mesh>
+        );
+      })}
+      {/* candle glow */}
+      <mesh position={[0, 0.06, 0]}>
+        <boxGeometry args={[0.12, 0.12, 0.12]} />
+        <meshStandardMaterial
+          ref={lanternRef}
+          color="#000"
+          emissive="#ffb070"
+          emissiveIntensity={1.4}
+          toneMapped={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function HeybeliadaIsland({
+  boatRef,
+}: {
+  boatRef: React.MutableRefObject<THREE.Group | null>;
+}) {
+  // Distant island silhouette on the right (z ≈ -7) + wooden pier
+  // jutting from the beach + a moored kayak that bobs. Mini video
+  // screen on a wooden post next to the pier plays heybeliada-web.mp4.
+  return (
+    <group position={[8, 0, -5]}>
+      {/* island base */}
+      <mesh position={[0, 0.5, 0]}>
+        <boxGeometry args={[5.0, 1.0, 2.4]} />
+        <meshLambertMaterial color="#2a1828" />
+      </mesh>
+      {/* island silhouette hills */}
+      <mesh position={[-1.4, 1.1, 0]}>
+        <boxGeometry args={[2.2, 1.4, 1.6]} />
+        <meshLambertMaterial color="#3a1a30" />
+      </mesh>
+      <mesh position={[0.5, 1.4, 0]}>
+        <boxGeometry args={[2.8, 2.0, 1.6]} />
+        <meshLambertMaterial color="#2e1428" />
+      </mesh>
+      <mesh position={[2.0, 1.0, 0]}>
+        <boxGeometry args={[1.6, 1.2, 1.6]} />
+        <meshLambertMaterial color="#3a1a30" />
+      </mesh>
+      {/* pine trees on the island (Heybeliada is famous for them) */}
+      {[-1.2, 0.4, 1.8].map((x, i) => (
+        <group key={i} position={[x, 2.0 + (i % 2) * 0.3, 0.6]}>
+          <mesh position={[0, 0.4, 0]}>
+            <boxGeometry args={[0.12, 0.8, 0.12]} />
+            <meshLambertMaterial color="#1a1014" />
+          </mesh>
+          <mesh position={[0, 0.9, 0]}>
+            <boxGeometry args={[0.55, 0.55, 0.55]} />
+            <meshLambertMaterial color="#16302a" />
+          </mesh>
+          <mesh position={[0, 1.25, 0]}>
+            <boxGeometry args={[0.4, 0.4, 0.4]} />
+            <meshLambertMaterial color="#1c4030" />
+          </mesh>
+        </group>
+      ))}
+      {/* a small house with lit window */}
+      <group position={[0.5, 2.4, 0.8]}>
+        <mesh>
+          <boxGeometry args={[0.4, 0.4, 0.3]} />
+          <meshLambertMaterial color="#1a1822" />
+        </mesh>
+        <mesh position={[0, 0.28, 0]} rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[0.3, 0.3, 0.3]} />
+          <meshLambertMaterial color="#2a1818" />
+        </mesh>
+        <mesh position={[0, -0.04, 0.16]}>
+          <boxGeometry args={[0.14, 0.14, 0.02]} />
+          <meshStandardMaterial color="#000" emissive="#ffd28a" emissiveIntensity={1.8} toneMapped={false} />
+        </mesh>
+      </group>
+
+      {/* Pier (wooden boards extending toward the camera from the island) */}
+      <group position={[-2.8, -0.45, 1.4]}>
+        {/* planks */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[3.0, 0.08, 0.7]} />
+          <meshLambertMaterial color="#5a3a1f" />
+        </mesh>
+        <mesh position={[0, 0.06, 0]}>
+          <boxGeometry args={[3.0, 0.02, 0.04]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        <mesh position={[0, 0.06, 0.2]}>
+          <boxGeometry args={[3.0, 0.02, 0.04]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        {/* posts */}
+        {[-1.2, 0, 1.2].map((x, i) => (
+          <mesh key={i} position={[x, -0.3, 0.3]}>
+            <boxGeometry args={[0.12, 0.7, 0.12]} />
+            <meshLambertMaterial color="#3a2418" />
+          </mesh>
+        ))}
+
+        {/* Heybeliada mini video screen on a sign post — clickable */}
+        <group position={[-1.0, 0.55, -0.3]}>
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[0.08, 1.0, 0.08]} />
+            <meshLambertMaterial color="#3a2418" />
+          </mesh>
+          <VideoScreen
+            position={[0, 0.7, 0]}
+            src="/assets/heybeliada-web.mp4"
+            width={0.9}
+            height={0.6}
+            frameColor="#3a2418"
+            glow
+            caption={{
+              tr: "Heybeliada · ada hayatı",
+              en: "Heybeliada · island life",
+            }}
+          />
+        </group>
+
+        {/* Tied kayak on the water next to the pier — bobs gently */}
+        <group ref={boatRef} position={[1.5, -0.18, 0.5]}>
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[1.2, 0.16, 0.36]} />
+            <meshLambertMaterial color="#caa84a" />
+          </mesh>
+          <mesh position={[0, 0.12, 0]}>
+            <boxGeometry args={[0.9, 0.06, 0.26]} />
+            <meshLambertMaterial color="#8a6a4a" />
+          </mesh>
+          {/* paddle */}
+          <mesh position={[0.5, 0.16, 0.2]} rotation={[0, 0, 0.2]}>
+            <boxGeometry args={[0.06, 0.04, 0.7]} />
+            <meshLambertMaterial color="#3a2418" />
+          </mesh>
+        </group>
+      </group>
     </group>
   );
 }
