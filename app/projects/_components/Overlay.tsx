@@ -1081,12 +1081,26 @@ export function AssetLightbox() {
             >
               ×
             </button>
-            <img
-              className="asset-lightbox-img"
-              src={current.src}
-              alt={current.caption ? pick(current.caption, lang) : ""}
-              draggable={false}
-            />
+            {/* Detect video vs image by extension. We keep both branches
+             *  so the same lightbox handles photos and short clips. */}
+            {/\.(mp4|webm|mov)$/i.test(current.src) ? (
+              <video
+                className="asset-lightbox-img"
+                src={current.src}
+                autoPlay
+                loop
+                playsInline
+                controls
+                muted
+              />
+            ) : (
+              <img
+                className="asset-lightbox-img"
+                src={current.src}
+                alt={current.caption ? pick(current.caption, lang) : ""}
+                draggable={false}
+              />
+            )}
             {current.caption && (
               <div className="asset-lightbox-caption">
                 {pick(current.caption, lang)}

@@ -2778,6 +2778,137 @@ function FramedPhoto({
   );
 }
 
+/* Wall-mounted video screen — plays a short clip looped + muted on a 3D
+ * panel using THREE.VideoTexture. Click opens the full clip in the
+ * lightbox where it auto-plays with sound controls available.
+ */
+function VideoScreen({
+  position,
+  rotationY = 0,
+  src,
+  width,
+  height,
+  caption,
+  frameColor = "#0a0b14",
+  glow = false,
+}: {
+  position: [number, number, number];
+  rotationY?: number;
+  src: string;
+  width: number;
+  height: number;
+  caption?: { tr: string; en: string };
+  frameColor?: string;
+  glow?: boolean;
+}) {
+  const { open } = useLightbox();
+  const [hovered, setHovered] = useState(false);
+  // Build one hidden HTMLVideoElement per mount and wrap it in a
+  // THREE.VideoTexture. The video plays muted + looped on the GPU so the
+  // diorama is always alive without forcing the user to interact first.
+  const video = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const v = document.createElement("video");
+    v.src = src;
+    v.crossOrigin = "anonymous";
+    v.loop = true;
+    v.muted = true;
+    v.playsInline = true;
+    v.autoplay = true;
+    // Hint to the browser this is a decorative element, not the focus
+    v.preload = "auto";
+    // Some browsers reject autoplay until play() is called explicitly
+    v.play().catch(() => {});
+    return v;
+  }, [src]);
+  const texture = useMemo(() => {
+    if (!video) return null;
+    const t = new THREE.VideoTexture(video);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.minFilter = THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.generateMipmaps = false;
+    return t;
+  }, [video]);
+  useEffect(() => {
+    return () => {
+      // Pause + detach the video on unmount so we don't leak playback.
+      if (video) {
+        video.pause();
+        video.src = "";
+        video.load();
+      }
+      texture?.dispose();
+    };
+  }, [video, texture]);
+  useEffect(() => {
+    if (!hovered) return;
+    document.body.style.cursor = "pointer";
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, [hovered]);
+  return (
+    <group
+      position={position}
+      rotation={[0, rotationY, 0]}
+      scale={hovered ? 1.03 : 1}
+      onClick={(e) => {
+        e.stopPropagation();
+        open({ src, caption });
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
+      {/* bezel */}
+      <mesh castShadow>
+        <boxGeometry args={[width + 0.18, height + 0.18, 0.1]} />
+        <meshLambertMaterial color={frameColor} />
+      </mesh>
+      {/* dark backplate (so screen edges read crisp) */}
+      <mesh position={[0, 0, 0.052]}>
+        <boxGeometry args={[width + 0.04, height + 0.04, 0.02]} />
+        <meshLambertMaterial color="#000" />
+      </mesh>
+      {/* live video plane */}
+      <mesh position={[0, 0, 0.07]}>
+        <planeGeometry args={[width, height]} />
+        {texture ? (
+          <meshBasicMaterial map={texture} toneMapped={false} />
+        ) : (
+          <meshBasicMaterial color="#1a1a1a" />
+        )}
+      </mesh>
+      {/* small red "REC/LIVE" dot at top-right to suggest playback */}
+      <mesh position={[width / 2 - 0.12, height / 2 - 0.12, 0.085]}>
+        <boxGeometry args={[0.08, 0.08, 0.02]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive="#ff3a3a"
+          emissiveIntensity={1.6}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* halo */}
+      {(hovered || glow) && (
+        <mesh position={[0, 0, -0.02]}>
+          <planeGeometry args={[width + 0.6, height + 0.6]} />
+          <meshBasicMaterial
+            color={hovered ? "#ffd49a" : "#a78bfa"}
+            transparent
+            opacity={hovered ? 0.55 : 0.25}
+            toneMapped={false}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+
 function DeciduousTree({
   position,
   variant,
@@ -3171,17 +3302,17 @@ function EnterpriseDiorama() {
 
   return (
     <group>
-      {/* ---- Floor: polished tile + faint accent grid ---- */}
+      {/* ---- Floor: bigger polished tile + faint accent grid running deep ---- */}
       <CheckerFloor
-        size={14}
+        size={22}
         cellSize={1}
         y={-0.5}
         colorA="#1d1f2a"
         colorB="#171924"
       />
-      {Array.from({ length: 5 }).map((_, i) => (
-        <mesh key={i} position={[-6 + i * 3, -0.18, 0]}>
-          <boxGeometry args={[0.04, 0.02, 14]} />
+      {Array.from({ length: 7 }).map((_, i) => (
+        <mesh key={i} position={[-9 + i * 3, -0.18, 0]}>
+          <boxGeometry args={[0.04, 0.02, 22]} />
           <meshStandardMaterial
             color={accent}
             emissive={accent}
@@ -3193,15 +3324,16 @@ function EnterpriseDiorama() {
         </mesh>
       ))}
 
-      {/* ---- Ceiling: thin slab + two fluorescent strips so the room reads
-       *      as "interior" without blocking the camera. */}
-      <mesh position={[0, 6.2, -1.5]}>
-        <boxGeometry args={[13, 0.2, 8]} />
+      {/* ---- Ceiling: wider slab + four fluorescent strips so the bigger
+       *      room still reads as interior. Pulled up to y=6.6 to make the
+       *      space feel taller. */}
+      <mesh position={[0, 6.6, -2.5]}>
+        <boxGeometry args={[20, 0.2, 12]} />
         <meshLambertMaterial color="#181a24" />
       </mesh>
-      {[-2.2, 2.2].map((x, i) => (
-        <mesh key={i} position={[x, 6.05, -1.5]}>
-          <boxGeometry args={[0.5, 0.08, 6]} />
+      {[-5, -1.6, 1.6, 5].map((x, i) => (
+        <mesh key={i} position={[x, 6.45, -2.5]}>
+          <boxGeometry args={[0.5, 0.08, 9]} />
           <meshStandardMaterial
             color="#0a0a14"
             emissive="#c4d4ff"
@@ -3211,17 +3343,28 @@ function EnterpriseDiorama() {
         </mesh>
       ))}
 
-      {/* ---- Back wall — full width, split into 3 sections.
-       *      Left band: microservice mural (-7..-1.5)
-       *      Centre band: glass curtain + Heybeliada (-1.5..1.5)
-       *      Right band: kanban board (1.5..7)
-       *      The back wall sits at z=-5 with very small thickness. */}
-      <mesh position={[0, 3, -5]} receiveShadow>
-        <boxGeometry args={[14, 6, 0.18]} />
+      {/* ---- Back wall pushed to z=-7, made wider so it spans the
+       *      enlarged room. Bands are unchanged structurally but they
+       *      now sit on a 20-unit canvas. */}
+      <mesh position={[0, 3.2, -7]} receiveShadow>
+        <boxGeometry args={[20, 6.6, 0.18]} />
         <meshLambertMaterial color="#1f2230" />
       </mesh>
 
-      {/* ---- Left band: Microservice diagram mural ---- */}
+      {/* ---- Side walls: short partials so we feel boxed-in but the
+       *      camera still sees in. Glass-tinted, lit from below. */}
+      {[-10, 10].map((x, i) => (
+        <mesh key={i} position={[x, 3.2, -2.5]}>
+          <boxGeometry args={[0.18, 6.6, 9]} />
+          <meshLambertMaterial color="#1a1d28" />
+        </mesh>
+      ))}
+
+      {/* ---- Background skyscrapers seen beyond the back wall (z<-7).
+       *      Pushed deep so they read as distance through the glass. */}
+      <EnterpriseDistantSkyline />
+
+      {/* ---- Left band on back wall: Microservice diagram mural ---- */}
       <MicroserviceMural kafkaDotRef={kafkaDotRef} accent={accent} />
 
       {/* ---- Centre band: glass curtain wall + Heybeliada silhouette ---- */}
@@ -3244,16 +3387,40 @@ function EnterpriseDiorama() {
        *      with a tiny figure + open laptop. */}
       <CovidBalcony laptopRef={laptopRef} />
 
-      {/* ---- Small office life: a side desk, plant, coffee corner ---- */}
-      <SideDesk position={[-5.4, 0, 1.2]} accent={accent} />
-      <OfficePlant position={[-4.5, 0, 2.6]} />
-      <OfficePlant position={[4.5, 0, 2.6]} />
-      <CoffeeCorner position={[5.4, 0, 1.0]} accent={accent} />
+      {/* ---- LEFT: glass-walled meeting room with a big wall TV that
+       *      plays the Kariyer.net throwback clip. Click on the TV
+       *      opens the clip full-screen in the lightbox. */}
+      <Suspense fallback={null}>
+        <MeetingRoom accent={accent} />
+      </Suspense>
 
-      {/* ---- Overhead ambient + accent point light ---- */}
-      <pointLight position={[0, 5.5, 1]} intensity={0.7} distance={14} color={accent} />
-      <pointLight position={[-3, 4, -3]} intensity={0.4} distance={6} color="#c4d4ff" />
-      <pointLight position={[3, 4, -3]} intensity={0.4} distance={6} color="#c4d4ff" />
+      {/* ---- RIGHT: lounge corner — sofa + "yoğun ofis" video screen
+       *      mounted on the right side wall. Click → lightbox. */}
+      <Suspense fallback={null}>
+        <LoungeCorner accent={accent} />
+      </Suspense>
+
+      {/* ---- Trophy / memory wall: framed FIFA Kupa photo on a small
+       *      pillar between the meeting room and the microservice
+       *      mural. Click → lightbox. */}
+      <Suspense fallback={null}>
+        <TrophyDisplay />
+      </Suspense>
+
+      {/* ---- Small office life ---- */}
+      <SideDesk position={[-5.4, 0, 2.0]} accent={accent} />
+      <SideDesk position={[5.4, 0, 2.0]} accent={accent} />
+      <OfficePlant position={[-7.5, 0, 3.2]} />
+      <OfficePlant position={[7.5, 0, 3.2]} />
+      <CoffeeCorner position={[-8.6, 0, 0.0]} accent={accent} />
+
+      {/* ---- Overhead ambient + accent point lights spread across the
+       *      bigger floor so no zone is left in shadow. */}
+      <pointLight position={[0, 5.8, 1]} intensity={0.7} distance={18} color={accent} />
+      <pointLight position={[-6, 4, -3]} intensity={0.45} distance={8} color="#c4d4ff" />
+      <pointLight position={[6, 4, -3]} intensity={0.45} distance={8} color="#c4d4ff" />
+      <pointLight position={[-8, 3, 1]} intensity={0.35} distance={6} color="#ffd49a" />
+      <pointLight position={[8, 3, 1]} intensity={0.35} distance={6} color="#ffd49a" />
     </group>
   );
 }
@@ -4090,6 +4257,350 @@ function OfficePlant({ position }: { position: [number, number, number] }) {
           <meshLambertMaterial color={["#2a6a4a", "#3a8a5a", "#1a5a3a"][i % 3]} />
         </mesh>
       ))}
+    </group>
+  );
+}
+
+/* ----- Bigger-room helpers --------------------------------------------- */
+
+function EnterpriseDistantSkyline() {
+  // Big-city silhouette pushed deep beyond the back wall — read through
+  // the centre glass curtain wall as a sense of "Istanbul outside."
+  // Far row is ~14 units behind the back wall (z ≈ -21).
+  type T = { x: number; w: number; h: number; emissive?: boolean };
+  const towers: T[] = [
+    { x: -10, w: 2.4, h: 9, emissive: true },
+    { x: -7, w: 1.8, h: 13 },
+    { x: -4, w: 2.2, h: 11, emissive: true },
+    { x: -1, w: 2.4, h: 16 },
+    { x: 2.4, w: 1.8, h: 12, emissive: true },
+    { x: 5, w: 2.6, h: 14 },
+    { x: 8.4, w: 2, h: 10, emissive: true },
+  ];
+  return (
+    <group position={[0, 0, -18]}>
+      {/* hazy backdrop strip behind the towers */}
+      <mesh position={[0, 6, -0.4]}>
+        <planeGeometry args={[40, 18]} />
+        <meshBasicMaterial color="#0a1228" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 1, -0.3]}>
+        <planeGeometry args={[40, 4]} />
+        <meshBasicMaterial color="#1a2454" toneMapped={false} />
+      </mesh>
+      {towers.map((t, i) => (
+        <group key={i} position={[t.x, 0, 0]}>
+          <mesh position={[0, t.h / 2, 0]}>
+            <boxGeometry args={[t.w, t.h, 2]} />
+            <meshLambertMaterial color="#10142a" />
+          </mesh>
+          {/* lit windows grid */}
+          {Array.from({ length: Math.min(6, Math.floor(t.h / 2)) }).map(
+            (_, r) => (
+              <group key={r}>
+                {Array.from({ length: 2 }).map((_, c) => (
+                  <mesh
+                    key={c}
+                    position={[
+                      -t.w / 4 + c * (t.w / 2),
+                      1.0 + r * 1.7,
+                      1.02,
+                    ]}
+                  >
+                    <boxGeometry args={[t.w * 0.18, 0.5, 0.02]} />
+                    <meshStandardMaterial
+                      color="#1a1a1e"
+                      emissive={
+                        t.emissive && (r + c + i) % 3 === 0
+                          ? "#ffd28a"
+                          : "#7d8cff"
+                      }
+                      emissiveIntensity={
+                        t.emissive && (r + c + i) % 3 === 0 ? 0.7 : 0.3
+                      }
+                      toneMapped={false}
+                    />
+                  </mesh>
+                ))}
+              </group>
+            ),
+          )}
+          {/* aircraft warning light on tallest towers */}
+          {t.h > 13 && (
+            <mesh position={[0, t.h + 0.18, 0]}>
+              <boxGeometry args={[0.14, 0.14, 0.14]} />
+              <meshStandardMaterial
+                color="#000"
+                emissive="#ff2a2a"
+                emissiveIntensity={1.6}
+                toneMapped={false}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function MeetingRoom({ accent }: { accent: string }) {
+  // Glass-walled meeting room on the far left. Inside: long table + 4
+  // chairs + a giant wall-mounted TV that plays the Kariyer.net throwback
+  // clip. The TV is clickable and routes to the lightbox.
+  return (
+    <group position={[-7.5, 0, -4.5]}>
+      {/* Glass front wall (facing camera) */}
+      <mesh position={[1.2, 2.2, 1.8]}>
+        <boxGeometry args={[4.4, 4.4, 0.04]} />
+        <meshStandardMaterial
+          color="#0e1830"
+          emissive="#3a8cff"
+          emissiveIntensity={0.18}
+          toneMapped={false}
+          transparent
+          opacity={0.6}
+        />
+      </mesh>
+      {/* Glass side wall (right side, dividing from open floor) */}
+      <mesh position={[3.4, 2.2, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <boxGeometry args={[3.4, 4.4, 0.04]} />
+        <meshStandardMaterial
+          color="#0e1830"
+          emissive="#3a8cff"
+          emissiveIntensity={0.16}
+          toneMapped={false}
+          transparent
+          opacity={0.6}
+        />
+      </mesh>
+      {/* Mullions on glass walls */}
+      {[-1, 0, 1].map((x, i) => (
+        <mesh key={i} position={[1.2 + x * 1.4, 2.2, 1.83]}>
+          <boxGeometry args={[0.04, 4.4, 0.02]} />
+          <meshLambertMaterial color="#1a1f30" />
+        </mesh>
+      ))}
+      {/* Frame at top */}
+      <mesh position={[1.2, 4.4, 1.8]}>
+        <boxGeometry args={[4.6, 0.18, 0.18]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      {/* Door cutout glow strip */}
+      <mesh position={[3.0, 1.0, 1.83]}>
+        <boxGeometry args={[0.8, 2, 0.02]} />
+        <meshStandardMaterial
+          color="#0a0e1a"
+          emissive={accent}
+          emissiveIntensity={0.35}
+          toneMapped={false}
+        />
+      </mesh>
+
+      {/* Meeting room TV — wall-mounted, plays kariyer-web.mp4 */}
+      <VideoScreen
+        position={[1.2, 2.6, -0.2]}
+        src="/assets/kariyer-web.mp4"
+        width={2.6}
+        height={1.6}
+        frameColor="#0a0a14"
+        glow
+        caption={{
+          tr: "Kariyer.net · ofiste bir an",
+          en: "Kariyer.net · a moment in the office",
+        }}
+      />
+
+      {/* Long meeting table */}
+      <mesh position={[1.2, 1.0, 0.7]} castShadow>
+        <boxGeometry args={[3.2, 0.12, 1.0]} />
+        <meshLambertMaterial color="#2a2d3a" />
+      </mesh>
+      {/* table center accent strip */}
+      <mesh position={[1.2, 1.08, 0.7]}>
+        <boxGeometry args={[3.0, 0.02, 0.06]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      {/* table legs */}
+      {([
+        [-0.2, 0.45, 0.3],
+        [2.6, 0.45, 0.3],
+        [-0.2, 0.45, 1.1],
+        [2.6, 0.45, 1.1],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh key={i} position={p}>
+          <boxGeometry args={[0.12, 1.0, 0.12]} />
+          <meshLambertMaterial color="#15182a" />
+        </mesh>
+      ))}
+
+      {/* 4 chairs around the table */}
+      {([
+        [0.4, 0, 1.55, 0],
+        [2.0, 0, 1.55, 0],
+        [0.4, 0, -0.05, Math.PI],
+        [2.0, 0, -0.05, Math.PI],
+      ] as [number, number, number, number][]).map((c, i) => (
+        <group key={i} position={[c[0], c[1], c[2]]} rotation={[0, c[3], 0]}>
+          <mesh position={[0, 0.7, 0]}>
+            <boxGeometry args={[0.7, 0.12, 0.6]} />
+            <meshLambertMaterial color="#15171f" />
+          </mesh>
+          <mesh position={[0, 1.3, 0.25]}>
+            <boxGeometry args={[0.7, 1.1, 0.1]} />
+            <meshLambertMaterial color="#1a1c26" />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Small "MEETING" sign above the door */}
+      <mesh position={[3.0, 3.4, 1.84]}>
+        <boxGeometry args={[1.0, 0.22, 0.02]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.2}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph position={[3.0, 3.4, 1.86]} text="MEETING" color="#fff" scale={0.024} />
+    </group>
+  );
+}
+
+function LoungeCorner({ accent }: { accent: string }) {
+  // Right-foreground lounge: sofa + small coffee table + a side TV
+  // mounted on the right wall that plays the "yoğun ofis" clip.
+  return (
+    <group position={[7.6, 0, 1.0]}>
+      {/* Sofa base */}
+      <mesh position={[0, 0.4, 0]} castShadow>
+        <boxGeometry args={[2.6, 0.5, 0.9]} />
+        <meshLambertMaterial color="#3a3d4a" />
+      </mesh>
+      {/* Sofa back */}
+      <mesh position={[0, 1.0, -0.4]} castShadow>
+        <boxGeometry args={[2.6, 0.9, 0.18]} />
+        <meshLambertMaterial color="#3a3d4a" />
+      </mesh>
+      {/* Sofa armrests */}
+      {[-1.4, 1.4].map((x, i) => (
+        <mesh key={i} position={[x, 0.75, 0]}>
+          <boxGeometry args={[0.18, 0.7, 0.9]} />
+          <meshLambertMaterial color="#2a2d38" />
+        </mesh>
+      ))}
+      {/* 3 cushions */}
+      {[-0.9, 0, 0.9].map((x, i) => (
+        <mesh key={i} position={[x, 0.72, 0.04]}>
+          <boxGeometry args={[0.78, 0.18, 0.7]} />
+          <meshLambertMaterial color={["#4a4e5c", "#3a3d4a", "#4a4e5c"][i]} />
+        </mesh>
+      ))}
+
+      {/* Small coffee table in front of the sofa */}
+      <mesh position={[0, 0.4, 1.0]} castShadow>
+        <boxGeometry args={[1.4, 0.08, 0.7]} />
+        <meshLambertMaterial color="#2a2d3a" />
+      </mesh>
+      <mesh position={[0, 0.2, 1.0]}>
+        <boxGeometry args={[1.2, 0.4, 0.5]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      {/* Magazine + mug on table */}
+      <mesh position={[-0.4, 0.46, 1.0]}>
+        <boxGeometry args={[0.4, 0.04, 0.5]} />
+        <meshLambertMaterial color="#caa84a" />
+      </mesh>
+      <mesh position={[0.4, 0.5, 1.0]}>
+        <cylinderGeometry args={[0.1, 0.1, 0.16, 8]} />
+        <meshLambertMaterial color="#9b3a2a" />
+      </mesh>
+
+      {/* Wall-mounted lounge TV with "yoğun ofis" clip */}
+      <VideoScreen
+        position={[2.0, 2.6, -0.6]}
+        rotationY={-Math.PI / 2}
+        src="/assets/yogun-web.mp4"
+        width={1.8}
+        height={1.1}
+        frameColor="#0a0a14"
+        glow
+        caption={{
+          tr: "Yoğun ofis — bir gün",
+          en: "Busy office — a day in the life",
+        }}
+      />
+
+      {/* "LOUNGE" sign tucked above sofa */}
+      <mesh position={[0, 2.2, -0.55]}>
+        <boxGeometry args={[1.2, 0.22, 0.02]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.0}
+          toneMapped={false}
+        />
+      </mesh>
+      <SignGlyph position={[0, 2.2, -0.52]} text="LOUNGE" color="#fff" scale={0.024} />
+    </group>
+  );
+}
+
+function TrophyDisplay() {
+  // Small pillar with a framed FIFA Kupa photo and a tiny voxel trophy
+  // beneath it. Sits between the meeting room and the microservice mural.
+  return (
+    <group position={[-5.4, 0, -2.0]}>
+      {/* pillar */}
+      <mesh position={[0, 1.4, 0]} castShadow>
+        <boxGeometry args={[0.5, 2.8, 0.5]} />
+        <meshLambertMaterial color="#2a2d3a" />
+      </mesh>
+      <mesh position={[0, 2.85, 0]}>
+        <boxGeometry args={[0.6, 0.08, 0.6]} />
+        <meshLambertMaterial color="#1a1c26" />
+      </mesh>
+      {/* Tiny voxel trophy on the pillar */}
+      <group position={[0, 3.05, 0]}>
+        {/* cup body */}
+        <mesh>
+          <boxGeometry args={[0.22, 0.26, 0.22]} />
+          <meshStandardMaterial
+            color="#caa84a"
+            emissive="#caa84a"
+            emissiveIntensity={0.6}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* base */}
+        <mesh position={[0, -0.18, 0]}>
+          <boxGeometry args={[0.3, 0.06, 0.3]} />
+          <meshLambertMaterial color="#3a2a18" />
+        </mesh>
+        {/* handles */}
+        <mesh position={[-0.16, 0, 0]}>
+          <boxGeometry args={[0.06, 0.16, 0.06]} />
+          <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.5} toneMapped={false} />
+        </mesh>
+        <mesh position={[0.16, 0, 0]}>
+          <boxGeometry args={[0.06, 0.16, 0.06]} />
+          <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.5} toneMapped={false} />
+        </mesh>
+      </group>
+      {/* Framed FIFA photo mounted higher on the wall behind the pillar */}
+      <FramedPhoto
+        position={[0, 4.3, -0.25]}
+        src="/assets/fifa_kupa-tex.jpg"
+        width={1.4}
+        height={1.05}
+        frameColor="#2a2d3a"
+        matColor="#dcdaca"
+        glow
+        caption={{
+          tr: "Ofis FIFA turnuvası kupası — ekip anısı",
+          en: "Office FIFA tournament trophy — team memory",
+        }}
+      />
     </group>
   );
 }
