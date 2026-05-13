@@ -743,15 +743,13 @@ function AtelierDiorama() {
       <ProjectStand
         position={[4.4, 0, 1.4]}
         accent="#ffcd5c"
-        label1="JQUERY"
-        label2="WORDPRESS"
+        label="PORTFOLYO"
       />
       {/* Right-shore small stand: Playout Web Client (XeusMedia) */}
       <ProjectStand
         position={[5.6, 0, -3.6]}
         accent="#62ffaa"
-        label1="PLAYOUT"
-        label2="SIGNALR"
+        label="PLAYOUT"
       />
 
       {/* ---- Buildings: left shore (Improde + AXIS AVM + BiSesVar stand) ---- */}
@@ -762,8 +760,7 @@ function AtelierDiorama() {
       <ProjectStand
         position={[-4.4, 0, 1.4]}
         accent="#ff6aa9"
-        label1="BISESVAR"
-        label2="MOBILE"
+        label="BISESVAR"
       />
 
       {/* ---- Water life: ferries, sailboats, seagulls ---- */}
@@ -1174,7 +1171,9 @@ function BosphorusBridge({ bridgeLightRefs }: BridgeRefs) {
 }
 
 function SSCTurShop({ position }: { position: [number, number, number] }) {
-  // Small ground-floor office — '.NET' green sign, ticket-stub poster.
+  // Small ground-floor office. Vitrine carries an actual photo from the
+  // SSCTur days — click → lightbox. Sign kept to a single line so the
+  // window/photo carry the visual weight.
   return (
     <group position={position}>
       {/* Building shell */}
@@ -1187,32 +1186,46 @@ function SSCTurShop({ position }: { position: [number, number, number] }) {
         <boxGeometry args={[3.4, 0.18, 2.3]} />
         <meshLambertMaterial color="#3a2418" />
       </mesh>
-      {/* Window */}
+      {/* Window — backlit dim so the framed photo sitting in front pops */}
       <mesh position={[-0.7, 1.5, 0.01]}>
-        <boxGeometry args={[1.4, 1.4, 0.06]} />
+        <boxGeometry args={[1.6, 1.6, 0.06]} />
         <meshStandardMaterial
-          color="#1a2a4a"
+          color="#0a1430"
           emissive="#3a8cff"
-          emissiveIntensity={0.45}
+          emissiveIntensity={0.25}
           toneMapped={false}
         />
       </mesh>
+      {/* Real photo on an in-window display, clickable */}
+      <FramedPhoto
+        position={[-0.7, 1.5, 0.18]}
+        src="/assets/ssctur-tex.jpg"
+        width={1.3}
+        height={1.3}
+        frameColor="#3a2418"
+        matColor="#e6d6b0"
+        glow
+        caption={{
+          tr: "SSCTur · 2014-2015 · ilk iş, alobilethatti.com",
+          en: "SSCTur · 2014-2015 · first job, alobilethatti.com",
+        }}
+      />
       {/* Door */}
-      <mesh position={[0.9, 1.1, 0.01]}>
-        <boxGeometry args={[0.8, 2.0, 0.06]} />
+      <mesh position={[1.0, 1.1, 0.01]}>
+        <boxGeometry args={[0.7, 2.0, 0.06]} />
         <meshLambertMaterial color="#2a1810" />
       </mesh>
-      <mesh position={[0.9, 1.45, 0.04]}>
-        <boxGeometry args={[0.6, 1.0, 0.02]} />
+      <mesh position={[1.0, 1.45, 0.04]}>
+        <boxGeometry args={[0.55, 1.0, 0.02]} />
         <meshStandardMaterial color="#1a3050" emissive="#3a8cff" emissiveIntensity={0.4} toneMapped={false} />
       </mesh>
-      {/* Sign */}
+      {/* Single-line sign */}
       <mesh position={[0, 2.4, 0.02]}>
-        <boxGeometry args={[3.0, 0.55, 0.06]} />
+        <boxGeometry args={[3.0, 0.5, 0.06]} />
         <meshLambertMaterial color="#1a1a1a" />
       </mesh>
       <mesh position={[0, 2.4, 0.06]}>
-        <boxGeometry args={[2.6, 0.36, 0.04]} />
+        <boxGeometry args={[2.7, 0.32, 0.04]} />
         <meshStandardMaterial
           color="#000"
           emissive="#62ffaa"
@@ -1220,9 +1233,7 @@ function SSCTurShop({ position }: { position: [number, number, number] }) {
           toneMapped={false}
         />
       </mesh>
-      <SignGlyph position={[0, 2.42, 0.1]} text="SSCTUR" color="#0a1a14" scale={0.06} />
-      {/* "ALOBILETHATTI" smaller line */}
-      <SignGlyph position={[0, 1.95, 0.06]} text="ALOBILETHATTI" color="#3a2418" scale={0.034} />
+      <SignGlyph position={[0, 2.4, 0.1]} text="SSCTUR" color="#0a1a14" scale={0.058} />
     </group>
   );
 }
@@ -1265,55 +1276,52 @@ function XeusMediaShop({
           />
         </mesh>
       ))}
-      {/* Ground floor — large vitrine */}
+      {/* Ground floor — large vitrine acting as a backlit display case */}
       <mesh position={[-0.8, 1.35, 0.02]} castShadow>
-        <boxGeometry args={[2.4, 2.0, 0.06]} />
+        <boxGeometry args={[2.6, 2.0, 0.06]} />
         <meshLambertMaterial color="#0a0a14" />
       </mesh>
-      {/* Big CRT-style screen inside vitrine showing Character Generator */}
+      {/* Backlit vitrine inner panel — gives the photo a warm glow halo */}
       <mesh position={[-0.8, 1.35, 0.07]}>
-        <boxGeometry args={[2.2, 1.8, 0.04]} />
+        <boxGeometry args={[2.4, 1.8, 0.04]} />
         <meshStandardMaterial
           ref={cgScreenRef}
           color="#0a1a14"
-          emissive="#62ffaa"
-          emissiveIntensity={0.7}
+          emissive="#7d8cff"
+          emissiveIntensity={0.55}
           toneMapped={false}
         />
       </mesh>
-      {/* Mock CG UI strips on the screen */}
-      {Array.from({ length: 5 }).map((_, i) => (
-        <mesh key={i} position={[-0.8, 0.7 + i * 0.32, 0.09]}>
-          <boxGeometry args={[2.0, 0.05, 0.01]} />
-          <meshStandardMaterial
-            color="#0a1a14"
-            emissive={i === 2 ? "#fff" : "#22aa88"}
-            emissiveIntensity={i === 2 ? 1.4 : 0.6}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-      {/* Crawl text strip */}
-      <mesh position={[-0.8, 0.45, 0.09]}>
-        <boxGeometry args={[2.0, 0.1, 0.01]} />
-        <meshStandardMaterial color="#1a1a30" emissive="#7d8cff" emissiveIntensity={1.0} toneMapped={false} />
-      </mesh>
+      {/* Real XeusMedia workspace photo inside the vitrine — clickable */}
+      <FramedPhoto
+        position={[-0.8, 1.35, 0.18]}
+        src="/assets/xeusmedia-tex.jpg"
+        width={2.0}
+        height={1.5}
+        frameColor="#1a1822"
+        matColor="#cfcdc0"
+        glow
+        caption={{
+          tr: "XeusMedia · 2015-2016 · ofis ve Character Generator",
+          en: "XeusMedia · 2015-2016 · the office and Character Generator",
+        }}
+      />
       {/* Door on the right */}
-      <mesh position={[1.2, 1.1, 0.02]}>
-        <boxGeometry args={[0.8, 2.0, 0.06]} />
+      <mesh position={[1.4, 1.1, 0.02]}>
+        <boxGeometry args={[0.7, 2.0, 0.06]} />
         <meshLambertMaterial color="#1a1822" />
       </mesh>
-      <mesh position={[1.2, 1.45, 0.05]}>
-        <boxGeometry args={[0.6, 1.0, 0.02]} />
+      <mesh position={[1.4, 1.45, 0.05]}>
+        <boxGeometry args={[0.55, 1.0, 0.02]} />
         <meshStandardMaterial color="#1a3050" emissive="#7d8cff" emissiveIntensity={0.4} toneMapped={false} />
       </mesh>
-      {/* Big neon sign */}
+      {/* Single-line neon sign */}
       <mesh position={[0, 4.45, 0.02]}>
-        <boxGeometry args={[3.8, 0.55, 0.06]} />
+        <boxGeometry args={[3.8, 0.5, 0.06]} />
         <meshLambertMaterial color="#0a0a12" />
       </mesh>
       <mesh position={[0, 4.45, 0.06]}>
-        <boxGeometry args={[3.3, 0.36, 0.04]} />
+        <boxGeometry args={[3.4, 0.32, 0.04]} />
         <meshStandardMaterial
           color="#000"
           emissive="#7d8cff"
@@ -1321,8 +1329,7 @@ function XeusMediaShop({
           toneMapped={false}
         />
       </mesh>
-      <SignGlyph position={[0, 4.47, 0.1]} text="XEUSMEDIA" color="#fff5e6" scale={0.052} />
-      <SignGlyph position={[0, 2.55, 0.05]} text="BROADCAST" color="#7d8cff" scale={0.032} />
+      <SignGlyph position={[0, 4.45, 0.1]} text="XEUSMEDIA" color="#fff5e6" scale={0.05} />
     </group>
   );
 }
@@ -1422,8 +1429,7 @@ function ImprodeShop({
           toneMapped={false}
         />
       </mesh>
-      <SignGlyph position={[0, 4.47, 0.1]} text="IMPRODE" color="#fff5e6" scale={0.052} />
-      <SignGlyph position={[0, 2.55, 0.05]} text="IMARSORGULAMA" color="#27e0c2" scale={0.028} />
+      <SignGlyph position={[0, 4.45, 0.1]} text="IMPRODE" color="#fff5e6" scale={0.05} />
     </group>
   );
 }
@@ -1514,17 +1520,15 @@ function AxisAVM({
 function ProjectStand({
   position,
   accent,
-  label1,
-  label2,
+  label,
 }: {
   position: [number, number, number];
   accent: string;
-  label1: string;
-  label2: string;
+  label: string;
 }) {
   // Sidewalk billboard: two-pole stand with a vertical board, neon-rimmed
-  // sign with project tag + tech keyword underneath. Sits at sidewalk
-  // height so it doesn't clash with shopfronts.
+  // sign with a single project tag. Single line keeps the street legible
+  // when looked at from a distance.
   return (
     <group position={position}>
       {/* Two legs */}
@@ -1536,12 +1540,12 @@ function ProjectStand({
       ))}
       {/* Board backplate */}
       <mesh position={[0, 1.5, 0]} castShadow>
-        <boxGeometry args={[1.2, 0.9, 0.08]} />
+        <boxGeometry args={[1.3, 0.7, 0.08]} />
         <meshLambertMaterial color="#0a0a12" />
       </mesh>
       {/* Neon strip background */}
       <mesh position={[0, 1.5, 0.045]}>
-        <boxGeometry args={[1.05, 0.72, 0.03]} />
+        <boxGeometry args={[1.15, 0.5, 0.03]} />
         <meshStandardMaterial
           color="#000"
           emissive={accent}
@@ -1549,9 +1553,7 @@ function ProjectStand({
           toneMapped={false}
         />
       </mesh>
-      {/* Text */}
-      <SignGlyph position={[0, 1.62, 0.08]} text={label1} color="#fff5e6" scale={0.038} />
-      <SignGlyph position={[0, 1.35, 0.08]} text={label2} color="#fff5e6" scale={0.028} />
+      <SignGlyph position={[0, 1.5, 0.08]} text={label} color="#fff5e6" scale={0.046} />
     </group>
   );
 }
