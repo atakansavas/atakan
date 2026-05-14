@@ -340,7 +340,6 @@ function EraHorizon({ eraId }: { eraId: Era }) {
   const stamps = useMemo(() => {
     type Stamp = { x: number; w: number; h: number; color: string };
     const palette = era.accent;
-    const dim = "#1a1d2a";
     switch (eraId) {
       case "genesis":
         // Distant neighborhood — rooflines + a couple of mosques/treetops.
@@ -1755,52 +1754,8 @@ function Renault19() {
   );
 }
 
-/* =========================================================================
- * NeonSign — pixel-style label with emissive frame
- * ========================================================================= */
-function NeonSign({
-  position,
-  text,
-  accent,
-  bgColor,
-}: {
-  position: [number, number, number];
-  text: string;
-  accent: string;
-  bgColor: string;
-}) {
-  const w = Math.max(2.2, text.length * 0.45 + 0.6);
-  return (
-    <group position={position}>
-      {/* backplate */}
-      <mesh>
-        <boxGeometry args={[w, 0.85, 0.15]} />
-        <meshLambertMaterial color={bgColor} />
-      </mesh>
-      {/* glow border */}
-      <mesh position={[0, 0, 0.085]}>
-        <boxGeometry args={[w - 0.15, 0.7, 0.04]} />
-        <meshStandardMaterial
-          color="#000"
-          emissive={accent}
-          emissiveIntensity={0.65}
-          toneMapped={false}
-        />
-      </mesh>
-      {/* text-ish bar (we don't render real text in 3D; the bar reads as
-       *  a pixel-art neon glyph, the actual era name lives in the overlay). */}
-      <mesh position={[0, 0, 0.14]}>
-        <boxGeometry args={[w - 0.55, 0.34, 0.05]} />
-        <meshStandardMaterial
-          color={accent}
-          emissive={accent}
-          emissiveIntensity={1.6}
-          toneMapped={false}
-        />
-      </mesh>
-    </group>
-  );
-}
+/* NeonSign helper removed — no longer used by any era; the per-era
+ * signs now use the SignGlyph pixel-font directly. */
 
 /* =========================================================================
  * Checker floor — gives that pixel-art tile feel without textures.
@@ -6112,71 +6067,8 @@ function DriftBicycle({ position }: { position: [number, number, number] }) {
   );
 }
 
-function Scooter({ accent }: { accent: string }) {
-  // Vespa-style scooter — voxel approximation, sitting on the road,
-  // facing +X (driven by the parent's rotation/position via useFrame).
-  return (
-    <group>
-      {/* body shell (round-ish, but voxel-blocky) */}
-      <mesh position={[0, 0.45, 0]} castShadow>
-        <boxGeometry args={[0.46, 0.7, 0.7]} />
-        <meshLambertMaterial color={accent} />
-      </mesh>
-      {/* lower deck */}
-      <mesh position={[-0.2, 0.3, 0]}>
-        <boxGeometry args={[0.6, 0.16, 0.5]} />
-        <meshLambertMaterial color={accent} />
-      </mesh>
-      {/* front shield + headlight stem */}
-      <mesh position={[0.35, 0.55, 0]} castShadow>
-        <boxGeometry args={[0.18, 0.45, 0.45]} />
-        <meshLambertMaterial color={accent} />
-      </mesh>
-      {/* headlight */}
-      <mesh position={[0.46, 0.65, 0]}>
-        <boxGeometry args={[0.05, 0.16, 0.2]} />
-        <meshStandardMaterial color="#fff5d0" emissive="#fff5d0" emissiveIntensity={2} toneMapped={false} />
-      </mesh>
-      {/* handlebars */}
-      <mesh position={[0.36, 0.85, 0]}>
-        <boxGeometry args={[0.08, 0.06, 0.5]} />
-        <meshLambertMaterial color="#1a1a25" />
-      </mesh>
-      {/* seat */}
-      <mesh position={[-0.05, 0.8, 0]}>
-        <boxGeometry args={[0.5, 0.1, 0.3]} />
-        <meshLambertMaterial color="#1a1820" />
-      </mesh>
-      {/* wheels */}
-      <mesh position={[0.34, 0.16, 0]}>
-        <boxGeometry args={[0.18, 0.32, 0.32]} />
-        <meshLambertMaterial color="#1a1a1a" />
-      </mesh>
-      <mesh position={[-0.34, 0.16, 0]}>
-        <boxGeometry args={[0.18, 0.32, 0.32]} />
-        <meshLambertMaterial color="#1a1a1a" />
-      </mesh>
-      {/* rider */}
-      <group position={[-0.05, 1.05, 0]}>
-        {/* torso */}
-        <mesh position={[0, 0.2, 0]}>
-          <boxGeometry args={[0.3, 0.38, 0.3]} />
-          <meshLambertMaterial color="#3a4a5a" />
-        </mesh>
-        {/* head */}
-        <mesh position={[0, 0.5, 0]}>
-          <boxGeometry args={[0.22, 0.22, 0.22]} />
-          <meshLambertMaterial color="#d8b48a" />
-        </mesh>
-        {/* helmet shell */}
-        <mesh position={[0, 0.58, 0]}>
-          <boxGeometry args={[0.26, 0.14, 0.26]} />
-          <meshLambertMaterial color="#1a1a25" />
-        </mesh>
-      </group>
-    </group>
-  );
-}
+/* Scooter helper removed — was previously used when Drift era had a
+ * coastal road; the road is gone and so is its rider. */
 
 function LotusLantern({
   position,
