@@ -399,14 +399,22 @@ function EraHorizon({ eraId }: { eraId: Era }) {
           { x: -4, w: 0.5, h: 1.6, color: palette },
         ] as Stamp[];
       case "agentic":
-        // angular cyber towers
+        // Quiet village ridgeline silhouette + a few cypress spires, so the
+        // far horizon stays grounded (peaceful) while the foreground neon
+        // board does the heavy futuristic lifting.
         return [
-          { x: -12, w: 2, h: 10, color: dim },
-          { x: -8, w: 4, h: 13, color: dim },
-          { x: -2, w: 3, h: 16, color: dim },
-          { x: 3, w: 5, h: 11, color: dim },
-          { x: 10, w: 2, h: 14, color: dim },
-          { x: 13, w: 3, h: 9, color: dim },
+          { x: -16, w: 4, h: 3.6, color: "#0e1428" },
+          { x: -10, w: 5, h: 4.4, color: "#0e1428" },
+          { x: -4, w: 6, h: 5.0, color: "#0e1428" },
+          { x: 2, w: 5, h: 4.6, color: "#0e1428" },
+          { x: 8, w: 5, h: 4.0, color: "#0e1428" },
+          { x: 14, w: 4, h: 3.4, color: "#0e1428" },
+          // cypress spires — slim tall accents
+          { x: -7, w: 0.6, h: 7, color: "#0e1428" },
+          { x: 5, w: 0.6, h: 8, color: "#0e1428" },
+          { x: 11, w: 0.6, h: 6.5, color: "#0e1428" },
+          // single accent dot (agentic blue)
+          { x: 0, w: 0.5, h: 1.8, color: palette },
         ] as Stamp[];
     }
   }, [eraId, era.accent]);
@@ -6345,205 +6353,790 @@ function HeybeliadaIsland({
 
 /* =========================================================================
  * AgenticDiorama — Agentic era (2025-2026).
- * Cyberpunk AI lab: hover-floating holo monitors, neon grid floor,
- * data globe, AI agent figure, mesai console with glowing edges.
+ *
+ * "Khora Village + Agent Monopoly": a small green Aegean village house
+ * sits in the centre — Atakan's CTO study / quiet retreat. Floating
+ * around the house at low altitude is a holographic Monopoly board with
+ * four project zones (KHORA · MESAI · ZEKAI · STEALTH); two corner
+ * card decks levitate at the diagonals; a few "in-play" cards drift
+ * across the board mid-roll. Above the house a wireframe data globe
+ * rotates as the AI brain; soft matrix code rain falls in the air; four
+ * mini agent figures stand at the corners as the players; Atakan himself
+ * sits on the porch with an open laptop.
+ *
+ * Visual tension: a calm, grounded village house at the heart of a
+ * neon agentic system. Real life + AI life, sharing one diorama.
  * ========================================================================= */
 function AgenticDiorama() {
   const accent = ERAS.agentic.accent; // #60a5fa
-  const holoRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
-  const sphereRef = useRef<THREE.Mesh | null>(null);
-  const agentRef = useRef<THREE.Group | null>(null);
-  const dataPillarRefs = useRef<(THREE.Mesh | null)[]>([]);
+  // Animated refs
+  const globeRef = useRef<THREE.Mesh | null>(null);
+  const boardRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  const cardRefs = useRef<(THREE.Group | null)[]>([]);
+  const agentRefs = useRef<(THREE.Group | null)[]>([]);
+  const rainRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const windowRef = useRef<THREE.MeshStandardMaterial | null>(null);
+  const laptopRef = useRef<THREE.MeshStandardMaterial | null>(null);
 
   useFrame(() => {
     const t = performance.now() * 0.001;
-    holoRefs.current.forEach((m, i) => {
-      if (!m) return;
-      m.emissiveIntensity = 0.85 + Math.sin(t * 2 + i * 0.9) * 0.18;
-      m.opacity = 0.78 + Math.sin(t * 1.4 + i * 0.7) * 0.12;
-    });
-    if (sphereRef.current) {
-      sphereRef.current.rotation.y = t * 0.4;
-      sphereRef.current.rotation.x = Math.sin(t * 0.3) * 0.2;
-      sphereRef.current.position.y = 4.2 + Math.sin(t * 0.9) * 0.2;
+    // Data globe rotates + breathes
+    if (globeRef.current) {
+      globeRef.current.rotation.y = t * 0.4;
+      globeRef.current.rotation.x = Math.sin(t * 0.3) * 0.2;
+      globeRef.current.position.y = 6.0 + Math.sin(t * 0.9) * 0.18;
     }
-    if (agentRef.current) {
-      agentRef.current.position.y = 1.2 + Math.sin(t * 1.6) * 0.05;
-    }
-    dataPillarRefs.current.forEach((m, i) => {
+    // Holo board panels pulse softly
+    boardRefs.current.forEach((m, i) => {
       if (!m) return;
-      m.scale.y = 1 + Math.sin(t * 2 + i * 1.2) * 0.3;
+      m.emissiveIntensity = 1.1 + Math.sin(t * 1.6 + i * 0.7) * 0.25;
     });
+    // Cards drift + spin
+    cardRefs.current.forEach((g, i) => {
+      if (!g) return;
+      const phase = i * 1.3;
+      g.position.y = 1.2 + Math.sin(t * 0.7 + phase) * 0.25;
+      g.rotation.y = t * 0.4 + phase;
+      g.rotation.z = Math.sin(t * 0.6 + phase) * 0.2;
+    });
+    // Agent figures gentle bob
+    agentRefs.current.forEach((g, i) => {
+      if (!g) return;
+      g.position.y = 0 + Math.sin(t * 1.4 + i * 0.6) * 0.04;
+    });
+    // Matrix code rain — each stream falls and wraps
+    rainRefs.current.forEach((m, i) => {
+      if (!m) return;
+      const speed = 1.2 + (i % 3) * 0.4;
+      const span = 8;
+      const y = ((t * speed + i * 0.7) % span);
+      m.position.y = 7 - y; // fall from y=7 down to y=-1, then wrap
+    });
+    // Window glow gentle breathing
+    if (windowRef.current) {
+      windowRef.current.emissiveIntensity = 1.1 + Math.sin(t * 1.4) * 0.15;
+    }
+    // Atakan's laptop screen pulse
+    if (laptopRef.current) {
+      laptopRef.current.emissiveIntensity = 0.9 + Math.sin(t * 3.0) * 0.12;
+    }
   });
 
   return (
     <group>
-      {/* Dark glossy floor with neon grid lines */}
-      <mesh position={[0, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[14, 14]} />
-        <meshStandardMaterial color="#06080f" />
-      </mesh>
-      {/* neon grid stripes — long thin emissive bars */}
-      {Array.from({ length: 7 }).map((_, i) => (
-        <mesh key={`x${i}`} position={[-6 + i * 2, -0.48, 0]}>
-          <boxGeometry args={[0.06, 0.02, 14]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.4} toneMapped={false} />
-        </mesh>
-      ))}
-      {Array.from({ length: 7 }).map((_, i) => (
-        <mesh key={`z${i}`} position={[0, -0.48, -6 + i * 2]}>
-          <boxGeometry args={[14, 0.02, 0.06]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.4} toneMapped={false} />
-        </mesh>
-      ))}
+      {/* Night sky backdrop with stars */}
+      <AgenticSky />
 
-      {/* Central console — angular pedestal */}
-      <mesh position={[0, 0.8, 0]} castShadow>
-        <boxGeometry args={[3, 1.6, 2]} />
-        <meshLambertMaterial color="#0d111c" />
+      {/* Ground tile — dark grass / village earth */}
+      <mesh position={[0, -0.5, 0]}>
+        <boxGeometry args={[18, 0.1, 18]} />
+        <meshLambertMaterial color="#0e1a14" />
       </mesh>
-      {/* console glow strips */}
-      {[1.61, 0.01, -1.61].map((x, i) => (
-        <mesh key={i} position={[x, 0.3, 1.005]}>
-          <boxGeometry args={[0.06, 1.4, 0.04]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.6} toneMapped={false} />
-        </mesh>
-      ))}
-      {/* top trim */}
-      <mesh position={[0, 1.62, 0]}>
-        <boxGeometry args={[3.05, 0.04, 2.05]} />
-        <meshStandardMaterial color="#ec5aa6" emissive="#ec5aa6" emissiveIntensity={1.4} toneMapped={false} />
-      </mesh>
+      {/* Grass tufts scattered around the house */}
+      <VillageGrass />
 
-      {/* Three floating holographic monitors arc above the console */}
-      {[-2, 0, 2].map((mx, i) => (
-        <group key={i} position={[mx, 3.2, 0]} rotation={[0, mx * -0.18, 0.05]}>
-          <mesh>
-            <boxGeometry args={[1.6, 1.2, 0.04]} />
-            <meshStandardMaterial
-              ref={(el) => {
-                holoRefs.current[i] = el;
-              }}
-              color="#000"
-              emissive={i === 1 ? "#ec5aa6" : accent}
-              emissiveIntensity={0.85}
-              toneMapped={false}
-              transparent
-              opacity={0.78}
-              depthWrite={false}
-            />
-          </mesh>
-          {/* holo bezel ribbon */}
-          <mesh position={[0, 0, 0.04]}>
-            <boxGeometry args={[1.65, 1.25, 0.01]} />
-            <meshStandardMaterial color={i === 1 ? "#ec5aa6" : accent} emissive={i === 1 ? "#ec5aa6" : accent} emissiveIntensity={1.4} toneMapped={false} transparent opacity={0.8} />
-          </mesh>
-          {/* fake content bars */}
-          {Array.from({ length: 4 }).map((_, j) => (
-            <mesh key={j} position={[-0.55 + (j % 2) * 0.6, 0.32 - j * 0.18, 0.06]}>
-              <boxGeometry args={[0.5, 0.08, 0.01]} />
-              <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={1.2} toneMapped={false} transparent opacity={0.85} />
-            </mesh>
-          ))}
+      {/* The central green village house */}
+      <VillageHouse windowRef={windowRef} />
+
+      {/* Atakan figure sitting on the porch with an open laptop */}
+      <PorchAtakan laptopRef={laptopRef} />
+
+      {/* Holographic Monopoly board floating just above the ground */}
+      <MonopolyHoloBoard boardRefs={boardRefs} accent={accent} />
+
+      {/* Two corner card decks — Chance / Community Chest equivalents */}
+      <CardDeck position={[5.6, 0.2, 5.6]} label="CHANCE" tint="#ff7a59" />
+      <CardDeck position={[-5.6, 0.2, -5.6]} label="MESAI" tint="#62ffaa" />
+
+      {/* In-play cards drifting around above the board */}
+      {[0, 1, 2].map((i) => {
+        const a = (i / 3) * Math.PI * 2;
+        const r = 4.2;
+        return (
+          <group
+            key={i}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
+            position={[Math.cos(a) * r, 1.2, Math.sin(a) * r]}
+          >
+            <PlayingCard color={["#7d8cff", "#62ffaa", "#ff7a59"][i]} />
+          </group>
+        );
+      })}
+
+      {/* Four mini AI agent figures at the four corners — the players */}
+      {(
+        [
+          { pos: [-5.5, 0, 5.5] as [number, number, number], color: "#7d8cff" }, // KHORA
+          { pos: [5.5, 0, 5.5] as [number, number, number], color: "#62ffaa" }, // MESAI
+          { pos: [5.5, 0, -5.5] as [number, number, number], color: "#ff7a59" }, // ZEKAI
+          { pos: [-5.5, 0, -5.5] as [number, number, number], color: "#a23a4a" }, // STEALTH
+        ]
+      ).map((a, i) => (
+        <group
+          key={i}
+          ref={(el) => {
+            agentRefs.current[i] = el;
+          }}
+          position={a.pos}
+          rotation={[0, Math.atan2(-a.pos[0], -a.pos[2]), 0]}
+        >
+          <MiniAgent color={a.color} />
         </group>
       ))}
 
-      {/* AI agent figure — minimal voxel humanoid */}
-      <group ref={agentRef} position={[1.5, 0, 1.6]}>
-        {/* legs */}
-        <mesh position={[-0.18, 0.45, 0]} castShadow>
-          <boxGeometry args={[0.22, 0.9, 0.22]} />
-          <meshLambertMaterial color="#1a2236" />
-        </mesh>
-        <mesh position={[0.18, 0.45, 0]} castShadow>
-          <boxGeometry args={[0.22, 0.9, 0.22]} />
-          <meshLambertMaterial color="#1a2236" />
-        </mesh>
-        {/* torso */}
-        <mesh position={[0, 1.3, 0]} castShadow>
-          <boxGeometry args={[0.6, 0.8, 0.4]} />
-          <meshLambertMaterial color="#222a3e" />
-        </mesh>
-        {/* core glow */}
-        <mesh position={[0, 1.3, 0.21]}>
-          <boxGeometry args={[0.32, 0.32, 0.04]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.8} toneMapped={false} />
-        </mesh>
-        {/* arms */}
-        <mesh position={[-0.42, 1.3, 0]}>
-          <boxGeometry args={[0.18, 0.7, 0.18]} />
-          <meshLambertMaterial color="#1a2236" />
-        </mesh>
-        <mesh position={[0.42, 1.3, 0]}>
-          <boxGeometry args={[0.18, 0.7, 0.18]} />
-          <meshLambertMaterial color="#1a2236" />
-        </mesh>
-        {/* head */}
-        <mesh position={[0, 1.95, 0]} castShadow>
-          <boxGeometry args={[0.5, 0.5, 0.5]} />
-          <meshLambertMaterial color="#10141f" />
-        </mesh>
-        {/* glowing visor (eye strip) */}
-        <mesh position={[0, 1.97, 0.255]}>
-          <boxGeometry args={[0.36, 0.1, 0.02]} />
-          <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={2.2} toneMapped={false} />
-        </mesh>
-      </group>
-
-      {/* Floating wireframe data globe */}
-      <mesh ref={sphereRef} position={[0, 4.2, -2]}>
-        <icosahedronGeometry args={[0.85, 1]} />
+      {/* Floating wireframe data globe above the house */}
+      <mesh ref={globeRef} position={[0, 6.0, 0]}>
+        <icosahedronGeometry args={[0.95, 1]} />
         <meshStandardMaterial
           color="#000"
           emissive={accent}
-          emissiveIntensity={0.6}
+          emissiveIntensity={1.0}
           toneMapped={false}
           wireframe
         />
       </mesh>
+      {/* Globe halo */}
+      <mesh position={[0, 6.0, 0]}>
+        <boxGeometry args={[2.6, 2.6, 0.02]} />
+        <meshBasicMaterial color={accent} transparent opacity={0.12} toneMapped={false} />
+      </mesh>
 
-      {/* Four data pillars at the corners — pulsing emissive bars */}
-      {([
-        [-5, 0, -3],
-        [5, 0, -3],
-        [-5, 0, 3],
-        [5, 0, 3],
-      ] as [number, number, number][]).map((p, i) => (
-        <mesh
-          key={i}
-          ref={(el) => {
-            dataPillarRefs.current[i] = el;
-          }}
-          position={[p[0], p[1] + 1.5, p[2]]}
-          castShadow
-        >
-          <boxGeometry args={[0.4, 3, 0.4]} />
-          <meshStandardMaterial color="#0a0e1a" emissive={i % 2 === 0 ? accent : "#ec5aa6"} emissiveIntensity={0.9} toneMapped={false} />
-        </mesh>
-      ))}
-
-      {/* Neon "MESAI" sign overhead */}
-      <NeonSign position={[-3.4, 5.2, -2.4]} text="MESAI" accent="#ec5aa6" bgColor="#0a0e1a" />
-      <NeonSign position={[3.2, 4.8, -2.4]} text="KHORA" accent={accent} bgColor="#0a0e1a" />
-
-      {/* Floating data cubes — small chunks orbiting console */}
-      {Array.from({ length: 6 }).map((_, i) => {
-        const a = (i / 6) * Math.PI * 2;
-        const r = 3.5;
+      {/* Matrix code rain — vertical thin emissive streaks */}
+      {Array.from({ length: 18 }).map((_, i) => {
+        const x = ((i * 31) % 16) - 8;
+        const z = ((i * 17) % 14) - 7;
+        const isClose = i % 4 === 0;
         return (
           <mesh
             key={i}
-            position={[Math.cos(a) * r, 2 + Math.sin(i) * 0.3, Math.sin(a) * r]}
+            ref={(el) => {
+              rainRefs.current[i] = el;
+            }}
+            position={[x, 6, z]}
           >
-            <boxGeometry args={[0.18, 0.18, 0.18]} />
-            <meshStandardMaterial color={i % 2 === 0 ? accent : "#ec5aa6"} emissive={i % 2 === 0 ? accent : "#ec5aa6"} emissiveIntensity={1.6} toneMapped={false} />
+            <boxGeometry args={[0.06, 0.5, 0.06]} />
+            <meshStandardMaterial
+              color="#0a2a1a"
+              emissive={isClose ? "#62ffaa" : "#3a8a66"}
+              emissiveIntensity={isClose ? 1.8 : 1.0}
+              toneMapped={false}
+              transparent
+              opacity={isClose ? 0.9 : 0.55}
+            />
           </mesh>
         );
       })}
 
-      {/* Cyberpunk magenta rim light */}
-      <pointLight position={[3, 4, 3]} intensity={0.8} distance={16} color="#ec5aa6" />
-      <pointLight position={[-3, 4, 3]} intensity={0.6} distance={14} color={accent} />
+      {/* Era horizon ambience — soft pink + accent rim */}
+      <pointLight position={[0, 5, 4]} intensity={0.7} distance={14} color={accent} />
+      <pointLight position={[-3, 1.5, 2]} intensity={0.5} distance={6} color="#ffd28a" />
+      <pointLight position={[3, 4, -2]} intensity={0.5} distance={9} color="#ec5aa6" />
+    </group>
+  );
+}
+
+/* ===== Agentic helpers =================================================== */
+
+function AgenticSky() {
+  return (
+    <group position={[0, 5, -16]}>
+      <mesh position={[0, 6, 0]}>
+        <planeGeometry args={[60, 14]} />
+        <meshBasicMaterial color="#070a20" toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -2, 0.05]}>
+        <planeGeometry args={[60, 6]} />
+        <meshBasicMaterial color="#10164a" toneMapped={false} />
+      </mesh>
+      {/* Stars — sparse */}
+      {Array.from({ length: 28 }).map((_, i) => {
+        const x = ((i * 37.9) % 56) - 28;
+        const y = ((i * 23.7) % 12) - 4;
+        return (
+          <mesh key={i} position={[x, y, 0.2]}>
+            <boxGeometry args={[0.06, 0.06, 0.02]} />
+            <meshBasicMaterial color={i % 5 === 0 ? "#a4d8f0" : "#fff5e6"} toneMapped={false} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function VillageGrass() {
+  // Pseudo-random tufts of grass scattered around the house base, kept
+  // away from the immediate floor of the porch.
+  const tufts = useMemo(() => {
+    const out: { x: number; z: number; size: number; tone: 0 | 1 }[] = [];
+    for (let i = 0; i < 36; i++) {
+      const x = (Math.sin(i * 12.31) * 0.5 + 0.5) * 14 - 7;
+      const z = (Math.cos(i * 7.13) * 0.5 + 0.5) * 14 - 7;
+      // Skip tufts that would clip into the house footprint (-1.7..1.7 in
+      // x, -1.5..1.5 in z) so the lawn looks gardened.
+      if (Math.abs(x) < 1.8 && Math.abs(z) < 1.6) continue;
+      out.push({
+        x,
+        z,
+        size: 0.18 + ((i * 0.31) % 0.16),
+        tone: (i % 2) as 0 | 1,
+      });
+    }
+    return out;
+  }, []);
+  return (
+    <group>
+      {tufts.map((g, i) => (
+        <mesh key={i} position={[g.x, -0.4, g.z]}>
+          <boxGeometry args={[g.size, 0.18, g.size]} />
+          <meshLambertMaterial color={g.tone === 0 ? "#1f3f24" : "#2a5230"} />
+        </mesh>
+      ))}
+      {/* Tiny flower clusters — pink dots */}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const x = (Math.sin(i * 4.1) * 0.5 + 0.5) * 14 - 7;
+        const z = (Math.cos(i * 5.7) * 0.5 + 0.5) * 14 - 7;
+        if (Math.abs(x) < 2 && Math.abs(z) < 1.8) return null;
+        return (
+          <mesh key={i} position={[x, -0.38, z]}>
+            <boxGeometry args={[0.12, 0.06, 0.12]} />
+            <meshStandardMaterial
+              color="#000"
+              emissive="#ff7a8c"
+              emissiveIntensity={0.6}
+              toneMapped={false}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function VillageHouse({
+  windowRef,
+}: {
+  windowRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  // Green-wood Aegean village house: green clapboard cladding, white
+  // window trim, red tile roof, small chimney, porch on the front
+  // (camera-facing) side.
+  const wallGreen = "#3a6a4a";
+  const trimWhite = "#f4f0e2";
+  const roofRed = "#8a2a2a";
+  return (
+    <group position={[0, 0, 0]}>
+      {/* Main body */}
+      <mesh position={[0, 1.0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3.0, 2.0, 2.4]} />
+        <meshLambertMaterial color={wallGreen} />
+      </mesh>
+      {/* Vertical wood-plank suggestion (thin overlays) */}
+      {[-1.2, -0.6, 0, 0.6, 1.2].map((x, i) => (
+        <mesh key={i} position={[x, 1.0, 1.21]}>
+          <boxGeometry args={[0.04, 1.9, 0.02]} />
+          <meshLambertMaterial color="#2a4a36" />
+        </mesh>
+      ))}
+      {/* Front-facing windows with warm interior glow */}
+      <mesh position={[-0.9, 1.2, 1.22]}>
+        <boxGeometry args={[0.6, 0.7, 0.04]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      <mesh position={[-0.9, 1.2, 1.235]}>
+        <boxGeometry args={[0.48, 0.58, 0.02]} />
+        <meshStandardMaterial
+          ref={windowRef}
+          color="#1a1410"
+          emissive="#ffd28a"
+          emissiveIntensity={1.2}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* mullion */}
+      <mesh position={[-0.9, 1.2, 1.245]}>
+        <boxGeometry args={[0.5, 0.04, 0.01]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      <mesh position={[-0.9, 1.2, 1.245]}>
+        <boxGeometry args={[0.04, 0.6, 0.01]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      {/* Right window */}
+      <mesh position={[0.9, 1.2, 1.22]}>
+        <boxGeometry args={[0.6, 0.7, 0.04]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      <mesh position={[0.9, 1.2, 1.235]}>
+        <boxGeometry args={[0.48, 0.58, 0.02]} />
+        <meshStandardMaterial
+          color="#1a1410"
+          emissive="#ffd28a"
+          emissiveIntensity={1.0}
+          toneMapped={false}
+        />
+      </mesh>
+      <mesh position={[0.9, 1.2, 1.245]}>
+        <boxGeometry args={[0.5, 0.04, 0.01]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      <mesh position={[0.9, 1.2, 1.245]}>
+        <boxGeometry args={[0.04, 0.6, 0.01]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      {/* Front door */}
+      <mesh position={[0, 0.65, 1.22]}>
+        <boxGeometry args={[0.7, 1.3, 0.04]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      <mesh position={[0, 0.65, 1.245]}>
+        <boxGeometry args={[0.6, 1.2, 0.02]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      {/* Door knob */}
+      <mesh position={[0.2, 0.65, 1.27]}>
+        <boxGeometry args={[0.06, 0.06, 0.04]} />
+        <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+
+      {/* Pitched red-tile roof — two slanted slabs */}
+      <mesh position={[-0.8, 2.3, 0]} rotation={[0, 0, -0.55]} castShadow>
+        <boxGeometry args={[2.2, 0.18, 2.6]} />
+        <meshLambertMaterial color={roofRed} />
+      </mesh>
+      <mesh position={[0.8, 2.3, 0]} rotation={[0, 0, 0.55]} castShadow>
+        <boxGeometry args={[2.2, 0.18, 2.6]} />
+        <meshLambertMaterial color={roofRed} />
+      </mesh>
+      {/* roof gable triangle (front + back) — using flat slab approximations */}
+      <mesh position={[0, 2.4, 1.21]}>
+        <boxGeometry args={[2.4, 0.7, 0.04]} />
+        <meshLambertMaterial color={wallGreen} />
+      </mesh>
+      <mesh position={[0, 2.4, -1.21]}>
+        <boxGeometry args={[2.4, 0.7, 0.04]} />
+        <meshLambertMaterial color={wallGreen} />
+      </mesh>
+      {/* Chimney */}
+      <mesh position={[0.9, 3.05, 0.4]} castShadow>
+        <boxGeometry args={[0.3, 0.7, 0.3]} />
+        <meshLambertMaterial color="#8a4828" />
+      </mesh>
+      <mesh position={[0.9, 3.45, 0.4]}>
+        <boxGeometry args={[0.36, 0.06, 0.36]} />
+        <meshLambertMaterial color="#2a1810" />
+      </mesh>
+      {/* Tiny smoke puff */}
+      <mesh position={[0.9, 3.7, 0.4]}>
+        <boxGeometry args={[0.2, 0.18, 0.2]} />
+        <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={0.4} transparent opacity={0.6} toneMapped={false} />
+      </mesh>
+
+      {/* Front porch — small platform extending toward the camera */}
+      <mesh position={[0, 0.05, 1.85]} receiveShadow>
+        <boxGeometry args={[2.4, 0.16, 1.0]} />
+        <meshLambertMaterial color="#5a3a1f" />
+      </mesh>
+      {/* Porch posts */}
+      <mesh position={[-1.0, 0.85, 2.3]} castShadow>
+        <boxGeometry args={[0.12, 1.6, 0.12]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      <mesh position={[1.0, 0.85, 2.3]} castShadow>
+        <boxGeometry args={[0.12, 1.6, 0.12]} />
+        <meshLambertMaterial color={trimWhite} />
+      </mesh>
+      {/* Porch awning */}
+      <mesh position={[0, 1.65, 1.9]}>
+        <boxGeometry args={[2.4, 0.12, 1.0]} />
+        <meshLambertMaterial color={roofRed} />
+      </mesh>
+      {/* String of small porch lights */}
+      {[-0.8, -0.3, 0.3, 0.8].map((x, i) => (
+        <mesh key={i} position={[x, 1.5, 2.3]}>
+          <boxGeometry args={[0.07, 0.07, 0.07]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#ffd28a"
+            emissiveIntensity={i % 2 === 0 ? 1.6 : 1.1}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function PorchAtakan({
+  laptopRef,
+}: {
+  laptopRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+}) {
+  // Small desk + chair + Atakan figure with an open laptop on the porch.
+  return (
+    <group position={[0.6, 0, 2.1]}>
+      {/* Small desk */}
+      <mesh position={[0, 0.6, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.06, 0.5]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      {/* desk legs */}
+      <mesh position={[-0.35, 0.3, 0.2]}>
+        <boxGeometry args={[0.06, 0.6, 0.06]} />
+        <meshLambertMaterial color="#1a1006" />
+      </mesh>
+      <mesh position={[0.35, 0.3, 0.2]}>
+        <boxGeometry args={[0.06, 0.6, 0.06]} />
+        <meshLambertMaterial color="#1a1006" />
+      </mesh>
+      <mesh position={[-0.35, 0.3, -0.2]}>
+        <boxGeometry args={[0.06, 0.6, 0.06]} />
+        <meshLambertMaterial color="#1a1006" />
+      </mesh>
+      <mesh position={[0.35, 0.3, -0.2]}>
+        <boxGeometry args={[0.06, 0.6, 0.06]} />
+        <meshLambertMaterial color="#1a1006" />
+      </mesh>
+      {/* laptop base */}
+      <mesh position={[0, 0.66, 0.05]}>
+        <boxGeometry args={[0.42, 0.03, 0.26]} />
+        <meshLambertMaterial color="#a0a8b0" />
+      </mesh>
+      {/* laptop screen */}
+      <mesh position={[0, 0.85, -0.08]} rotation={[-Math.PI / 8, 0, 0]}>
+        <boxGeometry args={[0.42, 0.28, 0.02]} />
+        <meshLambertMaterial color="#1a1a25" />
+      </mesh>
+      <mesh position={[0, 0.85, -0.075]} rotation={[-Math.PI / 8, 0, 0]}>
+        <boxGeometry args={[0.38, 0.24, 0.01]} />
+        <meshStandardMaterial
+          ref={laptopRef}
+          color="#000"
+          emissive="#60a5fa"
+          emissiveIntensity={0.9}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* mug */}
+      <mesh position={[0.32, 0.68, 0.15]}>
+        <boxGeometry args={[0.08, 0.12, 0.08]} />
+        <meshLambertMaterial color="#9b3a2a" />
+      </mesh>
+      {/* small desk lamp */}
+      <mesh position={[-0.36, 0.78, -0.18]}>
+        <boxGeometry args={[0.06, 0.36, 0.06]} />
+        <meshLambertMaterial color="#1a1a22" />
+      </mesh>
+      <mesh position={[-0.32, 0.98, -0.14]} rotation={[0, 0, 0.5]}>
+        <boxGeometry args={[0.14, 0.06, 0.14]} />
+        <meshStandardMaterial color="#000" emissive="#ffd28a" emissiveIntensity={1.4} toneMapped={false} />
+      </mesh>
+
+      {/* Atakan figure sitting in chair */}
+      <group position={[0.2, 0, 0.55]}>
+        {/* chair */}
+        <mesh position={[0, 0.42, 0]} castShadow>
+          <boxGeometry args={[0.5, 0.08, 0.5]} />
+          <meshLambertMaterial color="#5a3a1f" />
+        </mesh>
+        <mesh position={[0, 0.7, 0.22]} castShadow>
+          <boxGeometry args={[0.5, 0.6, 0.06]} />
+          <meshLambertMaterial color="#5a3a1f" />
+        </mesh>
+        {/* legs */}
+        <mesh position={[-0.18, 0.18, 0.18]}>
+          <boxGeometry args={[0.05, 0.4, 0.05]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        <mesh position={[0.18, 0.18, 0.18]}>
+          <boxGeometry args={[0.05, 0.4, 0.05]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        <mesh position={[-0.18, 0.18, -0.18]}>
+          <boxGeometry args={[0.05, 0.4, 0.05]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        <mesh position={[0.18, 0.18, -0.18]}>
+          <boxGeometry args={[0.05, 0.4, 0.05]} />
+          <meshLambertMaterial color="#3a2418" />
+        </mesh>
+        {/* legs/feet (figure) */}
+        <mesh position={[0, 0.6, -0.1]} rotation={[Math.PI / 2.5, 0, 0]}>
+          <boxGeometry args={[0.3, 0.5, 0.22]} />
+          <meshLambertMaterial color="#1a1f30" />
+        </mesh>
+        {/* torso */}
+        <mesh position={[0, 1.0, 0.15]}>
+          <boxGeometry args={[0.36, 0.4, 0.26]} />
+          <meshLambertMaterial color="#3a4a5a" />
+        </mesh>
+        {/* head */}
+        <mesh position={[0, 1.32, 0.15]}>
+          <boxGeometry args={[0.24, 0.24, 0.24]} />
+          <meshLambertMaterial color="#d8b48a" />
+        </mesh>
+        {/* hair */}
+        <mesh position={[0, 1.45, 0.15]}>
+          <boxGeometry args={[0.26, 0.06, 0.26]} />
+          <meshLambertMaterial color="#2a1810" />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+function MonopolyHoloBoard({
+  boardRefs,
+  accent,
+}: {
+  boardRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
+  accent: string;
+}) {
+  // A flat holographic Monopoly board floating at y=0.2 around the house.
+  // The board is a hollow square ring of grid panels with four named
+  // project zones (north/east/south/west).
+  const projects: { side: "N" | "E" | "S" | "W"; label: string; color: string }[] = [
+    { side: "N", label: "STEALTH", color: "#a23a4a" },
+    { side: "E", label: "MESAI", color: "#62ffaa" },
+    { side: "S", label: "ZEKAI", color: "#ff7a59" },
+    { side: "W", label: "KHORA", color: "#7d8cff" },
+  ];
+  return (
+    <group position={[0, 0.15, 0]}>
+      {/* Base holographic frame around the house — 4 long thin panels */}
+      {/* North (back) — z = -4.5 */}
+      <mesh position={[0, 0, -4.6]}>
+        <boxGeometry args={[10, 0.04, 1.6]} />
+        <meshStandardMaterial
+          ref={(el) => {
+            boardRefs.current[0] = el;
+          }}
+          color="#0a0e1a"
+          emissive={accent}
+          emissiveIntensity={0.9}
+          toneMapped={false}
+          transparent
+          opacity={0.65}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* South (front, camera side) */}
+      <mesh position={[0, 0, 4.6]}>
+        <boxGeometry args={[10, 0.04, 1.6]} />
+        <meshStandardMaterial
+          ref={(el) => {
+            boardRefs.current[1] = el;
+          }}
+          color="#0a0e1a"
+          emissive={accent}
+          emissiveIntensity={0.9}
+          toneMapped={false}
+          transparent
+          opacity={0.65}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* East (right) */}
+      <mesh position={[4.6, 0, 0]}>
+        <boxGeometry args={[1.6, 0.04, 10]} />
+        <meshStandardMaterial
+          ref={(el) => {
+            boardRefs.current[2] = el;
+          }}
+          color="#0a0e1a"
+          emissive={accent}
+          emissiveIntensity={0.9}
+          toneMapped={false}
+          transparent
+          opacity={0.65}
+          depthWrite={false}
+        />
+      </mesh>
+      {/* West (left) */}
+      <mesh position={[-4.6, 0, 0]}>
+        <boxGeometry args={[1.6, 0.04, 10]} />
+        <meshStandardMaterial
+          ref={(el) => {
+            boardRefs.current[3] = el;
+          }}
+          color="#0a0e1a"
+          emissive={accent}
+          emissiveIntensity={0.9}
+          toneMapped={false}
+          transparent
+          opacity={0.65}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Project named panels on each side */}
+      {projects.map((p, i) => {
+        let x = 0, z = 0, rot = 0;
+        if (p.side === "N") { x = 0; z = -4.6; }
+        if (p.side === "S") { x = 0; z = 4.6; }
+        if (p.side === "E") { x = 4.6; z = 0; rot = Math.PI / 2; }
+        if (p.side === "W") { x = -4.6; z = 0; rot = Math.PI / 2; }
+        return (
+          <group key={i} position={[x, 0.08, z]} rotation={[0, rot, 0]}>
+            {/* Inner colored panel */}
+            <mesh position={[0, 0, 0]}>
+              <boxGeometry args={[2.6, 0.04, 1.2]} />
+              <meshStandardMaterial
+                color="#000"
+                emissive={p.color}
+                emissiveIntensity={1.4}
+                toneMapped={false}
+                transparent
+                opacity={0.85}
+              />
+            </mesh>
+            {/* Label */}
+            <SignGlyph
+              position={[0, 0.05, 0]}
+              text={p.label}
+              color="#fff"
+              scale={0.062}
+            />
+          </group>
+        );
+      })}
+
+      {/* Grid dividing lines inside the board (subtle) */}
+      {[-3.5, -2, -0.5, 0.5, 2, 3.5].map((x, i) => (
+        <mesh key={`gn-${i}`} position={[x, 0.05, -4.6]}>
+          <boxGeometry args={[0.04, 0.02, 1.5]} />
+          <meshStandardMaterial color="#000" emissive={accent} emissiveIntensity={0.5} toneMapped={false} />
+        </mesh>
+      ))}
+      {[-3.5, -2, -0.5, 0.5, 2, 3.5].map((x, i) => (
+        <mesh key={`gs-${i}`} position={[x, 0.05, 4.6]}>
+          <boxGeometry args={[0.04, 0.02, 1.5]} />
+          <meshStandardMaterial color="#000" emissive={accent} emissiveIntensity={0.5} toneMapped={false} />
+        </mesh>
+      ))}
+
+      {/* Outer holographic border ring (very thin) */}
+      <mesh position={[0, -0.05, 0]}>
+        <boxGeometry args={[10.4, 0.02, 10.4]} />
+        <meshStandardMaterial
+          color="#000"
+          emissive={accent}
+          emissiveIntensity={1.6}
+          toneMapped={false}
+          transparent
+          opacity={0.35}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+function CardDeck({
+  position,
+  label,
+  tint,
+}: {
+  position: [number, number, number];
+  label: string;
+  tint: string;
+}) {
+  // Stack of 4-5 cards floating at corner, slightly skewed; top card has
+  // a colored band and a label.
+  return (
+    <group position={position}>
+      {/* deck stack */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <mesh key={i} position={[0, i * 0.04, 0]} rotation={[0, i * 0.05, 0]}>
+          <boxGeometry args={[0.9, 0.04, 1.2]} />
+          <meshLambertMaterial color={i === 4 ? "#fffaef" : "#e8e2d4"} />
+        </mesh>
+      ))}
+      {/* top-card band */}
+      <mesh position={[0, 0.18, 0]}>
+        <boxGeometry args={[0.78, 0.02, 0.34]} />
+        <meshStandardMaterial color="#000" emissive={tint} emissiveIntensity={1.3} toneMapped={false} />
+      </mesh>
+      <SignGlyph position={[0, 0.2, 0]} text={label} color="#fff" scale={0.05} />
+    </group>
+  );
+}
+
+function PlayingCard({ color }: { color: string }) {
+  // A single playing card with a colored band; animated by parent ref.
+  return (
+    <group>
+      <mesh castShadow>
+        <boxGeometry args={[0.72, 0.04, 1.0]} />
+        <meshLambertMaterial color="#fffaef" />
+      </mesh>
+      <mesh position={[0, 0.025, 0]}>
+        <boxGeometry args={[0.6, 0.02, 0.3]} />
+        <meshStandardMaterial color="#000" emissive={color} emissiveIntensity={1.4} toneMapped={false} />
+      </mesh>
+      {/* card pips — three small dots */}
+      {[-0.18, 0, 0.18].map((dz, i) => (
+        <mesh key={i} position={[0, 0.025, dz + 0.3]}>
+          <boxGeometry args={[0.06, 0.02, 0.06]} />
+          <meshLambertMaterial color={color} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function MiniAgent({ color }: { color: string }) {
+  // A small humanoid robot: dark body + colored eye visor, antenna,
+  // squared limbs. Mounted at corners of the board as "players".
+  return (
+    <group>
+      {/* legs */}
+      <mesh position={[-0.08, 0.2, 0]}>
+        <boxGeometry args={[0.12, 0.4, 0.12]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      <mesh position={[0.08, 0.2, 0]}>
+        <boxGeometry args={[0.12, 0.4, 0.12]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      {/* torso */}
+      <mesh position={[0, 0.65, 0]} castShadow>
+        <boxGeometry args={[0.36, 0.46, 0.22]} />
+        <meshLambertMaterial color="#1f2236" />
+      </mesh>
+      {/* chest emblem */}
+      <mesh position={[0, 0.7, 0.12]}>
+        <boxGeometry args={[0.18, 0.18, 0.02]} />
+        <meshStandardMaterial color="#000" emissive={color} emissiveIntensity={1.6} toneMapped={false} />
+      </mesh>
+      {/* arms */}
+      <mesh position={[-0.25, 0.65, 0]}>
+        <boxGeometry args={[0.08, 0.4, 0.12]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      <mesh position={[0.25, 0.65, 0]}>
+        <boxGeometry args={[0.08, 0.4, 0.12]} />
+        <meshLambertMaterial color="#15182a" />
+      </mesh>
+      {/* head */}
+      <mesh position={[0, 1.05, 0]}>
+        <boxGeometry args={[0.3, 0.3, 0.3]} />
+        <meshLambertMaterial color="#0a0e1a" />
+      </mesh>
+      {/* eye visor */}
+      <mesh position={[0, 1.05, 0.155]}>
+        <boxGeometry args={[0.22, 0.08, 0.02]} />
+        <meshStandardMaterial color="#000" emissive={color} emissiveIntensity={2.2} toneMapped={false} />
+      </mesh>
+      {/* antenna */}
+      <mesh position={[0, 1.28, 0]}>
+        <boxGeometry args={[0.04, 0.16, 0.04]} />
+        <meshLambertMaterial color="#5a5a64" />
+      </mesh>
+      <mesh position={[0, 1.4, 0]}>
+        <boxGeometry args={[0.08, 0.08, 0.08]} />
+        <meshStandardMaterial color="#000" emissive={color} emissiveIntensity={2.0} toneMapped={false} />
+      </mesh>
     </group>
   );
 }
