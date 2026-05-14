@@ -4704,11 +4704,10 @@ function DriftDiorama() {
         <HeybeliadaIsland boatRef={boatRef} />
       </Suspense>
 
-      {/* Sand floor (foreground beach) — softer checker so the diorama
-       *  reads as a beach, not a tiled patio. */}
-      <CheckerFloor size={24} cellSize={1} y={-0.5} colorA="#dccfaa" colorB="#d4c5a0" />
-
-      {/* Damp / wet sand strip near the water */}
+      {/* Beach sand — only a narrow foreground strip so the era's floor
+       *  doesn't bleed under the road, sea and Heybeliada. */}
+      <BeachSand />
+      {/* Damp / wet sand strip just before the water — also narrow */}
       <mesh position={[0, -0.46, -2.2]}>
         <boxGeometry args={[24, 0.06, 1.4]} />
         <meshLambertMaterial color="#b8a884" />
@@ -4747,6 +4746,35 @@ function DriftDiorama() {
       {/* RIGHT — Heybeliada island is positioned internally inside
        *  HeybeliadaIsland (x ≈ +8, z ≈ -5). */}
 
+      {/* ----- Narrative bridges: tie the three zones into ONE camp -----
+       * Festoon lights string from the caravan's roof to the palm to the
+       * Bali umbrella so the eye follows the path through the whole camp.
+       * A guitar leans on the caravan side — Atakan's road companion. */}
+
+      {/* Festoon: caravan top → camp palm top */}
+      <FestoonLights
+        from={[-4.0, 3.2, 0.6]}
+        to={[-2.4, 3.6, 0.4]}
+        segments={6}
+        sag={0.25}
+      />
+      {/* Festoon: palm → hammock right post → Bali umbrella */}
+      <FestoonLights
+        from={[-2.4, 3.6, 0.4]}
+        to={[1.2 + 1.6, 2.4, 1.4]}
+        segments={6}
+        sag={0.2}
+      />
+      <FestoonLights
+        from={[1.2 + 1.6, 2.4, 1.4]}
+        to={[3.8, 3.4, 2.4]}
+        segments={5}
+        sag={0.18}
+      />
+
+      {/* Guitar leaning on caravan back-right corner */}
+      <Guitar position={[-3.6, 0.5, 1.2]} rotation={[0, -0.5, 0.4]} />
+
       {/* Vespa-style scooter looping on the road */}
       <group ref={scooterRef}>
         <Scooter accent={accent} />
@@ -4761,6 +4789,175 @@ function DriftDiorama() {
 }
 
 /* ===== Drift helpers ============================================== */
+
+function BeachSand() {
+  // A narrow foreground beach strip that lives ONLY in the camp/road
+  // band. The previous full-size checker floor was bleeding into the
+  // sea zone and under Heybeliada, which made the era's ground feel
+  // tangled. Sand now stops cleanly where the road begins and the sea
+  // takes over.
+  const tiles = useMemo(() => {
+    type Tile = { key: string; pos: [number, number, number]; color: string };
+    const out: Tile[] = [];
+    const xStart = -12;
+    const xCount = 24;
+    const zStart = -1; // just behind the road
+    const zCount = 6; // shallow strip toward the camera
+    for (let i = 0; i < xCount; i++) {
+      for (let j = 0; j < zCount; j++) {
+        const isA = (i + j) % 2 === 0;
+        out.push({
+          key: `${i}-${j}`,
+          pos: [
+            xStart + i + 0.5,
+            // sand tiles sit slightly LOWER so the asphalt and damp-sand
+            // strips read clearly on top of them where they overlap.
+            -0.7,
+            zStart + j + 0.5,
+          ],
+          color: isA ? "#dccfaa" : "#d4c5a0",
+        });
+      }
+    }
+    return out;
+  }, []);
+  return (
+    <group>
+      {tiles.map((t) => (
+        // shorter tiles (height 0.4) so the top of the sand sits at y=-0.5
+        // — half a unit below the road surface (~y=-0.41).
+        <mesh key={t.key} position={t.pos} receiveShadow>
+          <boxGeometry args={[1, 0.4, 1]} />
+          <meshLambertMaterial color={t.color} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* Festoon string of warm bulbs — a flowing chain of tiny glowing cubes
+ * along a gentle catenary curve between two anchor points. Used to tie
+ * the camp together visually: caravan ↔ palm ↔ Bali umbrella.
+ */
+function FestoonLights({
+  from,
+  to,
+  segments = 10,
+  sag = 0.4,
+  color = "#ffd28a",
+}: {
+  from: [number, number, number];
+  to: [number, number, number];
+  segments?: number;
+  sag?: number;
+  color?: string;
+}) {
+  const points = useMemo(() => {
+    const out: { pos: [number, number, number] }[] = [];
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const x = from[0] + (to[0] - from[0]) * t;
+      const y = from[1] + (to[1] - from[1]) * t - Math.sin(t * Math.PI) * sag;
+      const z = from[2] + (to[2] - from[2]) * t;
+      out.push({ pos: [x, y, z] });
+    }
+    return out;
+  }, [from, to, segments, sag]);
+  return (
+    <group>
+      {/* Wire line — thin dark bar for each segment */}
+      {points.slice(0, -1).map((p, i) => {
+        const next = points[i + 1];
+        const cx = (p.pos[0] + next.pos[0]) / 2;
+        const cy = (p.pos[1] + next.pos[1]) / 2;
+        const cz = (p.pos[2] + next.pos[2]) / 2;
+        const dx = next.pos[0] - p.pos[0];
+        const dy = next.pos[1] - p.pos[1];
+        const dz = next.pos[2] - p.pos[2];
+        const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const rotY = Math.atan2(dx, dz);
+        const rotX = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+        return (
+          <mesh key={`w-${i}`} position={[cx, cy, cz]} rotation={[rotX, rotY, 0]}>
+            <boxGeometry args={[0.02, 0.02, len]} />
+            <meshLambertMaterial color="#1a1a1f" />
+          </mesh>
+        );
+      })}
+      {/* Bulbs */}
+      {points.map((p, i) => (
+        <mesh key={`b-${i}`} position={[p.pos[0], p.pos[1] - 0.06, p.pos[2]]}>
+          <boxGeometry args={[0.08, 0.1, 0.08]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive={color}
+            emissiveIntensity={i % 2 === 0 ? 1.6 : 1.1}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/* A simple voxel acoustic guitar leaning on a surface, body + neck +
+ * sound hole + tiny tuning pegs. Sized to lean on the caravan or a palm. */
+function Guitar({
+  position,
+  rotation = [0, 0, 0.35] as [number, number, number],
+}: {
+  position: [number, number, number];
+  rotation?: [number, number, number];
+}) {
+  return (
+    <group position={position} rotation={rotation}>
+      {/* body */}
+      <mesh position={[0, 0, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.9, 0.22]} />
+        <meshLambertMaterial color="#a87238" />
+      </mesh>
+      {/* upper-body indent (waist) — slightly smaller dark slab */}
+      <mesh position={[0, 0.18, 0.115]}>
+        <boxGeometry args={[0.5, 0.4, 0.02]} />
+        <meshLambertMaterial color="#5a3a1f" />
+      </mesh>
+      {/* sound hole */}
+      <mesh position={[0, 0.0, 0.12]}>
+        <boxGeometry args={[0.22, 0.22, 0.02]} />
+        <meshLambertMaterial color="#1a1006" />
+      </mesh>
+      {/* bridge */}
+      <mesh position={[0, -0.22, 0.12]}>
+        <boxGeometry args={[0.34, 0.04, 0.02]} />
+        <meshLambertMaterial color="#1a1006" />
+      </mesh>
+      {/* neck */}
+      <mesh position={[0, 0.92, 0]} castShadow>
+        <boxGeometry args={[0.15, 0.95, 0.12]} />
+        <meshLambertMaterial color="#3a2014" />
+      </mesh>
+      {/* head */}
+      <mesh position={[0, 1.48, 0]} castShadow>
+        <boxGeometry args={[0.24, 0.22, 0.1]} />
+        <meshLambertMaterial color="#2a1810" />
+      </mesh>
+      {/* tuning pegs */}
+      {[-0.06, 0.06].map((dx, i) => (
+        <mesh key={i} position={[dx, 1.5, 0.06]}>
+          <boxGeometry args={[0.04, 0.04, 0.06]} />
+          <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.4} toneMapped={false} />
+        </mesh>
+      ))}
+      {/* strings — six thin emissive lines down the neck */}
+      {[-0.06, -0.03, 0, 0.03, 0.06, 0.09].map((dx, i) => (
+        <mesh key={i} position={[dx - 0.015, 0.5, 0.13]}>
+          <boxGeometry args={[0.008, 1.7, 0.005]} />
+          <meshStandardMaterial color="#bcbab2" emissive="#bcbab2" emissiveIntensity={0.4} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
 
 function DriftSky() {
   // Golden-hour gradient: deep violet up top → pink → orange → soft yellow
@@ -4880,28 +5077,30 @@ function DriftSea({
 }: {
   waveRefs: React.MutableRefObject<(THREE.MeshStandardMaterial | null)[]>;
 }) {
-  // Sea ribbon: warm dark base + orange-pink crests, runs along x.
+  // Sea ribbon now extends from just behind the road all the way to
+  // the distant mountains — no more visible "void" between the sea
+  // and the horizon, and no sand bleeding through.
   return (
     <group>
-      {/* base sea */}
-      <mesh position={[0, -0.48, -5]} receiveShadow>
-        <boxGeometry args={[24, 0.06, 4.4]} />
+      {/* base sea (very wide + deep) */}
+      <mesh position={[0, -0.48, -7.5]} receiveShadow>
+        <boxGeometry args={[24, 0.06, 9]} />
         <meshLambertMaterial color="#1a2a4a" />
       </mesh>
-      {/* warmer near-shore band catching sun */}
-      <mesh position={[3, -0.46, -3.2]}>
+      {/* warmer near-shore band catching the sun */}
+      <mesh position={[3, -0.46, -3.4]}>
         <boxGeometry args={[20, 0.06, 1.6]} />
         <meshLambertMaterial color="#3a3458" />
       </mesh>
-      {/* deeper distant band */}
-      <mesh position={[0, -0.48, -6.8]}>
-        <boxGeometry args={[24, 0.06, 1.0]} />
+      {/* deeper far band so the sea reads as receding */}
+      <mesh position={[0, -0.48, -10]}>
+        <boxGeometry args={[24, 0.06, 3]} />
         <meshLambertMaterial color="#0e1a36" />
       </mesh>
-      {/* Wave crests shimmering — emissive bars */}
-      {Array.from({ length: 18 }).map((_, i) => {
-        const x = -11 + (i * 22) / 18 + (i * 0.31) % 1.4;
-        const z = -6.6 + (i * 0.5) % 4;
+      {/* Wave crests shimmering — emissive bars spread across the wider sea */}
+      {Array.from({ length: 24 }).map((_, i) => {
+        const x = -11 + (i * 22) / 24 + (i * 0.31) % 1.4;
+        const z = -10 + (i * 0.5) % 7;
         const w = 0.5 + ((i * 0.27) % 0.7);
         const isHot = i % 3 === 0;
         return (
