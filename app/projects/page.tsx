@@ -22,11 +22,11 @@ const Scene = dynamic(() => import("./_components/Scene"), {
   loading: () => null,
 });
 
-// Era-paginated scroll: each era is one "stop" of fixed height. The user
-// scrolls through 7 macro-positions: hero → 5 eras → outro. Within an era
-// stop the activeYear interpolates from era.start to era.end so the 3D
-// camera still drifts gently while the era's content sits on the right.
-const ERA_VH = 220;
+// Era-paginated scroll: each era is ONE viewport tall, so a single
+// mouse-wheel impulse maps cleanly to the next era. The wheel-impulse
+// hijack below makes this even crisper — one wheel turn / one touch
+// swipe = one era advance, with no "in-between" scroll drift.
+const ERA_VH = 100;
 const HERO_VH = 100;
 const OUTRO_VH = 90;
 
@@ -143,12 +143,63 @@ function ProjectsExperience() {
     [scrollYForStop, tweenScrollTo],
   );
 
-  // Snap to the nearest stop once the user pauses scrolling. Tolerance keeps
-  // us from snapping while the user is mid-gesture or actively scrolling.
-  // We only arm the snap timer in response to *user* scroll input (wheel/
-  // touch/key), never on programmatic `scrollTo` calls — that prevents the
-  // snap from interrupting button/era-rail jumps and from snap-fighting
-  // itself when its own scroll triggers a scroll event.
+  // Wheel-impulse hijack: turn the page into a one-wheel = one-era
+  // carousel. Each meaningful wheel impulse (or touch swipe) advances or
+  // retreats the active stop by exactly one. Throttled so a single
+  // trackpad burst doesn't fly across the whole timeline.
+  useEffect(() => {
+    let lastImpulseAt = 0;
+    let touchStartY: number | null = null;
+    const COOLDOWN = 650; // ms between accepted impulses
+    const WHEEL_THRESHOLD = 8; // ignore micro-wheel events
+    const SWIPE_THRESHOLD = 38; // px
+
+    const advance = (dir: 1 | -1) => {
+      const now = performance.now();
+      if (now - lastImpulseAt < COOLDOWN) return false;
+      lastImpulseAt = now;
+      const cur = scrollRef.current.activeIndex;
+      const next = Math.max(0, Math.min(STOPS_COUNT - 1, cur + dir));
+      if (next === cur) return false;
+      scrollToIdx(next);
+      return true;
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) return; // let pinch zoom through
+      if (Math.abs(e.deltaY) < WHEEL_THRESHOLD) return;
+      if (advance(e.deltaY > 0 ? 1 : -1)) {
+        e.preventDefault();
+      }
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0]?.clientY ?? null;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      if (touchStartY == null) return;
+      const endY = e.changedTouches[0]?.clientY ?? touchStartY;
+      const dy = touchStartY - endY;
+      touchStartY = null;
+      if (Math.abs(dy) < SWIPE_THRESHOLD) return;
+      advance(dy > 0 ? 1 : -1);
+    };
+
+    // wheel needs passive:false to preventDefault and stop the native
+    // scrollbar from also drifting on the same gesture
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [scrollToIdx]);
+
+  // Fallback snap: if the user drags the scrollbar directly or lands on
+  // an off-stop position (e.g. via deep link), gently snap back to the
+  // nearest era after a brief pause. Much shorter delay than before
+  // since most navigation now goes through the wheel-impulse path.
   useEffect(() => {
     let snapTimer: ReturnType<typeof setTimeout> | null = null;
     let isSnapping = false;
@@ -170,7 +221,7 @@ function ProjectsExperience() {
         const delta = Math.abs(window.scrollY - targetY);
         if (delta > 24 && cur > 0 && cur < STOPS_COUNT - 1) {
           isSnapping = true;
-          const duration = Math.min(800, Math.max(360, delta * 0.32));
+          const duration = Math.min(700, Math.max(280, delta * 0.3));
           programmaticScrollRef.current = true;
           programmaticScrollUntilRef.current =
             performance.now() + duration + 200;
@@ -180,15 +231,13 @@ function ProjectsExperience() {
             isSnapping = false;
           }, duration + 100);
         }
-      }, 420);
+      }, 200);
     };
 
-    window.addEventListener("wheel", armSnap, { passive: true });
-    window.addEventListener("touchend", armSnap, { passive: true });
+    window.addEventListener("scroll", armSnap, { passive: true });
     window.addEventListener("keyup", armSnap);
     return () => {
-      window.removeEventListener("wheel", armSnap);
-      window.removeEventListener("touchend", armSnap);
+      window.removeEventListener("scroll", armSnap);
       window.removeEventListener("keyup", armSnap);
       if (snapTimer) clearTimeout(snapTimer);
       if (snapReleaseTimer) clearTimeout(snapReleaseTimer);

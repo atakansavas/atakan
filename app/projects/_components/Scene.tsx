@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { EraDioramas, EraTargetTracker } from "./EraDioramas";
@@ -43,28 +43,10 @@ function SkyAtmosphere({ scrollRef }: Props) {
 
 function OrbitedScene({ scrollRef }: Props) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
-  const { gl } = useThree();
 
-  // OrbitControls' wheel handler captures mouse wheel and zooms the camera,
-  // which fights the page's snap-scroll. We want the wheel to ALWAYS scroll
-  // the page; users zoom the diorama via pinch (touch) or the keyboard "+/-"
-  // shortcut (which we may add later). So we add a capture-phase listener
-  // on the canvas that translates wheel deltas into window.scrollBy and
-  // stops the event from reaching OrbitControls.
-  useEffect(() => {
-    const dom = gl.domElement;
-    const onWheel = (e: WheelEvent) => {
-      // Pinch-zoom on trackpads sets ctrlKey = true; let OrbitControls
-      // handle that path so users CAN zoom into a diorama with pinch.
-      if (e.ctrlKey) return;
-      e.stopPropagation();
-      window.scrollBy({ top: e.deltaY, left: 0, behavior: "auto" });
-    };
-    dom.addEventListener("wheel", onWheel, { capture: true, passive: true });
-    return () => {
-      dom.removeEventListener("wheel", onWheel, { capture: true } as EventListenerOptions);
-    };
-  }, [gl]);
+  // OrbitControls' wheel zoom is disabled below (enableZoom={false}) so
+  // wheel events fall through to the page-level handler in page.tsx,
+  // which now drives the one-wheel-per-era carousel.
 
   return (
     <>
@@ -75,8 +57,8 @@ function OrbitedScene({ scrollRef }: Props) {
         intensity={0.95}
         color="#f0f4ff"
         castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        shadow-mapSize-width={512}
+        shadow-mapSize-height={512}
         shadow-camera-near={0.5}
         shadow-camera-far={120}
         shadow-camera-left={-60}
@@ -96,23 +78,14 @@ function OrbitedScene({ scrollRef }: Props) {
          glides between dioramas as the active era changes. */}
       <OrbitControls
         ref={controlsRef}
-        enableZoom
+        enableZoom={false}
         enableRotate
         enablePan={false}
-        // Disable wheel zoom — let the page scroll. Mouse drag = rotate;
-        // pinch on touch still zooms because that's a separate handler.
-        // We do this by overriding the zoom step via mouseButtons below.
-        zoomSpeed={0.6}
         rotateSpeed={0.55}
         enableDamping
         dampingFactor={0.08}
-        minDistance={6}
-        maxDistance={42}
         minPolarAngle={Math.PI * 0.18}
         maxPolarAngle={Math.PI * 0.55}
-        // Disable wheel-driven zoom: OrbitControls reads `enableZoom`
-        // for ALL zoom inputs, but we patch the wheel handler in
-        // EraTargetTracker so wheel always bubbles to the window.
         makeDefault
       />
       <EraTargetTracker scrollRef={scrollRef} controlsRef={controlsRef} />
