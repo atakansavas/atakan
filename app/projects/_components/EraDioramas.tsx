@@ -4632,12 +4632,13 @@ function DriftDiorama() {
   const accent = ERAS.drift.accent; // #f472b6 hot pink
   // Animated refs
   const fireRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
-  const scooterRef = useRef<THREE.Group | null>(null);
+  const planeRef = useRef<THREE.Group | null>(null);
   const hammockFigureRef = useRef<THREE.Group | null>(null);
   const laptopRef = useRef<THREE.MeshStandardMaterial | null>(null);
   const waveRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const lanternRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
   const boatRef = useRef<THREE.Group | null>(null);
+  const fishingBoatRef = useRef<THREE.Group | null>(null);
 
   useFrame(() => {
     const t = performance.now() * 0.001;
@@ -4646,15 +4647,21 @@ function DriftDiorama() {
       if (!m) return;
       m.emissiveIntensity = 1.4 + Math.sin(t * 6 + i) * 0.45;
     });
-    // Scooter loop on the coastal road (x oscillates left ↔ right, z fixed)
-    if (scooterRef.current) {
-      const period = 18;
+    // Airplane loop high in the sky — passes from over Heybeliada (right)
+    // toward the SE Asia mountains (back-left), then loops behind the sky.
+    if (planeRef.current) {
+      const period = 22;
       const f = (t % period) / period;
-      const x = -9 + f * 18;
-      scooterRef.current.position.set(x, 0, -1.5);
-      scooterRef.current.rotation.y = Math.PI / 2; // facing +X, moving along X
-      // gentle bob
-      scooterRef.current.position.y = Math.sin(t * 3) * 0.03;
+      // S-curve trajectory: starts right-near, sweeps to back-left, then
+      // wraps. Slight vertical wobble.
+      const x = 9 - f * 18; // 9 → -9
+      const z = -6 - Math.sin(f * Math.PI) * 4; // arcs from -6 to -10 to -6
+      const y = 7.5 + Math.sin(f * Math.PI * 2) * 0.4;
+      planeRef.current.position.set(x, y, z);
+      // face direction of motion (mostly -X, with slight Z drift)
+      planeRef.current.rotation.y = Math.PI / 2 + Math.sin(f * Math.PI) * 0.2;
+      // gentle bank
+      planeRef.current.rotation.z = Math.sin(f * Math.PI * 2) * 0.1;
     }
     // Hammock bob
     if (hammockFigureRef.current) {
@@ -4679,6 +4686,15 @@ function DriftDiorama() {
     if (boatRef.current) {
       boatRef.current.position.y = -0.18 + Math.sin(t * 1.1) * 0.04;
       boatRef.current.rotation.z = Math.sin(t * 0.9) * 0.03;
+    }
+    // Fishing boat drifting across the open sea
+    if (fishingBoatRef.current) {
+      const speed = 0.18;
+      const span = 18;
+      const x = ((t * speed) % span) - span / 2;
+      fishingBoatRef.current.position.set(x, -0.2 + Math.sin(t * 1.3) * 0.05, -6.5);
+      fishingBoatRef.current.rotation.y = Math.PI; // facing +Z (toward camera)
+      fishingBoatRef.current.rotation.z = Math.sin(t * 1.0) * 0.025;
     }
   });
 
@@ -4713,8 +4729,9 @@ function DriftDiorama() {
         <meshLambertMaterial color="#b8a884" />
       </mesh>
 
-      {/* Coastal road (z ≈ -1.5): asphalt strip + faded centerline dashes */}
-      <CoastalRoad />
+      {/* No road — the camp sits right on the beach; the asphalt strip
+       *  used to fragment the era visually and the scooter is gone too.
+       *  Sand → wet sand → sea is one uninterrupted shore. */}
 
       {/* ----- 3 zones along X — clean, non-overlapping boxes -----
        *
@@ -4775,9 +4792,30 @@ function DriftDiorama() {
       {/* Guitar leaning on caravan back-right corner */}
       <Guitar position={[-3.6, 0.5, 1.2]} rotation={[0, -0.5, 0.4]} />
 
-      {/* Vespa-style scooter looping on the road */}
-      <group ref={scooterRef}>
-        <Scooter accent={accent} />
+      {/* Plane looping between Heybeliada and the SE Asia horizon —
+       *  the sky's only moving thing now that the road is gone. */}
+      <group ref={planeRef}>
+        <Airplane accent={accent} />
+      </group>
+
+      {/* Camp life — small props that make the scene feel lived in */}
+      <CampingChair position={[-4.6, 0, 3.4]} accent={accent} />
+      <Cooler position={[-5.6, 0, 2.4]} />
+      <BeachTowel position={[0.0, -0.49, 3.0]} />
+      <DriftLaundryLine />
+      <FirewoodStack position={[-3.0, 0, 3.0]} />
+      <BackpackOpen position={[3.6, 0, 3.4]} />
+
+      {/* Beach finds + driftwood */}
+      <DriftSeashells />
+      <DriftPiece position={[6.4, -0.4, 3.0]} rotation={[0, 0.3, 0.04]} />
+      <DriftPiece position={[-7.5, -0.4, 3.6]} rotation={[0, -0.9, -0.06]} length={1.2} />
+
+      {/* More distant sea life — sailboats further out + a tiny fishing
+       *  caïque between the camp and Heybeliada. */}
+      <DistantSailboats />
+      <group ref={fishingBoatRef}>
+        <FishingBoat />
       </group>
 
       {/* Sunset glow filler */}
@@ -5134,29 +5172,410 @@ function DriftSea({
   );
 }
 
-function CoastalRoad() {
+/* CoastalRoad + Scooter removed — the camp now sits directly on the
+ * beach. New helpers below add the camp life and sea life that fill
+ * the era out. */
+
+function Airplane({ accent }: { accent: string }) {
+  // Small voxel commercial plane in white + accent stripe. Built so its
+  // nose points along +X by default; parent useFrame rotates it to face
+  // the direction of motion.
   return (
     <group>
-      {/* asphalt */}
-      <mesh position={[0, -0.45, -1.5]} receiveShadow>
-        <boxGeometry args={[24, 0.08, 1.5]} />
-        <meshLambertMaterial color="#2a2a32" />
+      {/* fuselage */}
+      <mesh castShadow>
+        <boxGeometry args={[1.8, 0.32, 0.32]} />
+        <meshLambertMaterial color="#f4f3ee" />
       </mesh>
-      {/* dashed centerline */}
-      {Array.from({ length: 11 }).map((_, i) => (
-        <mesh key={i} position={[-11 + i * 2.2, -0.4, -1.5]}>
-          <boxGeometry args={[1.0, 0.02, 0.12]} />
-          <meshBasicMaterial color="#e6c66a" toneMapped={false} />
-        </mesh>
-      ))}
-      {/* small curb to the beach side */}
-      <mesh position={[0, -0.35, -0.7]}>
-        <boxGeometry args={[24, 0.18, 0.16]} />
-        <meshLambertMaterial color="#9a8a6a" />
+      {/* accent stripe */}
+      <mesh position={[0, 0, 0.17]}>
+        <boxGeometry args={[1.7, 0.06, 0.01]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.6} toneMapped={false} />
+      </mesh>
+      {/* cockpit windows */}
+      <mesh position={[0.78, 0.08, 0]}>
+        <boxGeometry args={[0.16, 0.1, 0.32]} />
+        <meshStandardMaterial color="#0a1420" emissive="#7d8cff" emissiveIntensity={0.5} toneMapped={false} />
+      </mesh>
+      {/* nose cone */}
+      <mesh position={[0.95, 0, 0]}>
+        <boxGeometry args={[0.12, 0.22, 0.22]} />
+        <meshLambertMaterial color="#dccfb4" />
+      </mesh>
+      {/* wings (single span) */}
+      <mesh position={[0, -0.04, 0]}>
+        <boxGeometry args={[0.6, 0.06, 1.8]} />
+        <meshLambertMaterial color="#e8e6dc" />
+      </mesh>
+      {/* wing tip accent */}
+      <mesh position={[0, -0.04, 0.9]}>
+        <boxGeometry args={[0.6, 0.07, 0.06]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.7} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -0.04, -0.9]}>
+        <boxGeometry args={[0.6, 0.07, 0.06]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.7} toneMapped={false} />
+      </mesh>
+      {/* tail vertical fin */}
+      <mesh position={[-0.74, 0.22, 0]}>
+        <boxGeometry args={[0.36, 0.4, 0.06]} />
+        <meshLambertMaterial color="#e8e6dc" />
+      </mesh>
+      {/* tail horizontal stabiliser */}
+      <mesh position={[-0.76, 0.0, 0]}>
+        <boxGeometry args={[0.34, 0.06, 0.6]} />
+        <meshLambertMaterial color="#e8e6dc" />
+      </mesh>
+      {/* navigation lights */}
+      <mesh position={[0, -0.04, 0.95]}>
+        <boxGeometry args={[0.06, 0.06, 0.06]} />
+        <meshStandardMaterial color="#000" emissive="#22ff66" emissiveIntensity={2.0} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, -0.04, -0.95]}>
+        <boxGeometry args={[0.06, 0.06, 0.06]} />
+        <meshStandardMaterial color="#000" emissive="#ff3a3a" emissiveIntensity={2.0} toneMapped={false} />
+      </mesh>
+      {/* thin contrail trailing behind */}
+      <mesh position={[-1.6, 0, 0]}>
+        <boxGeometry args={[1.6, 0.04, 0.04]} />
+        <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={0.6} transparent opacity={0.5} toneMapped={false} />
       </mesh>
     </group>
   );
 }
+
+function CampingChair({
+  position,
+  accent,
+}: {
+  position: [number, number, number];
+  accent: string;
+}) {
+  return (
+    <group position={position} rotation={[0, -0.3, 0]}>
+      {/* seat */}
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <boxGeometry args={[0.6, 0.08, 0.6]} />
+        <meshLambertMaterial color={accent} />
+      </mesh>
+      {/* backrest */}
+      <mesh position={[0, 0.9, -0.28]} castShadow>
+        <boxGeometry args={[0.6, 1.0, 0.08]} />
+        <meshLambertMaterial color={accent} />
+      </mesh>
+      {/* aluminium frame legs */}
+      {([
+        [-0.28, 0.21, 0.28],
+        [0.28, 0.21, 0.28],
+        [-0.28, 0.21, -0.28],
+        [0.28, 0.21, -0.28],
+      ] as [number, number, number][]).map((p, i) => (
+        <mesh key={i} position={p}>
+          <boxGeometry args={[0.04, 0.42, 0.04]} />
+          <meshLambertMaterial color="#bcbab2" />
+        </mesh>
+      ))}
+      {/* cup-holder armrest */}
+      <mesh position={[0.34, 0.55, 0]}>
+        <boxGeometry args={[0.08, 0.04, 0.4]} />
+        <meshLambertMaterial color="#bcbab2" />
+      </mesh>
+    </group>
+  );
+}
+
+function Cooler({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* body */}
+      <mesh position={[0, 0.36, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.7, 0.5]} />
+        <meshLambertMaterial color="#bcd6f0" />
+      </mesh>
+      {/* lid */}
+      <mesh position={[0, 0.74, 0]}>
+        <boxGeometry args={[0.74, 0.08, 0.54]} />
+        <meshLambertMaterial color="#0f55a8" />
+      </mesh>
+      {/* handle */}
+      <mesh position={[0, 0.84, 0]}>
+        <boxGeometry args={[0.36, 0.04, 0.06]} />
+        <meshLambertMaterial color="#0a0a14" />
+      </mesh>
+      {/* sticker */}
+      <mesh position={[0, 0.4, 0.26]}>
+        <boxGeometry args={[0.36, 0.18, 0.02]} />
+        <meshStandardMaterial color="#ffd86a" emissive="#ffd86a" emissiveIntensity={0.3} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function BeachTowel({ position }: { position: [number, number, number] }) {
+  // A rectangle of bright striped fabric laid on the sand.
+  return (
+    <group position={position}>
+      <mesh rotation={[-Math.PI / 2, 0, 0.18]} receiveShadow>
+        <planeGeometry args={[1.6, 1.0]} />
+        <meshLambertMaterial color="#ff7a8c" side={THREE.DoubleSide} />
+      </mesh>
+      {/* stripes */}
+      {Array.from({ length: 4 }).map((_, i) => (
+        <mesh
+          key={i}
+          position={[-0.55 + i * 0.36, 0.005, 0]}
+          rotation={[-Math.PI / 2, 0, 0.18]}
+        >
+          <planeGeometry args={[0.16, 1.0]} />
+          <meshLambertMaterial color={i % 2 === 0 ? "#f4d04a" : "#62ffaa"} side={THREE.DoubleSide} />
+        </mesh>
+      ))}
+      {/* sunglasses on towel */}
+      <mesh position={[0.3, 0.04, 0.0]}>
+        <boxGeometry args={[0.24, 0.04, 0.1]} />
+        <meshLambertMaterial color="#0a0a14" />
+      </mesh>
+    </group>
+  );
+}
+
+function DriftLaundryLine() {
+  // Quick rope strung between caravan roof and a small post in the sand;
+  // a couple of clothes pinned to it.
+  const items: { x: number; w: number; h: number; color: string }[] = [
+    { x: -3.4, w: 0.36, h: 0.5, color: "#62a4ff" },
+    { x: -2.6, w: 0.4, h: 0.6, color: "#e8d8b4" },
+    { x: -1.8, w: 0.36, h: 0.5, color: "#ff7050" },
+  ];
+  return (
+    <group>
+      {/* small post in the sand (right anchor) */}
+      <mesh position={[-1.1, 1.2, -0.4]} castShadow>
+        <boxGeometry args={[0.06, 2.4, 0.06]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      {/* rope line — caravan roof (~y=3) to post top (~y=2.4) */}
+      <mesh position={[-2.3, 2.7, -0.4]} rotation={[0, 0, 0.05]}>
+        <boxGeometry args={[2.4, 0.02, 0.02]} />
+        <meshLambertMaterial color="#5a4030" />
+      </mesh>
+      {items.map((it, i) => (
+        <mesh key={i} position={[it.x, 2.7 - it.h / 2, -0.4]}>
+          <boxGeometry args={[it.w, it.h, 0.04]} />
+          <meshLambertMaterial color={it.color} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function FirewoodStack({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* stacked logs in two layers */}
+      {[0, 1].map((row) => (
+        <group key={row} position={[0, 0.1 + row * 0.18, 0]}>
+          {[-0.18, 0, 0.18].map((dx, i) => (
+            <mesh key={i} position={[dx, 0, 0]} rotation={[0, 0, row * 0.05]}>
+              <boxGeometry args={[0.16, 0.16, 0.7]} />
+              <meshLambertMaterial color={i % 2 === 0 ? "#5a3a1f" : "#3a2418"} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      {/* an axe stuck in one log */}
+      <mesh position={[0.0, 0.42, 0.0]} rotation={[0, 0, 0.6]}>
+        <boxGeometry args={[0.05, 0.7, 0.05]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[0.18, 0.78, 0.0]} rotation={[0, 0, 0.6]}>
+        <boxGeometry args={[0.04, 0.22, 0.16]} />
+        <meshLambertMaterial color="#bcbab2" />
+      </mesh>
+    </group>
+  );
+}
+
+function BackpackOpen({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position} rotation={[0, 0.5, 0]}>
+      {/* body */}
+      <mesh position={[0, 0.32, 0]} castShadow>
+        <boxGeometry args={[0.5, 0.64, 0.3]} />
+        <meshLambertMaterial color="#3a2818" />
+      </mesh>
+      {/* top flap (open) */}
+      <mesh position={[0, 0.7, 0.18]} rotation={[Math.PI / 3, 0, 0]}>
+        <boxGeometry args={[0.5, 0.18, 0.4]} />
+        <meshLambertMaterial color="#5a3818" />
+      </mesh>
+      {/* shoulder straps */}
+      <mesh position={[-0.16, 0.6, -0.16]}>
+        <boxGeometry args={[0.06, 0.5, 0.04]} />
+        <meshLambertMaterial color="#5a3818" />
+      </mesh>
+      <mesh position={[0.16, 0.6, -0.16]}>
+        <boxGeometry args={[0.06, 0.5, 0.04]} />
+        <meshLambertMaterial color="#5a3818" />
+      </mesh>
+      {/* spilling out — a map sticking out */}
+      <mesh position={[0.0, 0.7, 0.16]} rotation={[Math.PI / 4, 0, 0]}>
+        <boxGeometry args={[0.32, 0.02, 0.32]} />
+        <meshLambertMaterial color="#e8d8b4" />
+      </mesh>
+      {/* a small water bottle next to it */}
+      <mesh position={[0.42, 0.22, 0.08]}>
+        <boxGeometry args={[0.16, 0.42, 0.16]} />
+        <meshStandardMaterial color="#a4d8f0" transparent opacity={0.7} emissive="#a4d8f0" emissiveIntensity={0.15} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function DriftPiece({
+  position,
+  rotation = [0, 0, 0] as [number, number, number],
+  length = 1.6,
+}: {
+  position: [number, number, number];
+  rotation?: [number, number, number];
+  length?: number;
+}) {
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh castShadow>
+        <boxGeometry args={[length, 0.22, 0.22]} />
+        <meshLambertMaterial color="#7a5a40" />
+      </mesh>
+      {/* knots */}
+      <mesh position={[-length * 0.3, 0, 0.06]}>
+        <boxGeometry args={[0.06, 0.06, 0.06]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      <mesh position={[length * 0.2, 0, -0.06]}>
+        <boxGeometry args={[0.08, 0.08, 0.08]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+    </group>
+  );
+}
+
+function DriftSeashells() {
+  // Scattered seashells across the foreground sand — uses a memoised
+  // pseudo-random distribution so they don't dance on re-renders.
+  const shells = useMemo(() => {
+    const out: {
+      x: number;
+      z: number;
+      rot: number;
+      color: string;
+      size: number;
+    }[] = [];
+    for (let i = 0; i < 14; i++) {
+      const x = (Math.sin(i * 12.31) * 0.5 + 0.5) * 18 - 9;
+      const z = 1 + ((i * 0.61) % 3.4);
+      out.push({
+        x,
+        z,
+        rot: (i * 0.91) % (Math.PI * 2),
+        color: i % 4 === 0 ? "#f4d49a" : i % 4 === 1 ? "#f8c8a8" : i % 4 === 2 ? "#fde8c8" : "#e6c4a4",
+        size: 0.1 + ((i * 0.13) % 0.06),
+      });
+    }
+    return out;
+  }, []);
+  return (
+    <group>
+      {shells.map((s, i) => (
+        <mesh key={i} position={[s.x, -0.46, s.z]} rotation={[0, s.rot, 0]}>
+          <boxGeometry args={[s.size, 0.04, s.size * 0.8]} />
+          <meshLambertMaterial color={s.color} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function DistantSailboats() {
+  // A few small sailboats placed at fixed positions far out in the sea
+  // — these don't move because they read as distance markers, not life.
+  return (
+    <group>
+      {([
+        [-6, -0.2, -8.5, 0.5],
+        [-2, -0.2, -9.5, 0.4],
+        [3, -0.2, -8.0, 0.6],
+        [6, -0.2, -9.2, 0.45],
+      ] as [number, number, number, number][]).map((b, i) => (
+        <group key={i} position={[b[0], b[1], b[2]]}>
+          <mesh position={[0, 0.08, 0]}>
+            <boxGeometry args={[0.32 * b[3], 0.14, 0.7 * b[3]]} />
+            <meshLambertMaterial color="#5a4030" />
+          </mesh>
+          <mesh position={[0, 0.45 * b[3], 0]}>
+            <boxGeometry args={[0.04, 1.0 * b[3], 0.04]} />
+            <meshLambertMaterial color="#3a2418" />
+          </mesh>
+          <mesh position={[0, 0.5 * b[3], 0.16 * b[3]]} rotation={[0, 0, 0.18]}>
+            <boxGeometry args={[0.02, 0.8 * b[3], 0.5 * b[3]]} />
+            <meshStandardMaterial color="#f8efd6" emissive="#fff5d8" emissiveIntensity={0.3} toneMapped={false} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function FishingBoat() {
+  // A small Aegean caïque-style fishing boat with a tiny cabin and a
+  // single light. Parent ref controls position and rotation.
+  return (
+    <group>
+      {/* lower hull */}
+      <mesh position={[0, 0.16, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.32, 1.8]} />
+        <meshLambertMaterial color="#9a3a3a" />
+      </mesh>
+      {/* upper hull (white) */}
+      <mesh position={[0, 0.42, 0]}>
+        <boxGeometry args={[0.6, 0.2, 1.6]} />
+        <meshLambertMaterial color="#e8e6dc" />
+      </mesh>
+      {/* cabin */}
+      <mesh position={[0, 0.66, 0.2]}>
+        <boxGeometry args={[0.46, 0.36, 0.8]} />
+        <meshLambertMaterial color="#cfcdc0" />
+      </mesh>
+      {/* mast */}
+      <mesh position={[0, 1.18, 0.0]}>
+        <boxGeometry args={[0.04, 0.7, 0.04]} />
+        <meshLambertMaterial color="#3a2418" />
+      </mesh>
+      {/* mast light */}
+      <mesh position={[0, 1.55, 0.0]}>
+        <boxGeometry args={[0.06, 0.06, 0.06]} />
+        <meshStandardMaterial color="#000" emissive="#ffd28a" emissiveIntensity={2.0} toneMapped={false} />
+      </mesh>
+      {/* window glow */}
+      <mesh position={[0.24, 0.66, 0.2]}>
+        <boxGeometry args={[0.02, 0.16, 0.5]} />
+        <meshStandardMaterial color="#000" emissive="#ffd28a" emissiveIntensity={1.2} toneMapped={false} />
+      </mesh>
+      {/* tiny captain figure */}
+      <mesh position={[0, 0.9, -0.2]}>
+        <boxGeometry args={[0.16, 0.32, 0.12]} />
+        <meshLambertMaterial color="#3a4a5a" />
+      </mesh>
+      <mesh position={[0, 1.12, -0.2]}>
+        <boxGeometry args={[0.14, 0.14, 0.14]} />
+        <meshLambertMaterial color="#d8b48a" />
+      </mesh>
+    </group>
+  );
+}
+
+/* Original Scooter helper retained further down (unused since the
+ * road was removed). */
 
 function SprinterCaravan({
   position,
