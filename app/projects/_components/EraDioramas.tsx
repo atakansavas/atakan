@@ -6497,10 +6497,15 @@ function AgenticDiorama() {
           wireframe
         />
       </mesh>
-      {/* Globe halo */}
+      {/* Globe halo — soft transparent sphere around the wireframe */}
       <mesh position={[0, 6.0, 0]}>
-        <boxGeometry args={[2.6, 2.6, 0.02]} />
-        <meshBasicMaterial color={accent} transparent opacity={0.12} toneMapped={false} />
+        <icosahedronGeometry args={[1.4, 0]} />
+        <meshBasicMaterial
+          color={accent}
+          transparent
+          opacity={0.08}
+          toneMapped={false}
+        />
       </mesh>
 
       {/* Matrix code rain — vertical thin emissive streaks */}
@@ -6700,38 +6705,64 @@ function VillageHouse({
         <meshStandardMaterial color="#caa84a" emissive="#caa84a" emissiveIntensity={0.4} toneMapped={false} />
       </mesh>
 
-      {/* Pitched red-tile roof — two slanted slabs */}
-      <mesh position={[-0.8, 2.3, 0]} rotation={[0, 0, -0.55]} castShadow>
+      {/* Pitched red-tile roof — two slabs meeting at a ridge in the
+       *  middle. Centers shifted so the slabs meet at x=0 with a small
+       *  cap; rotation signs FLIPPED so the peak is up (was inverted). */}
+      <mesh position={[-0.95, 2.5, 0]} rotation={[0, 0, 0.5]} castShadow>
         <boxGeometry args={[2.2, 0.18, 2.6]} />
         <meshLambertMaterial color={roofRed} />
       </mesh>
-      <mesh position={[0.8, 2.3, 0]} rotation={[0, 0, 0.55]} castShadow>
+      <mesh position={[0.95, 2.5, 0]} rotation={[0, 0, -0.5]} castShadow>
         <boxGeometry args={[2.2, 0.18, 2.6]} />
         <meshLambertMaterial color={roofRed} />
       </mesh>
-      {/* roof gable triangle (front + back) — using flat slab approximations */}
-      <mesh position={[0, 2.4, 1.21]}>
-        <boxGeometry args={[2.4, 0.7, 0.04]} />
-        <meshLambertMaterial color={wallGreen} />
+      {/* Roof ridge cap — long thin slab along Z at the peak */}
+      <mesh position={[0, 3.05, 0]}>
+        <boxGeometry args={[0.18, 0.14, 2.6]} />
+        <meshLambertMaterial color="#5a1818" />
       </mesh>
-      <mesh position={[0, 2.4, -1.21]}>
-        <boxGeometry args={[2.4, 0.7, 0.04]} />
-        <meshLambertMaterial color={wallGreen} />
-      </mesh>
-      {/* Chimney */}
-      <mesh position={[0.9, 3.05, 0.4]} castShadow>
+
+      {/* Roof gable — stepped triangle (voxel-art style) on front + back.
+       *  Each side uses 4 stacked panels of decreasing width to form a
+       *  pyramid silhouette that sits under the slanted roof slabs. */}
+      {([1.21, -1.21] as const).map((z) => (
+        <group key={z}>
+          {[
+            { w: 2.4, y: 2.05 },
+            { w: 1.85, y: 2.3 },
+            { w: 1.25, y: 2.55 },
+            { w: 0.6, y: 2.8 },
+          ].map((row, i) => (
+            <mesh key={i} position={[0, row.y, z]}>
+              <boxGeometry args={[row.w, 0.26, 0.04]} />
+              <meshLambertMaterial color={wallGreen} />
+            </mesh>
+          ))}
+        </group>
+      ))}
+      {/* Chimney — moved up so it sits above the new roof peak (~y=3.05) */}
+      <mesh position={[0.9, 3.2, 0.4]} castShadow>
         <boxGeometry args={[0.3, 0.7, 0.3]} />
         <meshLambertMaterial color="#8a4828" />
       </mesh>
-      <mesh position={[0.9, 3.45, 0.4]}>
+      <mesh position={[0.9, 3.6, 0.4]}>
         <boxGeometry args={[0.36, 0.06, 0.36]} />
         <meshLambertMaterial color="#2a1810" />
       </mesh>
-      {/* Tiny smoke puff */}
-      <mesh position={[0.9, 3.7, 0.4]}>
-        <boxGeometry args={[0.2, 0.18, 0.2]} />
-        <meshStandardMaterial color="#fff" emissive="#fff" emissiveIntensity={0.4} transparent opacity={0.6} toneMapped={false} />
-      </mesh>
+      {/* Three small smoke puffs rising */}
+      {[0, 1, 2].map((i) => (
+        <mesh key={i} position={[0.9 + Math.sin(i * 1.4) * 0.06, 3.85 + i * 0.22, 0.4]}>
+          <boxGeometry args={[0.18 - i * 0.02, 0.16, 0.18 - i * 0.02]} />
+          <meshStandardMaterial
+            color="#fff"
+            emissive="#fff"
+            emissiveIntensity={0.45}
+            transparent
+            opacity={0.55 - i * 0.14}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
 
       {/* Front porch — small platform extending toward the camera */}
       <mesh position={[0, 0.05, 1.85]} receiveShadow>
