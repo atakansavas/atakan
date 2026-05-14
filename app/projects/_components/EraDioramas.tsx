@@ -1,6 +1,6 @@
 "use client";
 
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -6424,16 +6424,18 @@ function AgenticDiorama() {
 
   return (
     <group>
-      {/* Night sky backdrop with stars */}
-      <AgenticSky />
+      {/* Big LED back-wall — replaces the plain sky backdrop. Houses a
+       *  giant eye in the centre that follows the mouse pointer. */}
+      <LedBackdrop />
 
-      {/* Ground tile — dark grass / village earth */}
-      <mesh position={[0, -0.5, 0]}>
-        <boxGeometry args={[18, 0.1, 18]} />
-        <meshLambertMaterial color="#0e1a14" />
-      </mesh>
+      {/* Lush green grass ground with multiple shade strips */}
+      <AgenticGround />
+
       {/* Grass tufts scattered around the house */}
       <VillageGrass />
+
+      {/* Perimeter of clearly-coloured trees framing the diorama */}
+      <AgenticTrees />
 
       {/* The central green village house */}
       <VillageHouse windowRef={windowRef} />
@@ -6544,28 +6546,321 @@ function AgenticDiorama() {
 
 /* ===== Agentic helpers =================================================== */
 
-function AgenticSky() {
+/* The LED backdrop — a giant wall-mounted screen at z=-14 with a grid
+ * of small emissive cells (pulsing) and a huge centred eye that follows
+ * the user's mouse pointer. This is the era's main interactive moment.
+ */
+function LedBackdrop() {
+  // Pulsing grid cell refs (we only animate ~36 of them to stay cheap)
+  const cellRefs = useRef<(THREE.MeshStandardMaterial | null)[]>([]);
+  useFrame(() => {
+    const t = performance.now() * 0.001;
+    cellRefs.current.forEach((m, i) => {
+      if (!m) return;
+      // each cell pulses on its own random phase
+      const phase = (i * 0.371) % (Math.PI * 2);
+      m.emissiveIntensity = 0.4 + Math.sin(t * 1.6 + phase) * 0.35;
+    });
+  });
+  // Grid layout
+  const cols = 18;
+  const rows = 10;
+  const cellW = 1.4;
+  const cellH = 1.4;
+  const totalW = cols * cellW;
+  const totalH = rows * cellH;
   return (
-    <group position={[0, 5, -16]}>
-      <mesh position={[0, 6, 0]}>
-        <planeGeometry args={[60, 14]} />
-        <meshBasicMaterial color="#070a20" toneMapped={false} />
+    <group position={[0, 6, -14]}>
+      {/* Outer LED housing — dark bezel */}
+      <mesh position={[0, 0, -0.1]}>
+        <boxGeometry args={[totalW + 1.0, totalH + 1.0, 0.2]} />
+        <meshLambertMaterial color="#0a0a14" />
       </mesh>
-      <mesh position={[0, -2, 0.05]}>
-        <planeGeometry args={[60, 6]} />
-        <meshBasicMaterial color="#10164a" toneMapped={false} />
+      {/* Inner LED panel base */}
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[totalW, totalH, 0.04]} />
+        <meshLambertMaterial color="#06060c" />
       </mesh>
-      {/* Stars — sparse */}
-      {Array.from({ length: 28 }).map((_, i) => {
-        const x = ((i * 37.9) % 56) - 28;
-        const y = ((i * 23.7) % 12) - 4;
-        return (
-          <mesh key={i} position={[x, y, 0.2]}>
-            <boxGeometry args={[0.06, 0.06, 0.02]} />
-            <meshBasicMaterial color={i % 5 === 0 ? "#a4d8f0" : "#fff5e6"} toneMapped={false} />
-          </mesh>
-        );
-      })}
+      {/* LED cell grid — most are static dim, a sampled subset animates */}
+      {Array.from({ length: cols }).map((_, ci) =>
+        Array.from({ length: rows }).map((_, ri) => {
+          const x = -totalW / 2 + cellW / 2 + ci * cellW;
+          const y = -totalH / 2 + cellH / 2 + ri * cellH;
+          // Skip cells that fall under the eye (centre 6×6 area) so the
+          // eye is the only thing in that zone.
+          if (Math.abs(x) < 4 && Math.abs(y) < 4) return null;
+          const idx = ci * rows + ri;
+          const animated = idx % 5 === 0;
+          const color =
+            idx % 7 === 0 ? "#60a5fa" : idx % 7 === 1 ? "#7d8cff" : idx % 7 === 2 ? "#ec5aa6" : "#22aaff";
+          return (
+            <mesh key={`${ci}-${ri}`} position={[x, y, 0.04]}>
+              <boxGeometry args={[cellW - 0.18, cellH - 0.18, 0.04]} />
+              <meshStandardMaterial
+                ref={
+                  animated
+                    ? (el) => {
+                        cellRefs.current[idx] = el;
+                      }
+                    : undefined
+                }
+                color="#000"
+                emissive={color}
+                emissiveIntensity={animated ? 0.7 : 0.25}
+                toneMapped={false}
+              />
+            </mesh>
+          );
+        }),
+      )}
+
+      {/* Mouse-tracking eye in the centre */}
+      <MouseEye />
+    </group>
+  );
+}
+
+function MouseEye() {
+  // Pupil position is driven by the global mouse pointer (R3F's
+  // useThree provides a normalised [-1, 1] pointer).
+  const pupilRef = useRef<THREE.Group | null>(null);
+  const lidTopRef = useRef<THREE.Mesh | null>(null);
+  const lidBotRef = useRef<THREE.Mesh | null>(null);
+  const { pointer } = useThree();
+  // Lerped pointer for soft follow
+  const lerpedRef = useRef({ x: 0, y: 0 });
+  useFrame(() => {
+    // Soft follow — lerp current toward target
+    const target = lerpedRef.current;
+    target.x += (pointer.x - target.x) * 0.12;
+    target.y += (pointer.y - target.y) * 0.12;
+    if (pupilRef.current) {
+      const maxX = 0.9;
+      const maxY = 0.55;
+      pupilRef.current.position.x = target.x * maxX;
+      pupilRef.current.position.y = target.y * maxY;
+    }
+    // Occasional blink — close the eyelids quickly every few seconds
+    const t = performance.now() * 0.001;
+    // blink envelope: short triangular pulse every ~5s
+    const blinkPhase = (t % 5) / 5;
+    let blink = 0;
+    if (blinkPhase > 0.96) blink = (blinkPhase - 0.96) / 0.04;
+    else if (blinkPhase > 0.92) blink = 1 - (blinkPhase - 0.92) / 0.04;
+    if (lidTopRef.current && lidBotRef.current) {
+      // squash the lid scale.y to "close" the eye
+      const lidScale = 0.05 + blink * 1.2;
+      lidTopRef.current.scale.y = lidScale;
+      lidBotRef.current.scale.y = lidScale;
+    }
+  });
+  return (
+    <group position={[0, 0, 0.1]}>
+      {/* Eye background outline (dark rim) */}
+      <mesh position={[0, 0, 0]}>
+        <circleGeometry args={[3.5, 32]} />
+        <meshBasicMaterial color="#0a0a14" toneMapped={false} />
+      </mesh>
+      {/* Sclera (white of the eye) */}
+      <mesh position={[0, 0, 0.05]}>
+        <circleGeometry args={[3.2, 32]} />
+        <meshStandardMaterial
+          color="#fff"
+          emissive="#fff"
+          emissiveIntensity={0.6}
+          toneMapped={false}
+        />
+      </mesh>
+      {/* Pupil group — translates to follow mouse */}
+      <group ref={pupilRef} position={[0, 0, 0.1]}>
+        {/* iris — coloured ring */}
+        <mesh position={[0, 0, 0]}>
+          <circleGeometry args={[1.4, 32]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#60a5fa"
+            emissiveIntensity={1.3}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* iris detail — slightly darker inner ring */}
+        <mesh position={[0, 0, 0.02]}>
+          <circleGeometry args={[1.1, 32]} />
+          <meshStandardMaterial
+            color="#000"
+            emissive="#3a5aaa"
+            emissiveIntensity={1.4}
+            toneMapped={false}
+          />
+        </mesh>
+        {/* pupil — black dot */}
+        <mesh position={[0, 0, 0.04]}>
+          <circleGeometry args={[0.6, 32]} />
+          <meshBasicMaterial color="#000" toneMapped={false} />
+        </mesh>
+        {/* highlight — small white reflection in the upper-left */}
+        <mesh position={[-0.35, 0.4, 0.06]}>
+          <circleGeometry args={[0.18, 18]} />
+          <meshStandardMaterial
+            color="#fff"
+            emissive="#fff"
+            emissiveIntensity={1.8}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+      {/* Top eyelid (used for blinking) — wide black rectangle that
+       *  scales down to 0 most of the time and pops up during a blink. */}
+      <mesh ref={lidTopRef} position={[0, 2.4, 0.18]} scale={[1, 0.05, 1]}>
+        <planeGeometry args={[7.2, 3.0]} />
+        <meshBasicMaterial color="#0a0a14" toneMapped={false} />
+      </mesh>
+      <mesh ref={lidBotRef} position={[0, -2.4, 0.18]} scale={[1, 0.05, 1]}>
+        <planeGeometry args={[7.2, 3.0]} />
+        <meshBasicMaterial color="#0a0a14" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+function AgenticGround() {
+  // Lush green ground for the village world — two-tone strips so it
+  // reads as grass, not flat felt. Slightly raised so the holo board
+  // floats just above.
+  return (
+    <group>
+      {/* Base ground */}
+      <mesh position={[0, -0.5, 0]} receiveShadow>
+        <boxGeometry args={[22, 0.12, 22]} />
+        <meshLambertMaterial color="#1a3a22" />
+      </mesh>
+      {/* Lighter inner strip for definition */}
+      <mesh position={[0, -0.43, 0]} receiveShadow>
+        <boxGeometry args={[20, 0.04, 20]} />
+        <meshLambertMaterial color="#234a2a" />
+      </mesh>
+      {/* Soft path leading from the porch out to the front of the board */}
+      <mesh position={[0, -0.4, 3.6]}>
+        <boxGeometry args={[1.4, 0.04, 1.8]} />
+        <meshLambertMaterial color="#5a4a30" />
+      </mesh>
+      {/* Stepping stones along the path */}
+      {[2.6, 3.4, 4.2].map((z, i) => (
+        <mesh key={i} position={[0, -0.36, z]}>
+          <boxGeometry args={[0.6, 0.04, 0.4]} />
+          <meshLambertMaterial color="#a8a89a" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function AgenticTrees() {
+  // A perimeter of clearly-coloured voxel trees framing the diorama.
+  // Mix of tall cypresses + bushy round trees. Colours stay distinct so
+  // the world feels like a green village around the agent board.
+  const trees: {
+    pos: [number, number, number];
+    type: "cypress" | "round" | "wide";
+    palette: { trunk: string; leaf: string };
+  }[] = [
+    // Back row — tall cypresses
+    { pos: [-9, 0, -7], type: "cypress", palette: { trunk: "#2a1410", leaf: "#1c3a24" } },
+    { pos: [-6.5, 0, -7.5], type: "cypress", palette: { trunk: "#2a1410", leaf: "#244a2c" } },
+    { pos: [6.5, 0, -7.5], type: "cypress", palette: { trunk: "#2a1410", leaf: "#1c3a24" } },
+    { pos: [9, 0, -7], type: "cypress", palette: { trunk: "#2a1410", leaf: "#244a2c" } },
+    // Mid sides — bushy round trees
+    { pos: [-9, 0, -3], type: "round", palette: { trunk: "#3a2418", leaf: "#3a8a5a" } },
+    { pos: [9, 0, -3], type: "round", palette: { trunk: "#3a2418", leaf: "#3a8a5a" } },
+    { pos: [-9, 0, 1], type: "round", palette: { trunk: "#3a2418", leaf: "#2a6a4a" } },
+    { pos: [9, 0, 1], type: "round", palette: { trunk: "#3a2418", leaf: "#2a6a4a" } },
+    // Front (camera-facing) corners — wider trees
+    { pos: [-8, 0, 5], type: "wide", palette: { trunk: "#4a3220", leaf: "#458a3a" } },
+    { pos: [8, 0, 5], type: "wide", palette: { trunk: "#4a3220", leaf: "#458a3a" } },
+  ];
+  return (
+    <group>
+      {trees.map((t, i) => (
+        <group key={i} position={t.pos}>
+          {t.type === "cypress" && <CypressTree {...t.palette} />}
+          {t.type === "round" && <RoundTree {...t.palette} />}
+          {t.type === "wide" && <WideTree {...t.palette} />}
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function CypressTree({ trunk, leaf }: { trunk: string; leaf: string }) {
+  return (
+    <group>
+      <mesh position={[0, 0.4, 0]} castShadow>
+        <boxGeometry args={[0.24, 0.8, 0.24]} />
+        <meshLambertMaterial color={trunk} />
+      </mesh>
+      {/* slim tall conical body — three stacked decreasing slabs */}
+      <mesh position={[0, 1.6, 0]} castShadow>
+        <boxGeometry args={[0.9, 1.4, 0.9]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[0, 2.8, 0]} castShadow>
+        <boxGeometry args={[0.7, 1.2, 0.7]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[0, 3.85, 0]} castShadow>
+        <boxGeometry args={[0.5, 1.0, 0.5]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[0, 4.55, 0]} castShadow>
+        <boxGeometry args={[0.26, 0.4, 0.26]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+    </group>
+  );
+}
+
+function RoundTree({ trunk, leaf }: { trunk: string; leaf: string }) {
+  return (
+    <group>
+      <mesh position={[0, 0.55, 0]} castShadow>
+        <boxGeometry args={[0.3, 1.1, 0.3]} />
+        <meshLambertMaterial color={trunk} />
+      </mesh>
+      <mesh position={[0, 1.65, 0]} castShadow>
+        <boxGeometry args={[1.5, 0.9, 1.5]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[0, 2.25, 0]} castShadow>
+        <boxGeometry args={[1.2, 0.7, 1.2]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[0, 2.85, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.4, 0.7]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+    </group>
+  );
+}
+
+function WideTree({ trunk, leaf }: { trunk: string; leaf: string }) {
+  return (
+    <group>
+      <mesh position={[0, 0.65, 0]} castShadow>
+        <boxGeometry args={[0.36, 1.3, 0.36]} />
+        <meshLambertMaterial color={trunk} />
+      </mesh>
+      <mesh position={[0, 1.85, 0]} castShadow>
+        <boxGeometry args={[2.0, 1.0, 2.0]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[0.2, 2.5, -0.1]} castShadow>
+        <boxGeometry args={[1.5, 0.8, 1.5]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
+      <mesh position={[-0.1, 3.05, 0.1]} castShadow>
+        <boxGeometry args={[0.9, 0.6, 0.9]} />
+        <meshLambertMaterial color={leaf} />
+      </mesh>
     </group>
   );
 }
