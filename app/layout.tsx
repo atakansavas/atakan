@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/logo.png",
+        url: "/ben.jpg",
         width: 1200,
         height: 630,
         alt: "Ben Atakan - Yapay Zeka Uzmanı",
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     description:
       "İşinize yapay zeka desteği alın. Sesli asistanlar, süreç otomasyonları ve AI destekli çözümler.",
     creator: "@benatakanai",
-    images: ["/logo.png"],
+    images: ["/ben.jpg"],
   },
   robots: {
     index: true,

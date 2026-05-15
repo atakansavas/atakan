@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useLang } from "./LangProvider";
-import { LangToggle } from "./LangToggle";
 
 export function Footer() {
   const { t } = useLang();
@@ -70,7 +69,6 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-white/5 text-center text-xs text-[#94a3b8] flex flex-col md:flex-row justify-between items-center gap-4 font-mono">
           <p>{f.copyright}</p>
-          <LangToggle />
           <div className="flex items-center gap-2 pixel-font text-[10px] border border-[var(--color-accent)] px-3 py-1 bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
             <span className="w-2 h-2 bg-[var(--color-accent)] animate-blink shadow-[0_0_5px_var(--color-accent)]" />
             SYSTEM ONLINE

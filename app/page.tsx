@@ -174,11 +174,11 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center gap-3">
               <Image
-                src="/logo.png"
+                src="/ben.jpg"
                 alt="Ben Atakan"
                 width={32}
                 height={32}
-                className="rounded-lg"
+                className="rounded-full object-cover w-8 h-8 border border-white/10"
               />
               <div>
                 <div className="font-display text-lg font-semibold text-white tracking-tight">

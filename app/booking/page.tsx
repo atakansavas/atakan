@@ -50,11 +50,11 @@ export default function BookingPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
                 <Image
-                  src="/logo.png"
-                  alt="Ben Atakan AI"
+                  src="/ben.jpg"
+                  alt="Ben Atakan"
                   width={40}
                   height={40}
-                  className="rounded-lg"
+                  className="rounded-full object-cover w-10 h-10 border border-gray-200"
                 />
                 <div>
                   <div
@@ -239,11 +239,11 @@ export default function BookingPage() {
             <div className="mb-4 sm:mb-6">
               <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2">
                 <Image
-                  src="/logo.png"
-                  alt="Ben Atakan AI"
-                  width={28}
-                  height={28}
-                  className="sm:w-8 sm:h-8 rounded-lg"
+                  src="/ben.jpg"
+                  alt="Ben Atakan"
+                  width={32}
+                  height={32}
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-gray-200"
                 />
                 <div
                   className="text-xl sm:text-2xl font-semibold"

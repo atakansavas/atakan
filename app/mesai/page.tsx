@@ -7,12 +7,14 @@ import { WorldVision } from "./_components/WorldVision";
 import { TechStack } from "./_components/TechStack";
 import { InteractiveWaitlist } from "./_components/InteractiveWaitlist";
 import { Footer } from "./_components/Footer";
+import { TopBar } from "./_components/TopBar";
 import { LangProvider } from "./_components/LangProvider";
 
 export default function MesaiPage() {
   return (
     <LangProvider>
-      <main className="min-h-screen">
+      <TopBar />
+      <main className="min-h-screen pt-12">
         <Hero />
         <Concept />
         <ChefAndRoles />

@@ -4,893 +4,590 @@ import {
   Briefcase,
   Calendar,
   Code,
+  Download,
+  ExternalLink,
   Github,
   GraduationCap,
   Linkedin,
   Mail,
   MapPin,
   Phone,
+  Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  EXPERIENCES,
+  PROJECTS,
+  expEnd,
+  type Experience,
+  type Project,
+} from "../projects/_lib/data";
+
+const personalInfo = {
+  name: "Atakan Savaş",
+  title: "AI Solutions Architect · Full-Stack Engineer · CTO",
+  email: "info@benatakan.com",
+  phone: "+90 535 279 73 92",
+  location: "Dalyan, Muğla, Türkiye",
+  linkedin: "https://www.linkedin.com/in/hiata/",
+  github: "https://github.com/atakansavas",
+  website: "https://benatakan.com",
+};
+
+const summary = {
+  intro:
+    "AI Solutions Architect and Full-Stack Developer with 10+ years building production systems — from broadcast desktop apps and GIS platforms to microservices at scale and AI agent orchestration. Currently CTO of Khora Design Lab and co-founder of a stealth AI startup.",
+  recent:
+    "Over the past three years I have lived inside the AI shift: shipping voice agents that hold their own against humans, replacing entire support lines with LLM workflows, and prototyping autonomous multi-agent systems. Comfortable as a one-person product team or as the technical lead of a multidisciplinary group.",
+  highlights: [
+    "10+ years in software, 5+ in production AI/ML systems",
+    "Shipped products to 1.3M+ users (Pluton), 90+ Lighthouse scores under load",
+    "Cut ERP support operating costs by 60% with AI workflow redesign",
+    "Built one-person products that ran for years, plus monoliths split into microservices for 10-person squads",
+  ],
+};
+
+const techStack: Record<string, string[]> = {
+  "AI & Agents": [
+    "OpenAI",
+    "Claude Agent SDK",
+    "ElevenLabs",
+    "Whisper / XTTS",
+    "LangChain",
+    "Vector DBs",
+    "Vapi",
+    "n8n",
+  ],
+  "Frontend & Mobile": [
+    "Next.js 14/15",
+    "React",
+    "Vue.js / Nuxt.js",
+    "React Native",
+    "Expo",
+    "TypeScript",
+    "Tailwind",
+    "Three.js",
+  ],
+  "Backend & Infra": [
+    "Node.js",
+    ".NET / .NET Core",
+    "Python",
+    "AWS Lambda / Serverless",
+    "Vercel",
+    "Railway",
+    "Docker",
+    "GitHub Actions",
+  ],
+  "Data & Messaging": [
+    "PostgreSQL",
+    "MSSQL",
+    "MongoDB / DocumentDB",
+    "Redis",
+    "ElasticSearch",
+    "RabbitMQ / Kafka",
+    "Supabase",
+    "MongoDB Atlas",
+  ],
+  "Architecture & Practice": [
+    "DDD",
+    "CQRS",
+    "Mediator pattern",
+    "Pipeline pattern",
+    "Microservices",
+    "Event-driven systems",
+    "Agile / Scrum",
+    "Technical leadership",
+  ],
+};
+
+const skills: Record<string, string[]> = {
+  "AI Engineering": [
+    "Large Language Models (GPT-4, Claude)",
+    "Voice AI agents (ElevenLabs, Vapi, Whisper)",
+    "Multi-agent orchestration",
+    "Vector search & RAG pipelines",
+    "Prompt engineering & evaluation",
+    "Telegram, WhatsApp Cloud API",
+  ],
+  "Product Engineering": [
+    "End-to-end product lifecycle",
+    "Monetization & subscription (RevenueCat, iyzico)",
+    "SEO + SSR performance (90+ Lighthouse)",
+    "Mobile UX (React Native + Expo)",
+    "Marketplace mechanics",
+    "Web3 (Optimism, Base, NFT minting)",
+  ],
+  "Backend & Architecture": [
+    "REST + GraphQL APIs",
+    "Microservices & serverless",
+    "CQRS / DDD codebases",
+    "Real-time pipelines (SignalR, sockets)",
+    "GIS + geometric data (Cesium, GeoServer)",
+    "CI/CD (Jenkins, Octopus, GitHub Actions)",
+  ],
+  "Leadership & Process": [
+    "Technical strategy & roadmap",
+    "Hiring and team composition",
+    "Async distributed teams (5–10 people)",
+    "Architecture decision records",
+    "Cost discipline (soft cap / hard cap)",
+    "Mentorship & code review culture",
+  ],
+};
+
+const formatYears = (e: Experience) => {
+  const end = e.end === "present" ? "Present" : e.end;
+  return `${e.start} – ${end}`;
+};
+
+const formatProjectYears = (p: Project) => {
+  if (p.yearLabel) return p.yearLabel;
+  if (p.endYear === "present") return `${p.year} – Present`;
+  if (p.endYear && p.endYear !== p.year) return `${p.year} – ${p.endYear}`;
+  return String(p.year);
+};
+
+const expSortedDesc = [...EXPERIENCES].sort((a, b) => {
+  const aEnd = expEnd(a);
+  const bEnd = expEnd(b);
+  if (aEnd !== bEnd) return bEnd - aEnd;
+  return b.start - a.start;
+});
+
+// Featured projects — CV gets the flagship + alive set, newest first.
+const featuredProjects = [...PROJECTS]
+  .filter((p) => p.flagship || p.endYear === "present")
+  .sort((a, b) => b.year - a.year);
 
 export default function CVPage() {
-  const personalInfo = {
-    name: "Atakan Savas",
-    title: "AI Solutions Architect & Full-Stack Developer",
-    email: "info@benatakan.com",
-    phone: "+90 535 279 73 92",
-    location: "Ortaca, Muğla, Turkey",
-    linkedin: "https://www.linkedin.com/in/hiata/",
-    github: "https://github.com/atakansavas",
-  };
-
-  const summary = {
-    intro: `Experienced AI Solutions Architect and Full-Stack Developer with over a decade of expertise in developing AI-powered solutions and modern web technologies. Currently supporting a team preparing for investment. Specialized in large language models, voice AI agents, and process automation.`,
-    recent: `Over the past year, mastered prompt engineering and evolved into a vibe coding approach—leveraging deep technical knowledge across the entire stack to rapidly prototype and deliver production-ready solutions.`,
-    techStack: {
-      "JavaScript Family": [
-        "Node.js",
-        "React.js",
-        "Next.js",
-        "Vue.js",
-        "Nuxt.js",
-      ],
-      "Cloud Platforms": ["Vercel", "Railway", "AWS", "MongoDB Atlas"],
-      Databases: ["Supabase", "DocumentDB", "NoSQL"],
-      ".NET Family": ["C#", "ASP.NET MVC"],
-    },
-  };
-
-  const experience = [
-    {
-      title: "Chief Technology Officer (CTO)",
-      company: "Freelance / Independent",
-      period: "2021 - Present",
-      location: "Remote",
-      description: [
-        "Leading technical strategy and product development for AI-powered solutions and digital transformation initiatives",
-        "Currently working with 3-person team achieving $1M ARR, targeting $2M ARR by end of year",
-        "Driving product roadmap, architecture decisions, and technology stack selection",
-        "Spearheaded monetization strategies and automation workflows for scalable revenue growth",
-        "Built and productized SuperSocialScore platform for social media analytics",
-        "Developed production-ready voice AI agents for customer service with automated deployment pipelines",
-        "Transformed ERP support line with AI-powered automation, reducing operational costs by 60%",
-        "Specialized in large language models, voice AI agents, and process automation at scale",
-        "Implemented end-to-end product lifecycle management from ideation to monetization",
-      ],
-      technologies: [
-        "Next.js",
-        "OpenAI",
-        "LangChain",
-        "Vector DBs",
-        "ElevenLabs",
-        "Voice AI",
-        "Python",
-        "React",
-        "Product Strategy",
-        "Team Leadership",
-      ],
-    },
-    {
-      title: "Full-Stack Developer",
-      company: "Various Companies",
-      period: "2017 - 2021",
-      location: "Istanbul, Turkey",
-      description: [
-        "Developed enterprise-level web applications and SaaS platforms",
-        "Focused on cloud architecture and distributed systems",
-        "Built scalable solutions for various industries",
-        "Implemented cloud-native architectures and microservices",
-        "Developed RESTful APIs and GraphQL endpoints",
-        "Collaborated with enterprise organizations following Agile/Scrum methodologies",
-        "Built services and internal tools with ASP.NET and Blazor; implemented CI/CD with Azure DevOps",
-      ],
-      technologies: [
-        "React",
-        "Node.js",
-        "PostgreSQL",
-        "AWS",
-        "Docker",
-        "GraphQL",
-        "TypeScript",
-        "ASP.NET",
-        "Blazor",
-        "Agile/Scrum",
-        "CI/CD",
-        "Azure DevOps",
-      ],
-    },
-    {
-      title: "Web Developer",
-      company: "Web Development Agencies",
-      period: "2013 - 2017",
-      location: "Istanbul, Turkey",
-      description: [
-        "Worked across web technologies from UI to basic backend integrations and APIs",
-        "Developed responsive web applications and interactive user interfaces",
-        "Implemented modern UI/UX patterns and optimized frontend performance",
-        "Created cross-browser compatible solutions",
-        "Contributed to end-to-end web features beyond purely frontend responsibilities",
-      ],
-      technologies: [
-        "JavaScript",
-        "jQuery",
-        "Angular.js",
-        "HTML5/CSS3",
-        "Responsive Design",
-      ],
-    },
-  ];
-
-  const projects = [
-    {
-      title: "Bozcaada App",
-      description:
-        "AI-powered travel guide for Bozcaada featuring smart assistant, detailed maps, route planning, and live support; actively used in production.",
-      technologies: ["React Native", "Expo", "AI Tools"],
-      link: "https://www.bozcaada.app/",
-      status: "Active",
-    },
-    {
-      title: "SuperSocialScore",
-      description:
-        "Social media analytics platform for comprehensive social media scoring and insights",
-      technologies: [
-        "Next.js",
-        "AI Analytics",
-        "Social Media APIs",
-        "Real-time Data",
-      ],
-      link: "https://lnkd.in/dqYRe4mC",
-      status: "Active",
-    },
-    {
-      title: "Voice AI Agents",
-      description:
-        "Production-ready voice AI agents for customer service and support automation",
-      technologies: ["ElevenLabs", "OpenAI", "Voice Processing", "NLP"],
-      status: "Production",
-    },
-    {
-      title: "ERP AI Support System",
-      description:
-        "AI-powered ERP support line transformation for automated customer assistance",
-      technologies: ["AI Chatbots", "ERP Integration", "Process Automation"],
-      status: "Deployed",
-    },
-  ];
-
-  const skills = {
-    "Artificial Intelligence & ML": [
-      "Large Language Models (GPT-3/4)",
-      "Voice AI Agents",
-      "Vector Databases",
-      "Machine Learning Pipelines",
-      "Computer Vision",
-      "Natural Language Processing",
-    ],
-    "Frontend Development": [
-      "JavaScript (ES6+)",
-      "React & Next.js",
-      "Vue.js",
-      "TypeScript",
-      "Angular",
-      "jQuery",
-    ],
-    "Backend & Infrastructure": [
-      "Node.js",
-      "Python",
-      "GraphQL",
-      "REST APIs",
-      "Microservices",
-      "Docker/Kubernetes",
-    ],
-    "Database & Storage": [
-      "PostgreSQL",
-      "MongoDB",
-      "Redis",
-      "Elasticsearch",
-      "Vector Stores",
-      "AWS S3",
-    ],
-    "DevOps & Cloud": [
-      "AWS Suite",
-      "Google Cloud",
-      "CI/CD Pipelines",
-      "Infrastructure as Code",
-      "Monitoring & Logging",
-      "Serverless Architecture",
-    ],
-  };
-
   return (
     <>
-      {/* Print Styles */}
       <style jsx global>{`
-        /* Print-specific styles */
         @media print {
-          /* Reset all print styles */
           * {
             -webkit-print-color-adjust: exact !important;
             color-adjust: exact !important;
             print-color-adjust: exact !important;
-            box-sizing: border-box !important;
           }
-
-          /* Hide navigation and non-essential elements */
           nav,
           .no-print {
             display: none !important;
           }
-
-          /* Page setup */
           @page {
-            size: A4 portrait !important;
-            margin: 1.5cm !important;
-            orphans: 3 !important;
-            widows: 3 !important;
+            size: A4 portrait;
+            margin: 1.4cm;
           }
-
-          /* Body and container styles */
           body {
             background: white !important;
-            color: black !important;
-            font-family: "Times New Roman", serif !important;
-            font-size: 11pt !important;
+            color: #111 !important;
+            font-family: "Inter", "Helvetica", sans-serif !important;
+            font-size: 10.5pt !important;
             line-height: 1.4 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            -webkit-font-smoothing: antialiased !important;
-            -moz-osx-font-smoothing: grayscale !important;
           }
-
-          /* Main container */
           .cv-container {
+            background: white !important;
             max-width: none !important;
+            padding: 0 !important;
             margin: 0 !important;
-            padding: 0 !important;
-            background: white !important;
-            box-shadow: none !important;
-            border: none !important;
           }
-
-          /* Header section */
-          .cv-header {
-            page-break-after: avoid !important;
-            margin-bottom: 1.5em !important;
-            padding: 0 !important;
+          .cv-card {
             background: white !important;
             border: none !important;
             box-shadow: none !important;
+            padding: 0 !important;
+            margin-bottom: 1.2em !important;
+            page-break-inside: avoid !important;
           }
-
+          .cv-section-title {
+            font-size: 14pt !important;
+            border-bottom: 2px solid #111 !important;
+            padding-bottom: 0.25em !important;
+            margin-bottom: 0.6em !important;
+          }
+          .cv-exp-item,
+          .cv-proj-item {
+            page-break-inside: avoid !important;
+            margin-bottom: 1em !important;
+          }
           .cv-photo {
-            width: 100px !important;
-            height: 100px !important;
-            border: 2px solid #333 !important;
-            border-radius: 0 !important;
-            margin: 0 0 1em 0 !important;
+            width: 90px !important;
+            height: 90px !important;
+            border: 1.5px solid #333 !important;
           }
-
-          .cv-name {
-            font-size: 24pt !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            margin: 0 0 0.3em 0 !important;
-            line-height: 1.2 !important;
-          }
-
-          .cv-title {
-            font-size: 14pt !important;
-            color: #333 !important;
-            margin: 0 0 1em 0 !important;
-            font-weight: normal !important;
-          }
-
-          .cv-contact-info {
-            font-size: 10pt !important;
-            color: #555 !important;
-            margin: 0 !important;
-          }
-
-          .cv-contact-item {
-            margin: 0.2em 0 !important;
-            display: inline-block !important;
-            margin-right: 2em !important;
-          }
-
-          /* Section headers */
-          .cv-section {
-            page-break-inside: avoid !important;
-            margin-bottom: 1.5em !important;
-            padding: 0 !important;
-            background: white !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-
-          .cv-section-title {
-            font-size: 16pt !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            margin: 0 0 1em 0 !important;
-            padding-bottom: 0.3em !important;
-            border-bottom: 2px solid #333 !important;
-            page-break-after: avoid !important;
-          }
-
-          /* Experience items */
-          .cv-experience-item {
-            page-break-inside: avoid !important;
-            margin-bottom: 1.5em !important;
-            padding-left: 1em !important;
-            border-left: 3px solid #333 !important;
-          }
-
-          .cv-experience-header {
-            margin-bottom: 0.8em !important;
-          }
-
-          .cv-experience-title {
-            font-size: 12pt !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            margin: 0 !important;
-          }
-
-          .cv-experience-company {
-            font-size: 11pt !important;
-            color: #333 !important;
-            font-weight: bold !important;
-            margin: 0.2em 0 !important;
-          }
-
-          .cv-experience-meta {
-            font-size: 10pt !important;
-            color: #666 !important;
-            margin: 0.2em 0 !important;
-          }
-
-          .cv-experience-description {
-            font-size: 10pt !important;
-            color: #333 !important;
-            margin: 0.8em 0 !important;
-          }
-
-          .cv-experience-description li {
-            margin: 0.3em 0 !important;
-            line-height: 1.3 !important;
-          }
-
-          .cv-technologies {
-            margin-top: 0.8em !important;
-          }
-
-          .cv-tech-tag {
-            background: #f5f5f5 !important;
-            color: #333 !important;
-            padding: 0.2em 0.5em !important;
+          .cv-tag {
+            background: #f3f3f3 !important;
             border: 1px solid #ccc !important;
-            border-radius: 0 !important;
-            font-size: 9pt !important;
-            margin: 0.2em 0.3em 0.2em 0 !important;
-            display: inline-block !important;
-          }
-
-          /* Projects section */
-          .cv-projects-grid {
-            display: block !important;
-          }
-
-          .cv-project-item {
-            page-break-inside: avoid !important;
-            margin-bottom: 1.2em !important;
-            padding: 0.8em !important;
-            border: 1px solid #ccc !important;
-            border-radius: 0 !important;
-            background: #fafafa !important;
-          }
-
-          .cv-project-header {
-            margin-bottom: 0.5em !important;
-          }
-
-          .cv-project-title {
-            font-size: 11pt !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            margin: 0 !important;
-          }
-
-          .cv-project-status {
-            font-size: 8pt !important;
-            padding: 0.2em 0.4em !important;
-            border-radius: 0 !important;
-            font-weight: bold !important;
-            text-transform: uppercase !important;
-          }
-
-          .cv-project-status.active {
-            background: #e8f5e8 !important;
-            color: #2d5a2d !important;
-            border: 1px solid #b8d4b8 !important;
-          }
-
-          .cv-project-status.production {
-            background: #e8f0f8 !important;
-            color: #2d4a5a !important;
-            border: 1px solid #b8c8d4 !important;
-          }
-
-          .cv-project-status.deployed {
-            background: #f0f0f0 !important;
-            color: #4a4a4a !important;
-            border: 1px solid #d0d0d0 !important;
-          }
-
-          .cv-project-description {
-            font-size: 9pt !important;
             color: #333 !important;
-            margin: 0.5em 0 !important;
-            line-height: 1.3 !important;
+            font-size: 8.5pt !important;
           }
-
-          .cv-project-tech {
-            margin: 0.5em 0 !important;
-          }
-
-          .cv-project-tech-tag {
-            background: #f0f0f0 !important;
-            color: #555 !important;
-            padding: 0.1em 0.3em !important;
-            border: 1px solid #ddd !important;
-            border-radius: 0 !important;
-            font-size: 8pt !important;
-            margin: 0.1em 0.2em 0.1em 0 !important;
-            display: inline-block !important;
-          }
-
-          /* Skills section */
-          .cv-skills-grid {
-            display: block !important;
-          }
-
-          .cv-skill-category {
-            page-break-inside: avoid !important;
-            margin-bottom: 1.2em !important;
-          }
-
-          .cv-skill-category-title {
-            font-size: 12pt !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            margin: 0 0 0.5em 0 !important;
-            border-bottom: 1px solid #ccc !important;
-            padding-bottom: 0.2em !important;
-          }
-
-          .cv-skill-tags {
-            margin: 0.5em 0 !important;
-          }
-
-          .cv-skill-tag {
-            background: #f5f5f5 !important;
-            color: #333 !important;
-            padding: 0.2em 0.5em !important;
-            border: 1px solid #ccc !important;
-            border-radius: 0 !important;
-            font-size: 9pt !important;
-            margin: 0.2em 0.3em 0.2em 0 !important;
-            display: inline-block !important;
-          }
-
-          /* Contact section */
-          .cv-contact-section {
-            page-break-before: avoid !important;
-            margin-top: 1.5em !important;
-            padding: 0 !important;
-            background: white !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-
-          .cv-contact-title {
-            font-size: 14pt !important;
-            font-weight: bold !important;
-            color: #000 !important;
-            margin: 0 0 1em 0 !important;
-            text-align: center !important;
-          }
-
-          .cv-contact-links {
-            text-align: center !important;
-          }
-
-          .cv-contact-link {
-            display: inline-block !important;
-            margin: 0.5em 1em !important;
-            padding: 0.5em 1em !important;
-            border: 1px solid #333 !important;
-            border-radius: 0 !important;
+          a {
+            color: #1d4ed8 !important;
             text-decoration: none !important;
-            color: #333 !important;
-            font-size: 10pt !important;
-            background: white !important;
-            font-weight: normal !important;
-          }
-
-          /* Utility classes */
-          .print-break-before {
-            page-break-before: always !important;
-          }
-
-          .print-break-after {
-            page-break-after: always !important;
-          }
-
-          .print-break-inside-avoid {
-            page-break-inside: avoid !important;
-          }
-
-          /* Hide external links in print */
-          .cv-contact-link[href^="http"] {
-            display: none !important;
-          }
-
-          /* Ensure proper spacing */
-          p,
-          ul,
-          ol {
-            margin: 0.5em 0 !important;
-          }
-
-          ul,
-          ol {
-            padding-left: 1.5em !important;
-          }
-
-          li {
-            margin: 0.2em 0 !important;
-          }
-
-          /* Force background colors and borders to print */
-          * {
-            -webkit-print-color-adjust: exact !important;
-            color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-        }
-
-        /* Screen-specific styles */
-        @media screen {
-          .cv-container {
-            min-height: 100vh;
-            background: #f8f9fa;
-          }
-
-          .cv-section {
-            transition: all 0.3s ease;
-          }
-
-          .cv-section:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          }
-
-          .cv-tech-tag:hover,
-          .cv-skill-tag:hover {
-            background: #e3f2fd;
-            border-color: #2196f3;
-          }
-        }
-
-        /* Responsive design for different screen sizes */
-        @media (max-width: 768px) {
-          .cv-header {
-            text-align: center;
-          }
-
-          .cv-contact-info {
-            justify-content: center;
-          }
-
-          .cv-experience-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .cv-experience-meta {
-            margin-top: 0.5em;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .cv-name {
-            font-size: 1.8rem;
-          }
-
-          .cv-title {
-            font-size: 1.1rem;
-          }
-
-          .cv-section-title {
-            font-size: 1.3rem;
           }
         }
       `}</style>
 
       <div className="min-h-screen bg-gray-50 cv-container">
-        {/* Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-4 py-3 no-print">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
+        <nav className="bg-white border-b border-gray-200 px-4 py-3 no-print sticky top-0 z-30">
+          <div className="max-w-5xl mx-auto flex justify-between items-center">
             <Link
               href="/"
-              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Home
             </Link>
-            <div className="text-lg font-medium text-gray-900">
+            <div className="text-sm font-medium text-gray-900">
               Curriculum Vitae
+            </div>
+            <div className="flex items-center gap-2">
+              <a
+                href="/cv.pdf"
+                download
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <Download className="w-3.5 h-3.5" /> PDF
+              </a>
             </div>
           </div>
         </nav>
 
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
           {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8 cv-header">
+          <header className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8 cv-card">
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-shrink-0">
                 <Image
-                  src="/cv.JPG"
-                  alt="Atakan Savas"
-                  width={120}
-                  height={120}
-                  className="rounded-lg object-cover cv-photo"
+                  src="/ben.jpg"
+                  alt="Atakan Savaş"
+                  width={140}
+                  height={140}
+                  priority
+                  className="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl object-cover border border-gray-200 cv-photo"
                 />
               </div>
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2 cv-name">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight">
                   {personalInfo.name}
                 </h1>
-                <p className="text-xl text-gray-600 mb-4 cv-title">
+                <p className="text-lg text-gray-600 mt-1 mb-5">
                   {personalInfo.title}
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600 cv-contact-info">
-                  <div className="flex items-center gap-2 cv-contact-item">
-                    <Mail className="w-4 h-4" />
-                    {personalInfo.email}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-600">
+                  <a
+                    href={`mailto:${personalInfo.email}`}
+                    className="flex items-center gap-2 hover:text-blue-600"
+                  >
+                    <Mail className="w-4 h-4 shrink-0" />
+                    <span className="truncate">{personalInfo.email}</span>
+                  </a>
+                  <a
+                    href={`tel:${personalInfo.phone.replace(/\s/g, "")}`}
+                    className="flex items-center gap-2 hover:text-blue-600"
+                  >
+                    <Phone className="w-4 h-4 shrink-0" />
+                    <span>{personalInfo.phone}</span>
+                  </a>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span>{personalInfo.location}</span>
                   </div>
-                  <div className="flex items-center gap-2 cv-contact-item">
-                    <Phone className="w-4 h-4" />
-                    {personalInfo.phone}
-                  </div>
-                  <div className="flex items-center gap-2 cv-contact-item">
-                    <MapPin className="w-4 h-4" />
-                    {personalInfo.location}
-                  </div>
-                  <div className="flex items-center gap-2 cv-contact-item">
-                    <Linkedin className="w-4 h-4" />
-                    <a
-                      href={personalInfo.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-blue-600"
-                    >
-                      LinkedIn Profile
-                    </a>
-                  </div>
+                  <a
+                    href={personalInfo.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-blue-600"
+                  >
+                    <ExternalLink className="w-4 h-4 shrink-0" />
+                    <span>benatakan.com</span>
+                  </a>
+                  <a
+                    href={personalInfo.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-blue-600"
+                  >
+                    <Linkedin className="w-4 h-4 shrink-0" />
+                    <span>linkedin.com/in/hiata</span>
+                  </a>
+                  <a
+                    href={personalInfo.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-blue-600"
+                  >
+                    <Github className="w-4 h-4 shrink-0" />
+                    <span>github.com/atakansavas</span>
+                  </a>
                 </div>
               </div>
             </div>
-          </div>
+          </header>
 
-          {/* Professional Summary */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8 cv-section">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2 cv-section-title">
+          {/* Summary */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-7 cv-card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2 cv-section-title">
               <Briefcase className="w-5 h-5" />
               Professional Summary
             </h2>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              {summary.intro}
-            </p>
-            <p className="text-gray-700 leading-relaxed mb-4">
+            <p className="text-gray-700 leading-relaxed mb-3">{summary.intro}</p>
+            <p className="text-gray-700 leading-relaxed mb-5">
               {summary.recent}
             </p>
 
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                Tech Stack:
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(summary.techStack).map(
-                  ([category, technologies]) => (
-                    <div key={category}>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">
-                        {category}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {technologies.map((tech) => (
-                          <span
-                            key={tech}
-                            className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs border border-blue-200"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+              {summary.highlights.map((h) => (
+                <li
+                  key={h}
+                  className="flex items-start gap-2 text-sm text-gray-700"
+                >
+                  <Star className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                  <span>{h}</span>
+                </li>
+              ))}
+            </ul>
 
-          {/* Experience */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8 cv-section">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2 cv-section-title">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {Object.entries(techStack).map(([cat, list]) => (
+                <div key={cat}>
+                  <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-2">
+                    {cat}
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {list.map((t) => (
+                      <span
+                        key={t}
+                        className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs border border-blue-100 cv-tag"
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Experience timeline */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-7 cv-card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 cv-section-title">
               <Briefcase className="w-5 h-5" />
               Professional Experience
             </h2>
 
             <div className="space-y-8">
-              {experience.map((exp, index) => (
-                <div key={index} className="cv-experience-item">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-3 cv-experience-header">
+              {expSortedDesc.map((exp) => (
+                <article
+                  key={exp.id}
+                  className="relative pl-5 border-l-2 border-gray-200 cv-exp-item"
+                >
+                  <span className="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-white" />
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-baseline gap-1 mb-2">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 cv-experience-title">
-                        {exp.title}
+                      <h3 className="text-base font-semibold text-gray-900">
+                        {exp.role.en}
+                        {exp.flagship && (
+                          <span className="ml-2 text-amber-500 inline-block align-middle">
+                            <Star className="w-3.5 h-3.5 inline" />
+                          </span>
+                        )}
                       </h3>
-                      <p className="text-blue-600 font-medium cv-experience-company">
-                        {exp.company}
+                      <p className="text-blue-600 font-medium text-sm">
+                        {exp.company.en}
                       </p>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-2 md:mt-0 cv-experience-meta">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {exp.period}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {exp.location}
-                      </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-500 font-mono">
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> {formatYears(exp)}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> {exp.location.en}
+                      </span>
                     </div>
                   </div>
 
-                  <ul className="list-disc list-inside text-gray-700 space-y-1 mb-4 cv-experience-description">
-                    {exp.description.map((item, idx) => (
-                      <li key={idx}>{item}</li>
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3 italic">
+                    {exp.story.en}
+                  </p>
+
+                  <ul className="list-disc list-outside ml-5 text-sm text-gray-700 space-y-1 mb-3">
+                    {exp.bullets.map((b, i) => (
+                      <li key={i}>{b.en}</li>
                     ))}
                   </ul>
 
-                  <div className="flex flex-wrap gap-2 cv-technologies">
-                    {exp.technologies.map((tech) => (
+                  <div className="flex flex-wrap gap-1.5">
+                    {exp.tech.map((t) => (
                       <span
-                        key={tech}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm border border-gray-200 cv-tech-tag"
+                        key={t}
+                        className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-[11px] border border-gray-200 cv-tag"
                       >
-                        {tech}
+                        {t}
                       </span>
                     ))}
                   </div>
-                </div>
+                </article>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Projects */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8 cv-section">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2 cv-section-title">
+          {/* Featured Projects */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-7 cv-card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 cv-section-title">
               <Code className="w-5 h-5" />
-              Key Projects
+              Featured Projects
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 cv-projects-grid">
-              {projects.map((project, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-4 cv-project-item"
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {featuredProjects.map((p) => (
+                <article
+                  key={p.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-sm transition-all cv-proj-item"
                 >
-                  <div className="flex justify-between items-start mb-3 cv-project-header">
-                    <h3 className="text-lg font-semibold text-gray-900 cv-project-title">
-                      {project.title}
-                    </h3>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium cv-project-status ${
-                        project.status === "Active"
-                          ? "bg-green-100 text-green-700 active"
-                          : project.status === "Production"
-                          ? "bg-blue-100 text-blue-700 production"
-                          : "bg-gray-100 text-gray-700 deployed"
-                      }`}
-                    >
-                      {project.status}
-                    </span>
-                  </div>
-                  <p className="text-gray-700 mb-3 text-sm cv-project-description">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-3 cv-project-tech">
-                    {project.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-2 py-1 bg-gray-50 text-gray-600 rounded text-xs border border-gray-200 cv-project-tech-tag"
-                      >
-                        {tech}
+                  <div className="flex justify-between items-start gap-3 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-base font-semibold text-gray-900 leading-tight">
+                        {p.title}
+                        {p.flagship && (
+                          <Star className="w-3.5 h-3.5 inline text-amber-500 ml-1.5 align-middle" />
+                        )}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {p.subtitle.en}
+                      </p>
+                    </div>
+                    {p.status && (
+                      <span className="px-2 py-0.5 bg-green-50 text-green-700 rounded-full text-[10px] font-medium border border-green-100 shrink-0">
+                        {p.status.en}
                       </span>
-                    ))}
+                    )}
                   </div>
-                  {project.link && (
+
+                  <p className="text-xs text-gray-400 font-mono mb-2">
+                    {formatProjectYears(p)}
+                  </p>
+
+                  <p className="text-sm text-gray-700 leading-relaxed mb-3">
+                    {p.story.en}
+                  </p>
+
+                  {p.highlight && p.highlight.length > 0 && (
+                    <ul className="text-xs text-gray-600 space-y-0.5 mb-3 list-disc list-outside ml-4">
+                      {p.highlight.map((h, i) => (
+                        <li key={i}>{h.en}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {p.takeaway && (
+                    <p className="text-xs text-gray-600 italic mb-3 border-l-2 border-blue-200 pl-2">
+                      “{p.takeaway.en}”
+                    </p>
+                  )}
+
+                  {p.tech && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {p.tech.slice(0, 8).map((t) => (
+                        <span
+                          key={t}
+                          className="px-1.5 py-0.5 bg-gray-50 text-gray-600 rounded text-[10px] border border-gray-200 cv-tag"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {p.link && p.link.startsWith("http") && (
                     <a
-                      href={project.link}
+                      href={p.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-xs font-medium"
                     >
-                      View Project →
+                      <ExternalLink className="w-3 h-3" /> View project
                     </a>
                   )}
-                </div>
+                </article>
               ))}
             </div>
-          </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+              <Link
+                href="/projects"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                See the full 20-year timeline →
+              </Link>
+            </div>
+          </section>
 
           {/* Skills */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8 cv-section">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2 cv-section-title">
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-7 cv-card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2 cv-section-title">
               <GraduationCap className="w-5 h-5" />
-              Technical Skills
+              Skills & Practice
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 cv-skills-grid">
-              {Object.entries(skills).map(([category, skillList]) => (
-                <div key={category} className="cv-skill-category">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 cv-skill-category-title">
-                    {category}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Object.entries(skills).map(([cat, list]) => (
+                <div key={cat}>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                    {cat}
                   </h3>
-                  <div className="flex flex-wrap gap-2 cv-skill-tags">
-                    {skillList.map((skill) => (
-                      <span
-                        key={skill}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm border border-gray-200 cv-skill-tag"
+                  <ul className="space-y-1">
+                    {list.map((s) => (
+                      <li
+                        key={s}
+                        className="text-sm text-gray-700 flex items-start gap-2"
                       >
-                        {skill}
-                      </span>
+                        <span className="text-blue-500 mt-1.5 w-1 h-1 rounded-full bg-blue-500 shrink-0" />
+                        <span>{s}</span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
           {/* Contact */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 cv-contact-section">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 cv-contact-title">
-              Contact Information
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-7 cv-card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center cv-section-title">
+              Let&apos;s talk
             </h2>
-            <div className="flex flex-wrap gap-4 cv-contact-links">
+            <p className="text-center text-sm text-gray-600 mb-5 max-w-xl mx-auto">
+              Currently leading technology at Khora Design Lab and co-building a
+              stealth AI startup. Open to selected advisory, consulting, and
+              technical leadership conversations.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={`mailto:${personalInfo.email}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <Mail className="w-4 h-4" /> Email
+              </a>
               <a
                 href={personalInfo.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors cv-contact-link"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors text-sm font-medium"
               >
-                <Linkedin className="w-4 h-4" />
-                LinkedIn
+                <Linkedin className="w-4 h-4" /> LinkedIn
               </a>
               <a
                 href={personalInfo.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors cv-contact-link"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
               >
-                <Github className="w-4 h-4" />
-                GitHub
+                <Github className="w-4 h-4" /> GitHub
               </a>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </>

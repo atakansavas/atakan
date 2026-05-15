@@ -31,11 +31,11 @@ export default function PresentationsLayout({
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
                 <Image
-                  src="/logo.png"
-                  alt="Ben Atakan AI"
+                  src="/ben.jpg"
+                  alt="Ben Atakan"
                   width={40}
                   height={40}
-                  className="rounded-lg"
+                  className="rounded-full object-cover w-10 h-10 border border-gray-200"
                 />
                 <div>
                   <div
@@ -72,11 +72,11 @@ export default function PresentationsLayout({
             <div className="mb-6">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <Image
-                  src="/logo.png"
-                  alt="Ben Atakan AI"
+                  src="/ben.jpg"
+                  alt="Ben Atakan"
                   width={32}
                   height={32}
-                  className="rounded-lg"
+                  className="rounded-full object-cover w-8 h-8 border border-gray-200"
                 />
                 <div
                   className="text-2xl font-semibold"
