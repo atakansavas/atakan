@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Bot, Eye, EyeOff, Lock, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, User } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -89,13 +90,18 @@ export default function LoginPage() {
         >
           <div className="flex items-center justify-center mb-4">
             <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
+              animate={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="relative"
             >
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <Bot className="w-8 h-8 text-white" />
-              </div>
+              <Image
+                src="/ben.jpg"
+                alt="Ben Atakan"
+                width={72}
+                height={72}
+                priority
+                className="w-16 h-16 rounded-2xl object-cover shadow-lg border border-white/40"
+              />
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-20"
                 animate={{ scale: [1, 1.2, 1] }}

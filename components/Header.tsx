@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bell, Bot, LogOut, Settings, User } from "lucide-react";
+import { Bell, LogOut, Settings, User } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -44,13 +45,17 @@ export default function Header({ userName }: HeaderProps) {
           {/* Logo and Title */}
           <div className="flex items-center space-x-3">
             <motion.div
-              animate={{ rotate: [0, 5, -5, 0] }}
+              animate={{ scale: [1, 1.03, 1] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="relative"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
+              <Image
+                src="/ben.jpg"
+                alt="Ben Atakan"
+                width={40}
+                height={40}
+                className="w-10 h-10 rounded-full object-cover shadow-md border border-gray-200"
+              />
             </motion.div>
             <div>
               <h1
