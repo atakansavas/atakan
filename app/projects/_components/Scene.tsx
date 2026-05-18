@@ -2,11 +2,26 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { EraDioramas, EraTargetTracker } from "./EraDioramas";
 import type { ScrollState } from "../_lib/scroll";
+
+// Camera-distance clamps for the custom zoom controller. The scene reads
+// nicely between roughly half its default distance and ~1.75x out.
+const ZOOM_MIN_DISTANCE = 9;
+const ZOOM_MAX_DISTANCE = 42;
+const ZOOM_DEFAULT_DISTANCE = 22;
+
+export type ProjectsZoomDetail = {
+  // "step" applies a relative dolly (factor < 1 = zoom in, > 1 = zoom out).
+  // "reset" snaps camera distance back to the default.
+  // "wheel" passes a raw wheel deltaY for fine-grained zoom.
+  mode: "step" | "reset" | "wheel";
+  factor?: number;
+  deltaY?: number;
+};
 
 type Props = {
   scrollRef: React.MutableRefObject<ScrollState>;
@@ -47,6 +62,44 @@ function OrbitedScene({ scrollRef }: Props) {
   // OrbitControls' wheel zoom is disabled below (enableZoom={false}) so
   // wheel events fall through to the page-level handler in page.tsx,
   // which now drives the one-wheel-per-era carousel.
+  //
+  // Zoom is instead driven by `projects-zoom` CustomEvents dispatched by
+  // the page (buttons, +/- keys, Cmd/Ctrl+wheel, pinch). We dolly the
+  // camera along its current target→camera vector and clamp to a sane
+  // range so users can't fly inside the model or off to infinity.
+  useEffect(() => {
+    const onZoom = (e: Event) => {
+      const ctrl = controlsRef.current;
+      if (!ctrl) return;
+      const detail = (e as CustomEvent<ProjectsZoomDetail>).detail;
+      if (!detail) return;
+      const cam = ctrl.object as THREE.PerspectiveCamera;
+      const target = ctrl.target;
+      const offset = cam.position.clone().sub(target);
+      const dist = offset.length();
+      let nextDist = dist;
+      if (detail.mode === "reset") {
+        nextDist = ZOOM_DEFAULT_DISTANCE;
+      } else if (detail.mode === "step") {
+        nextDist = dist * (detail.factor ?? 1);
+      } else if (detail.mode === "wheel") {
+        // deltaY > 0 = zoom out; tuned so a typical trackpad swipe moves
+        // the camera by a noticeable but controllable amount.
+        const k = Math.exp((detail.deltaY ?? 0) * 0.0018);
+        nextDist = dist * k;
+      }
+      nextDist = Math.max(
+        ZOOM_MIN_DISTANCE,
+        Math.min(ZOOM_MAX_DISTANCE, nextDist),
+      );
+      offset.setLength(nextDist);
+      cam.position.copy(target).add(offset);
+      ctrl.update();
+    };
+    window.addEventListener("projects-zoom", onZoom as EventListener);
+    return () =>
+      window.removeEventListener("projects-zoom", onZoom as EventListener);
+  }, []);
 
   return (
     <>

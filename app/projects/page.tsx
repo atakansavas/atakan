@@ -32,6 +32,19 @@ const OUTRO_VH = 90;
 
 const STOPS_COUNT = 1 + ERA_ORDER.length + 1; // hero + N eras + outro
 
+// Dispatch helper for camera zoom — Scene.tsx listens for these events
+// and dollies the camera along its current target→camera vector.
+type ProjectsZoomDetail =
+  | { mode: "step"; factor: number }
+  | { mode: "reset" }
+  | { mode: "wheel"; deltaY: number };
+const fireZoom = (detail: ProjectsZoomDetail) => {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("projects-zoom", { detail }));
+};
+const ZOOM_STEP_IN = 0.82; // each press multiplies distance by this
+const ZOOM_STEP_OUT = 1.22;
+
 export default function ProjectsPage() {
   return (
     <LangProvider>
@@ -135,7 +148,7 @@ function ProjectsExperience() {
       const distance = Math.abs(window.scrollY - target);
       // A bit longer + scaled so longer jumps feel weighty (genesis →
       // agentic shouldn't be the same speed as adjacent stops).
-      const duration = Math.min(1500, Math.max(560, distance * 0.42));
+      const duration = Math.min(1200, Math.max(420, distance * 0.36));
       programmaticScrollRef.current = true;
       programmaticScrollUntilRef.current = performance.now() + duration + 200;
       tweenScrollTo(target, duration);
@@ -145,18 +158,32 @@ function ProjectsExperience() {
 
   // Wheel-impulse hijack: turn the page into a one-wheel = one-era
   // carousel. Each meaningful wheel impulse (or touch swipe) advances or
-  // retreats the active stop by exactly one. Throttled so a single
-  // trackpad burst doesn't fly across the whole timeline.
+  // retreats the active stop by exactly one.
+  //
+  // Trackpad inertia handling: a single physical swipe on a Mac trackpad
+  // emits dozens of decaying wheel events over ~600ms. We accept the
+  // first impulse, then suppress further events until they fall below a
+  // "quiet" delta AND have stopped arriving for a short window. This
+  // gives a snappier feel than a fixed cooldown while still preventing
+  // a single swipe from flying across multiple eras.
+  //
+  // Cmd/Ctrl+wheel (and pinch-to-zoom which the OS reports as ctrlKey
+  // wheel) is routed to the 3D camera zoom instead of era navigation.
   useEffect(() => {
     let lastImpulseAt = 0;
+    let lastWheelAt = 0;
+    let inertiaLock = false;
     let touchStartY: number | null = null;
-    const COOLDOWN = 650; // ms between accepted impulses
-    const WHEEL_THRESHOLD = 8; // ignore micro-wheel events
+    let pinchStartDist: number | null = null;
+    const HARD_COOLDOWN = 380; // ms — minimum gap between accepted impulses
+    const QUIET_DELTA = 4; // wheel events smaller than this count as inertia
+    const QUIET_WINDOW = 90; // ms of "no real wheel" needed to re-arm
+    const WHEEL_THRESHOLD = 10; // ignore micro-wheel events entirely
     const SWIPE_THRESHOLD = 38; // px
 
     const advance = (dir: 1 | -1) => {
       const now = performance.now();
-      if (now - lastImpulseAt < COOLDOWN) return false;
+      if (now - lastImpulseAt < HARD_COOLDOWN) return false;
       lastImpulseAt = now;
       const cur = scrollRef.current.activeIndex;
       const next = Math.max(0, Math.min(STOPS_COUNT - 1, cur + dir));
@@ -166,16 +193,63 @@ function ProjectsExperience() {
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) return; // let pinch zoom through
-      if (Math.abs(e.deltaY) < WHEEL_THRESHOLD) return;
+      // Cmd/Ctrl+wheel = camera zoom (this is also what macOS pinch-
+      // to-zoom synthesises). Stop the browser from page-zooming.
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        fireZoom({ mode: "wheel", deltaY: e.deltaY });
+        return;
+      }
+      const now = performance.now();
+      const abs = Math.abs(e.deltaY);
+      if (abs < WHEEL_THRESHOLD) {
+        lastWheelAt = now;
+        return;
+      }
+      // If we're mid-inertia from the last accepted swipe, eat the event
+      // until the trackpad quiets down again.
+      if (inertiaLock) {
+        if (abs < QUIET_DELTA && now - lastWheelAt > QUIET_WINDOW) {
+          inertiaLock = false;
+        } else {
+          lastWheelAt = now;
+          e.preventDefault();
+          return;
+        }
+      }
+      lastWheelAt = now;
       if (advance(e.deltaY > 0 ? 1 : -1)) {
+        inertiaLock = true;
         e.preventDefault();
       }
     };
     const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        const [a, b] = [e.touches[0], e.touches[1]];
+        pinchStartDist = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        touchStartY = null;
+        return;
+      }
       touchStartY = e.touches[0]?.clientY ?? null;
+      pinchStartDist = null;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 2 && pinchStartDist != null) {
+        const [a, b] = [e.touches[0], e.touches[1]];
+        const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        const ratio = d / pinchStartDist;
+        if (Math.abs(1 - ratio) > 0.02) {
+          fireZoom({ mode: "step", factor: 1 / ratio });
+          pinchStartDist = d;
+          e.preventDefault();
+        }
+      }
     };
     const onTouchEnd = (e: TouchEvent) => {
+      if (pinchStartDist != null) {
+        pinchStartDist = null;
+        return;
+      }
       if (touchStartY == null) return;
       const endY = e.changedTouches[0]?.clientY ?? touchStartY;
       const dy = touchStartY - endY;
@@ -188,10 +262,12 @@ function ProjectsExperience() {
     // scrollbar from also drifting on the same gesture
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
     window.addEventListener("touchend", onTouchEnd, { passive: true });
     return () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
     };
   }, [scrollToIdx]);
@@ -345,6 +421,20 @@ function ProjectsExperience() {
           e.preventDefault();
           window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
           break;
+        case "+":
+        case "=":
+          e.preventDefault();
+          fireZoom({ mode: "step", factor: ZOOM_STEP_IN });
+          break;
+        case "-":
+        case "_":
+          e.preventDefault();
+          fireZoom({ mode: "step", factor: ZOOM_STEP_OUT });
+          break;
+        case "0":
+          e.preventDefault();
+          fireZoom({ mode: "reset" });
+          break;
       }
     };
     window.addEventListener("keydown", onKey);
@@ -378,6 +468,9 @@ function ProjectsExperience() {
         total={STOPS_COUNT}
         onPrev={() => scrollToIdx(activeIdx - 1)}
         onNext={() => scrollToIdx(activeIdx + 1)}
+        onZoomIn={() => fireZoom({ mode: "step", factor: ZOOM_STEP_IN })}
+        onZoomOut={() => fireZoom({ mode: "step", factor: ZOOM_STEP_OUT })}
+        onZoomReset={() => fireZoom({ mode: "reset" })}
       />
 
       {/* Outro / contact card — fades in at the end of the journey */}
