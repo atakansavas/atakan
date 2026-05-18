@@ -56,17 +56,55 @@ function SkyAtmosphere({ scrollRef }: Props) {
   return null;
 }
 
+/**
+ * ZoomInterpolator — runs every frame, smoothly lerping the camera's
+ * distance from the orbit target toward `targetRef.current`. The lerp
+ * factor uses the framerate-independent `1 - exp(-k * dt)` form so the
+ * glide feels the same on a 60Hz vs 120Hz display. Once the distance
+ * settles within ~0.01 of the target, the ref is cleared so we don't
+ * fight `EraTargetTracker` during era transitions.
+ */
+function ZoomInterpolator({
+  controlsRef,
+  targetRef,
+  smoothRef,
+}: {
+  controlsRef: React.RefObject<OrbitControlsImpl | null>;
+  targetRef: React.MutableRefObject<number | null>;
+  smoothRef: React.MutableRefObject<number>;
+}) {
+  useFrame((_, delta) => {
+    const ctrl = controlsRef.current;
+    const target = targetRef.current;
+    if (!ctrl || target == null) return;
+    const cam = ctrl.object as THREE.PerspectiveCamera;
+    const offset = cam.position.clone().sub(ctrl.target);
+    const dist = offset.length();
+    if (dist < 1e-4) return;
+    const k = 1 - Math.exp(-smoothRef.current * delta);
+    const next = dist + (target - dist) * k;
+    offset.setLength(next);
+    cam.position.copy(ctrl.target).add(offset);
+    ctrl.update();
+    if (Math.abs(next - target) < 0.01) {
+      targetRef.current = null;
+    }
+  });
+  return null;
+}
+
 function OrbitedScene({ scrollRef }: Props) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
+  // Zoom is driven by `projects-zoom` CustomEvents (buttons, +/- keys,
+  // Cmd/Ctrl+wheel, pinch). Instead of snapping camera distance instantly,
+  // we store a target distance here and a useFrame ramps the actual
+  // distance toward it each frame — gives a cinematic glide on button
+  // presses and a tight follow on continuous wheel/pinch input.
+  const zoomTargetRef = useRef<number | null>(null);
+  // Per-event smoothing factor: buttons + keys = slow glide, raw
+  // wheel/pinch = nearly 1:1 so the camera tracks the gesture.
+  const zoomSmoothRef = useRef<number>(6); // higher = faster catch-up
 
-  // OrbitControls' wheel zoom is disabled below (enableZoom={false}) so
-  // wheel events fall through to the page-level handler in page.tsx,
-  // which now drives the one-wheel-per-era carousel.
-  //
-  // Zoom is instead driven by `projects-zoom` CustomEvents dispatched by
-  // the page (buttons, +/- keys, Cmd/Ctrl+wheel, pinch). We dolly the
-  // camera along its current target→camera vector and clamp to a sane
-  // range so users can't fly inside the model or off to infinity.
   useEffect(() => {
     const onZoom = (e: Event) => {
       const ctrl = controlsRef.current;
@@ -74,27 +112,27 @@ function OrbitedScene({ scrollRef }: Props) {
       const detail = (e as CustomEvent<ProjectsZoomDetail>).detail;
       if (!detail) return;
       const cam = ctrl.object as THREE.PerspectiveCamera;
-      const target = ctrl.target;
-      const offset = cam.position.clone().sub(target);
-      const dist = offset.length();
-      let nextDist = dist;
+      // Compound from the *target* (not current camera distance) so
+      // rapid clicks keep stepping in the same direction even while the
+      // glide is still in flight.
+      const baseDist =
+        zoomTargetRef.current ?? cam.position.distanceTo(ctrl.target);
+      let nextDist = baseDist;
       if (detail.mode === "reset") {
         nextDist = ZOOM_DEFAULT_DISTANCE;
+        zoomSmoothRef.current = 5; // slightly slower for the reset glide
       } else if (detail.mode === "step") {
-        nextDist = dist * (detail.factor ?? 1);
+        nextDist = baseDist * (detail.factor ?? 1);
+        zoomSmoothRef.current = 7; // smooth glide for button/key presses
       } else if (detail.mode === "wheel") {
-        // deltaY > 0 = zoom out; tuned so a typical trackpad swipe moves
-        // the camera by a noticeable but controllable amount.
         const k = Math.exp((detail.deltaY ?? 0) * 0.0018);
-        nextDist = dist * k;
+        nextDist = baseDist * k;
+        zoomSmoothRef.current = 16; // near-instant for continuous input
       }
-      nextDist = Math.max(
+      zoomTargetRef.current = Math.max(
         ZOOM_MIN_DISTANCE,
         Math.min(ZOOM_MAX_DISTANCE, nextDist),
       );
-      offset.setLength(nextDist);
-      cam.position.copy(target).add(offset);
-      ctrl.update();
     };
     window.addEventListener("projects-zoom", onZoom as EventListener);
     return () =>
@@ -124,6 +162,11 @@ function OrbitedScene({ scrollRef }: Props) {
 
       <EraDioramas scrollRef={scrollRef} />
       <SkyAtmosphere scrollRef={scrollRef} />
+      <ZoomInterpolator
+        controlsRef={controlsRef}
+        targetRef={zoomTargetRef}
+        smoothRef={zoomSmoothRef}
+      />
 
       {/* Drag rotates around the active diorama; scroll wheel passes through
          to the page (enableZoom=false), pinch-to-zoom still works on touch.
