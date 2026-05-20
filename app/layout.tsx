@@ -98,7 +98,7 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="canonical" href="https://benatakan.com/" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
