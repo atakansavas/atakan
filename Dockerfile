@@ -11,8 +11,11 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* yarn.lock* ./
-RUN if [ -f package-lock.json ]; then npm ci; \
-    elif [ -f yarn.lock ]; then corepack enable && yarn install --frozen-lockfile; \
+# yarn.lock is the source of truth in this repo (package-lock.json is a
+# stale stub). Prefer yarn if present so `--frozen-lockfile` actually
+# resolves the real dependency tree.
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
     else echo "No lockfile found." && exit 1; \
     fi
 
@@ -25,8 +28,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN if [ -f package-lock.json ]; then npm run build; \
-    elif [ -f yarn.lock ]; then yarn build; \
+RUN if [ -f yarn.lock ]; then yarn build; \
+    elif [ -f package-lock.json ]; then npm run build; \
     else echo "No lockfile found." && exit 1; \
     fi
 
