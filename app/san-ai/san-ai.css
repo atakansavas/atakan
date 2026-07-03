@@ -1,0 +1,188 @@
+/*
+ * San·ai page styles — scoped to .sanai-scope so the warm, cinematic
+ * nature theme does not bleed into the rest of the Atakan site.
+ * Palette: deep forest night, warm sand, river teal, terracotta, sun gold.
+ */
+
+.sanai-scope {
+  --sanai-bg: #12140f;
+  --sanai-bg-soft: #191c14;
+  --sanai-panel: #1e2218;
+  --sanai-sand: #ece3d1;
+  --sanai-sand-dim: #b9b09c;
+  --sanai-teal: #6fae9f;
+  --sanai-clay: #c6714a;
+  --sanai-gold: #d7a54a;
+  --sanai-line: rgba(236, 227, 209, 0.14);
+
+  background-color: var(--sanai-bg);
+  color: var(--sanai-sand);
+  font-family: var(--font-instrument), system-ui, -apple-system, sans-serif;
+  line-height: 1.65;
+  position: relative;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(1200px 600px at 15% -5%, rgba(111, 174, 159, 0.12), transparent 60%),
+    radial-gradient(1000px 700px at 100% 10%, rgba(215, 165, 74, 0.08), transparent 55%),
+    radial-gradient(900px 700px at 50% 110%, rgba(198, 113, 74, 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+.sanai-scope ::selection {
+  background: var(--sanai-teal);
+  color: #0c0e0a;
+}
+
+/* Fine film grain overlay for the cinematic feel */
+.sanai-scope.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+/* Typography roles ------------------------------------------------------- */
+.sanai-scope .sanai-serif {
+  font-family: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+.sanai-scope .sanai-label {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.68rem;
+}
+
+.sanai-scope .sanai-wordmark {
+  font-family: var(--font-fraunces), Georgia, serif;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+
+/* Surfaces --------------------------------------------------------------- */
+.sanai-scope .sanai-panel {
+  background: linear-gradient(160deg, rgba(30, 34, 24, 0.9), rgba(18, 20, 15, 0.85));
+  border: 1px solid var(--sanai-line);
+  border-radius: 14px;
+  backdrop-filter: blur(4px);
+}
+
+/* Photo placeholder plate — clearly reads as an image slot to be swapped */
+.sanai-scope .sanai-plate {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid var(--sanai-line);
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(111, 174, 159, 0.16), rgba(18, 20, 15, 0) 55%),
+    linear-gradient(300deg, rgba(198, 113, 74, 0.18), rgba(18, 20, 15, 0) 50%),
+    linear-gradient(180deg, #232819, #14170f);
+}
+
+.sanai-scope .sanai-plate::after {
+  content: attr(data-caption);
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: rgba(236, 227, 209, 0.55);
+}
+
+/* Soft topographic line texture inside plates */
+.sanai-scope .sanai-plate .topo {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: repeating-radial-gradient(
+    circle at 30% 120%,
+    rgba(236, 227, 209, 0.06) 0,
+    rgba(236, 227, 209, 0.06) 1px,
+    transparent 1px,
+    transparent 22px
+  );
+  pointer-events: none;
+}
+
+/* Interactive cards */
+.sanai-scope .sanai-card {
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+.sanai-scope .sanai-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(111, 174, 159, 0.5);
+  background: linear-gradient(160deg, rgba(36, 42, 28, 0.95), rgba(20, 23, 16, 0.9));
+}
+
+/* Buttons */
+.sanai-scope .sanai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.7rem 1.4rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.sanai-scope .sanai-btn-primary {
+  background: var(--sanai-sand);
+  color: #14170f;
+}
+.sanai-scope .sanai-btn-primary:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+.sanai-scope .sanai-btn-ghost {
+  border-color: var(--sanai-line);
+  color: var(--sanai-sand);
+}
+.sanai-scope .sanai-btn-ghost:hover {
+  border-color: var(--sanai-teal);
+  color: #fff;
+}
+
+/* Text accents */
+.sanai-scope .text-teal { color: var(--sanai-teal); }
+.sanai-scope .text-clay { color: var(--sanai-clay); }
+.sanai-scope .text-gold { color: var(--sanai-gold); }
+.sanai-scope .text-dim { color: var(--sanai-sand-dim); }
+
+/* Divider hairline */
+.sanai-scope .sanai-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--sanai-line), transparent);
+}
+
+/* Slow ambient drift for the hero water shimmer */
+@keyframes sanai-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -12px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+.sanai-scope .sanai-drift {
+  animation: sanai-drift 9s ease-in-out infinite;
+}
+
+@keyframes sanai-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.sanai-scope .sanai-pulse {
+  animation: sanai-pulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sanai-scope .sanai-drift,
+  .sanai-scope .sanai-pulse {
+    animation: none;
+  }
+}

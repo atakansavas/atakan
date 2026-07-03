@@ -18,6 +18,7 @@ type NavLink = { href: string; label: string; soon?: boolean };
 type PillLink = { href: string; label: string; title: string; color: string; soon?: boolean };
 
 const NAV_LINKS: NavLink[] = [
+  { href: "/san-ai", label: "San·ai" },
   { href: "/projects", label: "Projects" },
   { href: "/mesai", label: "Mesai" },
   { href: "/presentations", label: "Presentations" },
@@ -25,9 +26,10 @@ const NAV_LINKS: NavLink[] = [
 ];
 
 const PILL_LINKS: PillLink[] = [
+  { href: "/san-ai", label: "S", title: "San·ai", color: "bg-emerald-500/80 hover:bg-emerald-400" },
   { href: "/projects", label: "P", title: "Projects", color: "bg-blue-500/80 hover:bg-blue-400" },
   { href: "/mesai", label: "M", title: "Mesai", color: "bg-fuchsia-500/80 hover:bg-fuchsia-400" },
-  { href: "/presentations", label: "S", title: "Presentations", color: "bg-purple-500/80 hover:bg-purple-400" },
+  { href: "/presentations", label: "Sw", title: "Presentations", color: "bg-purple-500/80 hover:bg-purple-400" },
   { href: "/cv", label: "CV", title: "CV", color: "bg-pink-500/80 hover:bg-pink-400" },
 ];
 
