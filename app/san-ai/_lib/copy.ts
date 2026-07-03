@@ -3,13 +3,6 @@ export type Lang = "tr" | "en";
 type Belief = { title: string; desc: string };
 type Feature = { label: string; title: string; desc: string };
 type DayBlock = { time: string; title: string; desc: string };
-type RoofProject = {
-  name: string;
-  kind: string;
-  desc: string;
-  href?: string;
-  status: string;
-};
 type Channel = { platform: string; handle: string; status: string };
 
 export type CopyShape = {
@@ -42,13 +35,6 @@ export type CopyShape = {
     title: string;
     sub: string;
     blocks: DayBlock[];
-  };
-  roof: {
-    eyebrow: string;
-    title: string;
-    sub: string;
-    projects: RoofProject[];
-    note: string;
   };
   feed: {
     eyebrow: string;
@@ -158,33 +144,6 @@ export const copy: Record<Lang, CopyShape> = {
         { time: "16:00", title: "Ekip senkron", desc: "Kısa birlikte-çalışma; ne bitti, ne kaldı, ne shipliyoruz." },
         { time: "20:00", title: "Ateş ve sohbet", desc: "Kod kapanır, hikâyeler açılır. En iyi fikirler burada çıkar." },
       ],
-    },
-    roof: {
-      eyebrow: "[ ÇATININ ALTINDA ]",
-      title: "San·ai bir çatı",
-      sub: "Altında büyüyen işler var. İlki burada doğdu; gerisi yolda.",
-      projects: [
-        {
-          name: "Mesai",
-          kind: "Dijital AI ofisi",
-          desc: "Her projeye bir Chef ata, ekibini topla, ofisini tasarla. San·ai'nin dijital ikizi.",
-          href: "/mesai",
-          status: "Closed beta",
-        },
-        {
-          name: "Deneyim akışı",
-          kind: "İçerik & topluluk",
-          desc: "Dalyan'daki yapımın gündelik kaydı — video, foto, not.",
-          status: "Hazırlanıyor",
-        },
-        {
-          name: "Daha fazlası",
-          kind: "Yeni işler",
-          desc: "Çatının altında sıradaki ürünler kuruluyor.",
-          status: "Yakında",
-        },
-      ],
-      note: "Bu çatıyı yavaşça büyütüyoruz — her iş, aynı evden.",
     },
     feed: {
       eyebrow: "[ DENEYİM AKIŞI ]",
@@ -299,33 +258,6 @@ export const copy: Record<Lang, CopyShape> = {
         { time: "16:00", title: "Team sync", desc: "A short co-working beat: what shipped, what's left, what's next." },
         { time: "20:00", title: "Fire and talk", desc: "Code closes, stories open. The best ideas surface right here." },
       ],
-    },
-    roof: {
-      eyebrow: "[ UNDER THE ROOF ]",
-      title: "San·ai is a roof",
-      sub: "Works grow beneath it. The first was born here; the rest are on the way.",
-      projects: [
-        {
-          name: "Mesai",
-          kind: "Digital AI office",
-          desc: "Assign a Chef to every project, build the team, design the office. San·ai's digital twin.",
-          href: "/mesai",
-          status: "Closed beta",
-        },
-        {
-          name: "Experience feed",
-          kind: "Content & community",
-          desc: "The daily record of making in Dalyan — video, photo, notes.",
-          status: "In progress",
-        },
-        {
-          name: "More",
-          kind: "New works",
-          desc: "The next products are being built under the roof.",
-          status: "Soon",
-        },
-      ],
-      note: "We grow this roof slowly — every work, from the same house.",
     },
     feed: {
       eyebrow: "[ EXPERIENCE FEED ]",

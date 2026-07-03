@@ -4,7 +4,6 @@ import { Hero } from "./_components/Hero";
 import { Manifesto } from "./_components/Manifesto";
 import { Place } from "./_components/Place";
 import { DayHere } from "./_components/DayHere";
-import { UnderTheRoof } from "./_components/UnderTheRoof";
 import { Feed } from "./_components/Feed";
 import { Invite } from "./_components/Invite";
 import { Footer } from "./_components/Footer";
@@ -18,7 +17,6 @@ export default function SanAiPage() {
         <Manifesto />
         <Place />
         <DayHere />
-        <UnderTheRoof />
         <Feed />
         <Invite />
       </main>
