@@ -3,16 +3,24 @@ export type Lang = "tr" | "en";
 type Belief = { title: string; desc: string };
 type Feature = { label: string; title: string; desc: string };
 type DayBlock = { time: string; title: string; desc: string };
-type Channel = { platform: string; handle: string; status: string };
+type Channel = { platform: string; handle: string; status: string; desc: string };
 
 export type CopyShape = {
   meta: { location: string; coords: string };
-  nav: { wordmark: string; tag: string; back: string };
+  marquee: string[];
+  nav: {
+    wordmark: string;
+    tag: string;
+    back: string;
+    cta: string;
+    links: { manifesto: string; place: string; rhythm: string; feed: string };
+  };
   hero: {
     eyebrow: string;
     headline: string;
     headlineAccent: string;
     sub: string;
+    cta: string;
     scroll: string;
     plateCaption: string;
   };
@@ -27,6 +35,8 @@ export type CopyShape = {
     eyebrow: string;
     title: string;
     sub: string;
+    cardLabel: string;
+    cta: string;
     features: Feature[];
     note: string;
   };
@@ -40,6 +50,7 @@ export type CopyShape = {
     eyebrow: string;
     title: string;
     sub: string;
+    aside: string;
     channels: Channel[];
     soon: string;
   };
@@ -68,22 +79,42 @@ export const copy: Record<Lang, CopyShape> = {
       location: "Dalyan · Muğla · Türkiye",
       coords: "36°49′K 28°38′D",
     },
+    marquee: [
+      "Kod",
+      "Nehir",
+      "Ajanlar",
+      "Sazlık",
+      "Deploy",
+      "Ateş",
+      "Tatlı su",
+      "Ürün",
+      "Doğa",
+      "Yayın",
+    ],
     nav: {
-      wordmark: "SAN·AI",
+      wordmark: "San·ai",
       tag: "yazılım evi",
       back: "← Atakan",
+      cta: "Merhaba de",
+      links: {
+        manifesto: "Manifesto",
+        place: "Nerede",
+        rhythm: "Ritim",
+        feed: "Akış",
+      },
     },
     hero: {
       eyebrow: "DALYAN · MUĞLA — TATLI SUYUN DENİZE KARIŞTIĞI YER",
       headline: "Yapay zeka çağının",
       headlineAccent: "sanayisi.",
       sub: "Doğanın içinde, köyün kıyısında, tatlı suyun sesinde bir paylaşımlı yazılım evi. Kod yazdığımız, ürettiğimiz ve yaşadığımız çatı burası.",
+      cta: "Hikâyeyi keşfet",
       scroll: "kaydır",
-      plateCaption: "// Dalyan — sabahın ilk ışığı",
+      plateCaption: "DALYAN — SABAHIN İLK IŞIĞI",
     },
     manifesto: {
       eyebrow: "[ MANİFESTO ]",
-      title: "Her kasabanın bir sanayisi vardır.",
+      title: "Her kasabanın bir |sanayisi vardır.",
       lead: "Ustaların, torna ve kaynağın, elleriyle bir şey yapanların mahallesi. Biz o ruhu aldık — çağın aletini, yapay zekâyı, tezgâhın üstüne koyduk. Sonra hepsini betondan çıkarıp doğanın içine taşıdık. San·ai, üreticinin mahallesinin yeni çağ hâli: bir çatı, altında yazılım, ajanlar ve ürünler.",
       beliefs: [
         {
@@ -107,8 +138,10 @@ export const copy: Record<Lang, CopyShape> = {
     },
     place: {
       eyebrow: "[ NEREDE ]",
-      title: "Hem doğa, hem bant genişliği",
+      title: "Hem doğa, |hem bant genişliği",
       sub: "Dalyan; nehrin denize karıştığı, caretta'ların yumurtladığı, sazlıkların rüzgârda salındığı yer. Ama masanın üstünde fiber, arkasında sessizlik var.",
+      cardLabel: "Konum",
+      cta: "Kapıyı çal",
       features: [
         {
           label: "01",
@@ -135,7 +168,7 @@ export const copy: Record<Lang, CopyShape> = {
     },
     day: {
       eyebrow: "[ BİR GÜN BURADA ]",
-      title: "Sabah kod, öğlen nehir, akşam ekip",
+      title: "Sabah kod, öğlen nehir, |akşam ekip",
       sub: "San·ai bir ofis değil, bir ritim. Günün doğayla ve işle nasıl aktığı:",
       blocks: [
         { time: "07:30", title: "Nehir kenarında kahve", desc: "Su sesi, sis, ilk defter. Gün planı doğada kurulur." },
@@ -147,12 +180,28 @@ export const copy: Record<Lang, CopyShape> = {
     },
     feed: {
       eyebrow: "[ DENEYİM AKIŞI ]",
-      title: "Süreci açıkça paylaşıyoruz",
+      title: "Süreci |açıkça paylaşıyoruz",
       sub: "Dalyan'daki yapımın gündelik hâli — Instagram, TikTok ve YouTube'da. Kanallar hazırlanıyor; ilk kayıtlar çok yakında.",
+      aside: "Kanallar",
       channels: [
-        { platform: "Instagram", handle: "@sanai", status: "Hazırlanıyor" },
-        { platform: "TikTok", handle: "@sanai", status: "Hazırlanıyor" },
-        { platform: "YouTube", handle: "San·ai", status: "Hazırlanıyor" },
+        {
+          platform: "Instagram",
+          handle: "@sanai",
+          status: "Hazırlanıyor",
+          desc: "Günlük kareler, kısa anlar ve sahne arkası — doğanın içindeki masadan.",
+        },
+        {
+          platform: "TikTok",
+          handle: "@sanai",
+          status: "Hazırlanıyor",
+          desc: "Kısa videolar: yapım süreci, denemeler ve hızlı fikir çekimleri.",
+        },
+        {
+          platform: "YouTube",
+          handle: "San·ai",
+          status: "Hazırlanıyor",
+          desc: "Uzun anlatımlar, derin dalışlar ve haftalık üretim günlükleri.",
+        },
       ],
       soon: "yakında",
     },
@@ -182,22 +231,42 @@ export const copy: Record<Lang, CopyShape> = {
       location: "Dalyan · Muğla · Türkiye",
       coords: "36°49′N 28°38′E",
     },
+    marquee: [
+      "Code",
+      "River",
+      "Agents",
+      "Reeds",
+      "Deploy",
+      "Fire",
+      "Freshwater",
+      "Product",
+      "Nature",
+      "Stream",
+    ],
     nav: {
-      wordmark: "SAN·AI",
+      wordmark: "San·ai",
       tag: "software house",
       back: "← Atakan",
+      cta: "Say hello",
+      links: {
+        manifesto: "Manifesto",
+        place: "Place",
+        rhythm: "Rhythm",
+        feed: "Feed",
+      },
     },
     hero: {
       eyebrow: "DALYAN · MUĞLA — WHERE FRESHWATER MEETS THE SEA",
       headline: "The workshop quarter",
       headlineAccent: "of the AI age.",
       sub: "A shared software house inside nature, at the edge of the village, by the sound of freshwater. This is the roof where we code, build and live.",
+      cta: "Explore the story",
       scroll: "scroll",
-      plateCaption: "// Dalyan — first light",
+      plateCaption: "DALYAN — FIRST LIGHT",
     },
     manifesto: {
       eyebrow: "[ MANIFESTO ]",
-      title: "Every town has its workshop quarter.",
+      title: "Every town has its |workshop quarter.",
       lead: "The street of craftsmen — the lathe, the welder, the people who make things with their hands. We took that spirit, set the tool of our age, AI, on the workbench, then pulled it all out of the concrete and into nature. San·ai is the maker's quarter reborn: one roof, and under it software, agents and products.",
       beliefs: [
         {
@@ -221,8 +290,10 @@ export const copy: Record<Lang, CopyShape> = {
     },
     place: {
       eyebrow: "[ WHERE ]",
-      title: "Both nature and bandwidth",
+      title: "Both nature |and bandwidth",
       sub: "Dalyan — where the river meets the sea, the loggerheads nest and the reeds sway in the wind. But on the desk there's fiber, and behind it, silence.",
+      cardLabel: "Location",
+      cta: "Come knock",
       features: [
         {
           label: "01",
@@ -249,7 +320,7 @@ export const copy: Record<Lang, CopyShape> = {
     },
     day: {
       eyebrow: "[ A DAY HERE ]",
-      title: "Code by morning, river by noon, team by night",
+      title: "Code by morning, river by noon, |team by night",
       sub: "San·ai isn't an office, it's a rhythm. How a day flows between nature and the work:",
       blocks: [
         { time: "07:30", title: "Coffee by the river", desc: "Water sounds, mist, the first notebook. The day is planned outdoors." },
@@ -261,12 +332,28 @@ export const copy: Record<Lang, CopyShape> = {
     },
     feed: {
       eyebrow: "[ EXPERIENCE FEED ]",
-      title: "We share the process out loud",
+      title: "We share the |process out loud",
       sub: "The daily life of making in Dalyan — on Instagram, TikTok and YouTube. Channels are being prepared; the first recordings land very soon.",
+      aside: "Channels",
       channels: [
-        { platform: "Instagram", handle: "@sanai", status: "In progress" },
-        { platform: "TikTok", handle: "@sanai", status: "In progress" },
-        { platform: "YouTube", handle: "San·ai", status: "In progress" },
+        {
+          platform: "Instagram",
+          handle: "@sanai",
+          status: "In progress",
+          desc: "Daily frames, short moments and behind the scenes — from a desk inside nature.",
+        },
+        {
+          platform: "TikTok",
+          handle: "@sanai",
+          status: "In progress",
+          desc: "Short clips: the build process, experiments and quick idea takes.",
+        },
+        {
+          platform: "YouTube",
+          handle: "San·ai",
+          status: "In progress",
+          desc: "Long-form stories, deep dives and weekly making journals.",
+        },
       ],
       soon: "soon",
     },

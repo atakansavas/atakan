@@ -1,68 +1,94 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 import { useLang } from "./LangProvider";
+
+const VIDEO_SRC =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4";
 
 export function Hero() {
   const { t } = useLang();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Nudge playback in case the browser hesitates on autoplay after hydration.
+  useEffect(() => {
+    videoRef.current?.play().catch(() => {});
+  }, []);
 
   return (
-    <section className="relative min-h-[100svh] flex items-center pt-14 overflow-hidden">
-      {/* Cinematic backdrop plate — swap for a real Dalyan photo later */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 sanai-drift">
-          <div
-            className="absolute inset-0 opacity-90"
-            style={{
-              background:
-                "radial-gradient(1000px 800px at 20% 30%, rgba(111,174,159,0.20), transparent 60%), radial-gradient(900px 700px at 85% 20%, rgba(215,165,74,0.14), transparent 55%), radial-gradient(1100px 900px at 60% 120%, rgba(198,113,74,0.18), transparent 60%)",
-            }}
-          />
-        </div>
-        {/* Letterbox bars */}
-        <div className="absolute inset-x-0 top-14 h-10 bg-gradient-to-b from-[#12140f] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#12140f] to-transparent" />
+    <section
+      id="top"
+      className="relative min-h-[100svh] flex items-center justify-center overflow-hidden"
+    >
+      {/* Fullscreen looping video — the sole source of visual depth */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[var(--sanai-navy)]" />
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+        >
+          <source src={VIDEO_SRC} type="video/mp4" />
+        </video>
+        {/* Legibility + blend into the navy sections below */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,26,42,0.5) 0%, rgba(0,26,42,0.12) 30%, rgba(0,26,42,0.32) 66%, var(--sanai-navy) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(125% 90% at 50% 42%, transparent 38%, rgba(0,18,30,0.5) 100%)",
+          }}
+        />
       </div>
 
-      <div className="max-w-6xl mx-auto px-5 w-full">
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="sanai-label text-teal mb-6"
-        >
+      {/* Hero content */}
+      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 text-center pt-24 pb-28">
+        <p className="animate-fade-rise sanai-label text-white/70 mb-7">
           {t.hero.eyebrow}
-        </motion.p>
+        </p>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.1, ease: "easeOut" }}
-          className="sanai-serif text-[clamp(2.6rem,8vw,6.2rem)] font-light leading-[0.98] tracking-[-0.02em] max-w-4xl"
-        >
+        <h1 className="animate-fade-rise-delay sanai-serif text-[clamp(2.7rem,8.5vw,7rem)] leading-[0.92] tracking-[-0.03em] text-white">
           {t.hero.headline}
           <br />
-          <span className="italic text-gold">{t.hero.headlineAccent}</span>
-        </motion.h1>
+          <em className="not-italic text-white/55">{t.hero.headlineAccent}</em>
+        </h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="mt-8 max-w-xl text-lg text-dim leading-relaxed"
-        >
+        <p className="animate-fade-rise-delay-2 mt-8 mx-auto max-w-2xl text-base sm:text-lg text-white/80 leading-relaxed">
           {t.hero.sub}
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="mt-12 flex items-center gap-3 sanai-label text-dim"
-        >
-          <span className="sanai-pulse">↓</span>
-          <span>{t.hero.scroll}</span>
-        </motion.div>
+        <div className="animate-fade-rise-delay-3 mt-12">
+          <a
+            href="#manifesto"
+            className="liquid-glass rounded-full px-12 py-4 text-base text-white inline-flex items-center"
+          >
+            {t.hero.cta}
+          </a>
+        </div>
+      </div>
+
+      {/* Cinematic HUD line */}
+      <div className="absolute bottom-6 inset-x-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center justify-between sanai-label text-white/45">
+          <span className="hidden sm:inline">{t.meta.coords} · DALYAN</span>
+          <a
+            href="#manifesto"
+            className="flex items-center gap-2 hover:text-white transition-colors"
+          >
+            <span>{t.hero.scroll}</span>
+            <span className="sanai-bob not-italic">↓</span>
+          </a>
+        </div>
       </div>
     </section>
   );

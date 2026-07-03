@@ -1,24 +1,20 @@
 import type { Metadata } from "next";
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { Instrument_Serif, Inter } from "next/font/google";
 import "./san-ai.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+// Cinematic display serif — includes latin-ext so Turkish glyphs (ş, ğ, ı, ç)
+// render correctly in the big headlines.
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  subsets: ["latin", "latin-ext"],
+  weight: "400",
+  style: ["normal", "italic"],
   display: "swap",
 });
 
-const instrument = Instrument_Sans({
-  variable: "--font-instrument",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "latin-ext"],
   display: "swap",
 });
 
@@ -35,7 +31,7 @@ export default function SanAiLayout({
 }>) {
   return (
     <div
-      className={`${fraunces.variable} ${instrument.variable} ${jetbrains.variable} sanai-scope grain min-h-screen antialiased`}
+      className={`${instrumentSerif.variable} ${inter.variable} sanai-scope min-h-screen antialiased`}
     >
       {children}
     </div>

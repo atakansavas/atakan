@@ -1,47 +1,79 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import { useLang } from "./LangProvider";
+import { SectionVideo } from "./SectionVideo";
+import { SpotlightCard } from "./SpotlightCard";
+import { TwoTone } from "./TwoTone";
+import { reveal } from "../_lib/motion";
+import { videos } from "../_lib/videos";
+
+const CHANNEL_VIDEOS = [
+  videos.feedInstagram,
+  videos.feedTiktok,
+  videos.feedYoutube,
+];
 
 export function Feed() {
   const { t } = useLang();
 
   return (
-    <section className="relative py-24 sm:py-32">
-      <div className="max-w-6xl mx-auto px-5">
-        <p className="sanai-label text-teal mb-6">{t.feed.eyebrow}</p>
-        <h2 className="sanai-serif text-[clamp(1.8rem,4vw,3rem)] font-light leading-tight max-w-2xl">
-          {t.feed.title}
-        </h2>
-        <p className="mt-6 text-lg text-dim leading-relaxed max-w-xl">
-          {t.feed.sub}
-        </p>
+    <section
+      id="akis"
+      className="relative z-10 scroll-mt-24 py-24 md:py-36 px-6 overflow-hidden"
+    >
+      <div className="relative max-w-6xl mx-auto">
+        <motion.div {...reveal()}>
+          <p className="sanai-label text-white/40 mb-6">{t.feed.eyebrow}</p>
+          <div className="flex items-end justify-between gap-6">
+            <h2 className="sanai-serif text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.05] tracking-[-0.02em] max-w-2xl text-white">
+              <TwoTone text={t.feed.title} />
+            </h2>
+            <span className="sanai-label text-white/40 hidden md:block shrink-0">
+              {t.feed.aside}
+            </span>
+          </div>
+          <p className="mt-6 text-lg text-white/60 leading-relaxed max-w-xl">
+            {t.feed.sub}
+          </p>
+        </motion.div>
 
-        {/* Channel cards — handles + embeds drop in once channels go live */}
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
           {t.feed.channels.map((c, i) => (
             <motion.div
               key={c.platform}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: i * 0.08 }}
-              className="sanai-panel sanai-card p-6"
+              {...reveal(i * 0.1)}
+              className="h-full"
             >
-              <div className="flex items-center justify-between mb-6">
-                <span className="sanai-serif text-lg">{c.platform}</span>
-                <span className="sanai-label text-gold text-[9px] px-2 py-0.5 rounded-full border border-[var(--sanai-line)]">
-                  {t.feed.soon}
-                </span>
-              </div>
-              {/* Placeholder feed frame — swap for embedded posts later */}
-              <div
-                className="sanai-plate aspect-square w-full"
-                data-caption={c.handle}
-              >
-                <div className="topo" />
-              </div>
-              <p className="mt-4 sanai-label text-dim opacity-70">{c.status}</p>
+              <SpotlightCard className="liquid-glass rounded-3xl group h-full">
+                <div className="relative aspect-video overflow-hidden">
+                  <SectionVideo
+                    src={CHANNEL_VIDEOS[i]}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <span className="absolute top-4 right-4 sanai-chip">
+                    {t.feed.soon}
+                  </span>
+                </div>
+                <div className="p-6 md:p-7">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="sanai-label text-white/40">
+                      {c.handle}
+                    </span>
+                    <span className="liquid-glass rounded-full p-2 inline-flex text-white transition-transform duration-300 group-hover:rotate-45">
+                      <ArrowUpRight size={16} />
+                    </span>
+                  </div>
+                  <h3 className="sanai-serif text-xl md:text-2xl text-white mb-2 tracking-tight">
+                    {c.platform}
+                  </h3>
+                  <p className="text-white/50 text-sm leading-relaxed">
+                    {c.desc}
+                  </p>
+                </div>
+              </SpotlightCard>
             </motion.div>
           ))}
         </div>

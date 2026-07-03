@@ -35,6 +35,16 @@ export function LangProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Keep the document language in sync while on this page (a11y / SEO),
+  // and restore Turkish when navigating away.
+  useEffect(() => {
+    const previous = document.documentElement.lang;
+    document.documentElement.lang = lang;
+    return () => {
+      document.documentElement.lang = previous || "tr";
+    };
+  }, [lang]);
+
   const setLang = useCallback((next: Lang) => {
     setLangState(next);
     if (typeof window !== "undefined") {
