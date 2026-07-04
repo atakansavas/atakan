@@ -25,7 +25,7 @@ export function Feed() {
     >
       <div className="relative max-w-6xl mx-auto">
         <motion.div {...reveal()}>
-          <p className="sanai-label text-white/40 mb-6">{t.feed.eyebrow}</p>
+          <p className="sanai-label text-[var(--sanai-su)] mb-6">{t.feed.eyebrow}</p>
           <div className="flex items-end justify-between gap-6">
             <h2 className="sanai-serif text-[clamp(2rem,4.5vw,3.4rem)] leading-[1.05] tracking-[-0.02em] max-w-2xl text-white">
               <TwoTone text={t.feed.title} />
@@ -62,7 +62,7 @@ export function Feed() {
                     <span className="sanai-label text-white/40">
                       {c.handle}
                     </span>
-                    <span className="liquid-glass rounded-full p-2 inline-flex text-white transition-transform duration-300 group-hover:rotate-45">
+                    <span className="liquid-glass rounded-full p-2 inline-flex text-[var(--sanai-su)] transition-transform duration-300 group-hover:rotate-45">
                       <ArrowUpRight size={16} />
                     </span>
                   </div>

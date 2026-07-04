@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: "San·ai | Yapay zeka çağının sanayisi",
   description:
     "San·ai — Dalyan'da, doğanın içinde bir paylaşımlı yazılım evi. Yapay zeka çağının sanayisi: kod yazdığımız, ürettiğimiz ve yaşadığımız çatı.",
+  icons: {
+    icon: [{ url: "/san-ai-icon.svg", type: "image/svg+xml" }],
+    apple: "/san-ai-apple-touch.png",
+  },
 };
 
 export default function SanAiLayout({

@@ -40,6 +40,7 @@ export const metadata: Metadata = {
     "veri analitiği",
     "benatakanai",
   ],
+  icons: { icon: [{ url: "/favicon.svg", type: "image/svg+xml" }] },
   authors: [{ name: "Atakan Savaş" }],
   creator: "Atakan Savaş",
   publisher: "Ben Atakan AI Solutions",
@@ -98,7 +99,6 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="canonical" href="https://benatakan.com/" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script

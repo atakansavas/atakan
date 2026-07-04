@@ -19,7 +19,7 @@ export function Place() {
       className="relative z-10 scroll-mt-24 py-20 md:py-28 px-6 overflow-hidden"
     >
       <div className="max-w-6xl mx-auto">
-        <motion.p {...reveal()} className="sanai-label text-white/40 mb-6">
+        <motion.p {...reveal()} className="sanai-label text-[var(--sanai-su)] mb-6">
           {t.place.eyebrow}
         </motion.p>
 

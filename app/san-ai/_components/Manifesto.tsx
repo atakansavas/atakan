@@ -18,7 +18,7 @@ export function Manifesto() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.04)_0%,_transparent_65%)]" />
 
       <div className="relative max-w-5xl mx-auto">
-        <motion.p {...reveal()} className="sanai-label text-white/40 mb-8">
+        <motion.p {...reveal()} className="sanai-label text-[var(--sanai-su)] mb-8">
           {t.manifesto.eyebrow}
         </motion.p>
 

@@ -63,14 +63,16 @@ export function Hero() {
 
       {/* Hero content */}
       <div className="relative z-10 w-full max-w-5xl mx-auto px-6 text-center pt-24 pb-28">
-        <p className="animate-fade-rise sanai-label text-white/70 mb-7">
+        <p className="animate-fade-rise sanai-label text-[var(--sanai-su-soft)] mb-7">
           {t.hero.eyebrow}
         </p>
 
         <h1 className="animate-fade-rise-delay sanai-serif text-[clamp(2.7rem,8.5vw,7rem)] leading-[0.92] tracking-[-0.03em] text-white">
           {t.hero.headline}
           <br />
-          <em className="not-italic text-white/55">{t.hero.headlineAccent}</em>
+          <em className="not-italic text-[var(--sanai-su-soft)]">
+            {t.hero.headlineAccent}
+          </em>
         </h1>
 
         <p className="animate-fade-rise-delay-2 mt-8 mx-auto max-w-2xl text-base sm:text-lg text-white/80 leading-relaxed">

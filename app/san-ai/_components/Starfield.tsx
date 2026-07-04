@@ -13,7 +13,7 @@ function buildShadow(count: number, bright: boolean) {
     const x = Math.floor(Math.random() * 2200);
     const y = Math.floor(Math.random() * 1500);
     const alpha = bright ? 0.85 : 0.45;
-    parts.push(`${x}px ${y}px 0 0 rgba(200,220,255,${alpha})`);
+    parts.push(`${x}px ${y}px 0 0 rgba(202,228,216,${alpha})`);
   }
   return parts.join(", ");
 }

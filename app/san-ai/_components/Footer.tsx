@@ -5,6 +5,7 @@ import { Globe, Instagram, Twitter } from "lucide-react";
 import Link from "next/link";
 import { useLang } from "./LangProvider";
 import { Magnetic } from "./Magnetic";
+import { Mark } from "./Mark";
 import { SectionVideo } from "./SectionVideo";
 import { reveal } from "../_lib/motion";
 import { videos } from "../_lib/videos";
@@ -62,7 +63,7 @@ export function Footer() {
 
       {/* CTA */}
       <div className="relative z-10 max-w-3xl mx-auto text-center px-6 pt-32 md:pt-48 pb-20 md:pb-28">
-        <motion.p {...reveal()} className="sanai-label text-white/55 mb-7">
+        <motion.p {...reveal()} className="sanai-label text-[var(--sanai-su)] mb-7">
           {t.invite.eyebrow}
         </motion.p>
         <motion.h2
@@ -105,11 +106,14 @@ export function Footer() {
       <div className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8 pt-12 pb-14 border-t border-white/10">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-10">
           <div>
-            <div className="sanai-wordmark text-3xl text-white">
-              {t.footer.wordmark}
-              <sup className="ml-0.5 align-super text-[0.42em] text-white/50">
-                ®
-              </sup>
+            <div className="flex items-center gap-3 text-white">
+              <Mark className="h-8 w-8 shrink-0 text-[var(--sanai-su)]" />
+              <span className="sanai-wordmark text-3xl">
+                {t.footer.wordmark}
+                <sup className="ml-0.5 align-super text-[0.42em] text-white/50">
+                  ®
+                </sup>
+              </span>
             </div>
             <div className="sanai-label text-white/50 mt-3">{t.footer.tag}</div>
             <div className="mt-6 space-y-1.5">

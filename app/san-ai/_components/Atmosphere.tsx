@@ -17,7 +17,7 @@ export function Atmosphere() {
           width: "42vw",
           height: "42vw",
           background:
-            "radial-gradient(circle, rgba(70,150,175,0.16), transparent 70%)",
+            "radial-gradient(circle, rgba(94,164,143,0.2), transparent 70%)",
         }}
       />
       <div
@@ -28,7 +28,7 @@ export function Atmosphere() {
           width: "46vw",
           height: "46vw",
           background:
-            "radial-gradient(circle, rgba(120,110,190,0.12), transparent 70%)",
+            "radial-gradient(circle, rgba(46,124,107,0.16), transparent 70%)",
         }}
       />
       <Starfield />

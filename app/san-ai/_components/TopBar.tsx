@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLang } from "./LangProvider";
 import { LangToggle } from "./LangToggle";
+import { Mark } from "./Mark";
 
 export function TopBar() {
   const { t } = useLang();
@@ -35,10 +36,13 @@ export function TopBar() {
         {/* Wordmark */}
         <Link
           href="#top"
-          className="sanai-wordmark text-2xl sm:text-[1.7rem] tracking-tight text-white hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 text-white hover:opacity-80 transition-opacity"
         >
-          {t.nav.wordmark}
-          <sup className="ml-0.5 align-super text-[0.5em] text-muted">®</sup>
+          <Mark className="h-6 w-6 sm:h-7 sm:w-7 shrink-0 text-[var(--sanai-su)]" />
+          <span className="sanai-wordmark text-2xl sm:text-[1.7rem] tracking-tight">
+            {t.nav.wordmark}
+            <sup className="ml-0.5 align-super text-[0.5em] text-muted">®</sup>
+          </span>
         </Link>
 
         {/* Section links */}

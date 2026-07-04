@@ -12,7 +12,7 @@ export function TwoTone({ text }: { text: string }) {
     <>
       {head}
       {tail && (
-        <em className="sanai-serif-italic text-white/50">{tail}</em>
+        <em className="sanai-serif-italic text-[var(--sanai-su)]">{tail}</em>
       )}
     </>
   );
