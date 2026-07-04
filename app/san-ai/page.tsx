@@ -1,6 +1,7 @@
 import { LangProvider } from "./_components/LangProvider";
 import { Atmosphere } from "./_components/Atmosphere";
 import { ScrollProgress } from "./_components/ScrollProgress";
+import { SmoothScroll } from "./_components/SmoothScroll";
 import { TopBar } from "./_components/TopBar";
 import { Hero } from "./_components/Hero";
 import { Manifesto } from "./_components/Manifesto";
@@ -12,6 +13,7 @@ import { Footer } from "./_components/Footer";
 export default function SanAiPage() {
   return (
     <LangProvider>
+      <SmoothScroll />
       <Atmosphere />
       <ScrollProgress />
       <TopBar />

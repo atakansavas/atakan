@@ -20,8 +20,18 @@ export function Hero() {
       id="top"
       className="relative min-h-[100svh] flex items-center justify-center overflow-hidden"
     >
-      {/* Fullscreen looping video — the sole source of visual depth */}
-      <div className="absolute inset-0 z-0">
+      {/* Fullscreen looping video — the sole source of visual depth. The whole
+          layer is masked at the bottom so the hero dissolves into the navy /
+          starfield below instead of ending on a hard edge. */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%)",
+          maskImage:
+            "linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%)",
+        }}
+      >
         <div className="absolute inset-0 bg-[var(--sanai-navy)]" />
         <video
           ref={videoRef}

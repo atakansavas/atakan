@@ -7,6 +7,22 @@
  * liquid-glass surfaces — not from textures or coloured blobs.
  */
 
+/* Lenis smooth-scroll — only active while the class is on <html> (san-ai page),
+   so it overrides the site-wide `scroll-behavior: smooth` just here. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 .sanai-scope {
   /* Core palette (HSL kept close to the brief; muted tinted slightly blue
      so it sits naturally on the navy) */
