@@ -28,8 +28,18 @@ export function Footer() {
       id="invite"
       className="relative z-10 scroll-mt-24 overflow-hidden"
     >
-      {/* Background clip + scrim */}
-      <div className="absolute inset-0 z-0">
+      {/* Background clip + scrim — the whole layer is masked so the video
+          dissolves into the navy (and starfield) above instead of showing a
+          hard top edge, then deepens toward the footer meta below. */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0%, #000 16%, #000 100%)",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0%, #000 16%, #000 100%)",
+        }}
+      >
         <SectionVideo
           src={videos.rhythm}
           className="w-full h-full object-cover"
@@ -38,14 +48,14 @@ export function Footer() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, var(--sanai-navy) 0%, rgba(0,20,32,0.52) 18%, rgba(0,20,32,0.46) 46%, rgba(0,18,28,0.82) 78%, rgba(0,15,24,0.94) 100%)",
+              "linear-gradient(180deg, rgba(0,22,34,0.3) 0%, rgba(0,20,32,0.4) 42%, rgba(0,17,27,0.8) 80%, rgba(0,14,22,0.95) 100%)",
           }}
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(120% 70% at 50% 38%, transparent 45%, rgba(0,16,26,0.55) 100%)",
+              "radial-gradient(120% 70% at 50% 40%, transparent 48%, rgba(0,15,24,0.5) 100%)",
           }}
         />
       </div>

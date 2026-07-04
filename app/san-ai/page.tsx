@@ -1,5 +1,6 @@
 import { LangProvider } from "./_components/LangProvider";
 import { Atmosphere } from "./_components/Atmosphere";
+import { ScrollProgress } from "./_components/ScrollProgress";
 import { TopBar } from "./_components/TopBar";
 import { Hero } from "./_components/Hero";
 import { Manifesto } from "./_components/Manifesto";
@@ -12,6 +13,7 @@ export default function SanAiPage() {
   return (
     <LangProvider>
       <Atmosphere />
+      <ScrollProgress />
       <TopBar />
       <main className="relative z-10">
         <Hero />
