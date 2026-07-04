@@ -18,13 +18,38 @@ const inter = Inter({
   display: "swap",
 });
 
+const SANAI_TITLE = "San·ai | Yapay zeka çağının sanayisi";
+const SANAI_DESC =
+  "San·ai — Dalyan'da, doğanın içinde bir paylaşımlı yazılım evi. Yapay zeka çağının sanayisi: kod yazdığımız, ürettiğimiz ve yaşadığımız çatı.";
+
 export const metadata: Metadata = {
-  title: "San·ai | Yapay zeka çağının sanayisi",
-  description:
-    "San·ai — Dalyan'da, doğanın içinde bir paylaşımlı yazılım evi. Yapay zeka çağının sanayisi: kod yazdığımız, ürettiğimiz ve yaşadığımız çatı.",
+  title: SANAI_TITLE,
+  description: SANAI_DESC,
   icons: {
-    icon: [{ url: "/san-ai-icon.svg", type: "image/svg+xml" }],
-    apple: "/san-ai-apple-touch.png",
+    icon: [{ url: "/brand/icon-green.svg", type: "image/svg+xml" }],
+    apple: "/brand/apple-touch.png",
+  },
+  openGraph: {
+    title: SANAI_TITLE,
+    description: SANAI_DESC,
+    url: "/san-ai",
+    siteName: "San·ai",
+    locale: "tr_TR",
+    type: "website",
+    images: [
+      {
+        url: "/brand/og.png",
+        width: 1200,
+        height: 630,
+        alt: "San·ai — Yapay zeka çağının sanayisi",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SANAI_TITLE,
+    description: SANAI_DESC,
+    images: ["/brand/og.png"],
   },
 };
 
