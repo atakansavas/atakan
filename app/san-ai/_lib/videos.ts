@@ -1,12 +1,21 @@
-// Cinematic section clips (CloudFront). The hero uses its own video in Hero.tsx;
-// these drive the video-rich sections below it.
+// Real Dalyan footage from the San·ai shoots, web-optimised into public/san-ai/.
+// The Place section's cinematic plate uses the local drone loop; the small
+// translucent facet previews beneath it and the Feed reels are lean local
+// clips; the footer's ambient background streams from the original CloudFront
+// clip. Sources live in the sibling `sanai` project (videos/web) and are
+// re-encoded lean before committing.
 const BASE =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P";
 
 export const videos = {
-  place: `${BASE}/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4`,
+  // Featured drone loop of the venue — the Place section's cinematic plate.
+  hero: "/san-ai/hero.mp4",
+
+  // Feed reels (local web-optimised).
+  feedInstagram: "/san-ai/feed-instagram.mp4",
+  feedTiktok: "/san-ai/feed-tiktok.mp4",
+  feedYoutube: "/san-ai/feed-youtube.mp4",
+
+  // Footer ambient background — original CloudFront clip (footer unchanged).
   rhythm: `${BASE}/hf_20260307_083826_e938b29f-a43a-41ec-a153-3d4730578ab8.mp4`,
-  feedInstagram: `${BASE}/hf_20260324_151826_c7218672-6e92-402c-9e45-f1e0f454bdc4.mp4`,
-  feedTiktok: `${BASE}/hf_20260405_074625_a81f018a-956b-43fb-9aee-4d1508e30e6a.mp4`,
-  feedYoutube: `${BASE}/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4`,
 } as const;

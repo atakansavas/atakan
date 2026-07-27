@@ -11,7 +11,7 @@ export function Marquee() {
   const doubled = [...t.marquee, ...t.marquee];
 
   return (
-    <div className="marquee-wrap relative z-10 overflow-hidden py-10 md:py-14">
+    <div className="marquee-wrap relative z-10 overflow-hidden py-8 md:py-10">
       {/* soft hairlines that fade out at the ends instead of hard borders */}
       <div className="sanai-rule absolute inset-x-0 top-0" />
       <div className="sanai-rule absolute inset-x-0 bottom-0" />

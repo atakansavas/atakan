@@ -12,7 +12,7 @@ export function Manifesto() {
   return (
     <section
       id="manifesto"
-      className="relative z-10 scroll-mt-24 pt-32 md:pt-44 pb-24 md:pb-28 px-6 overflow-hidden"
+      className="relative z-10 scroll-mt-24 pt-24 md:pt-32 pb-16 md:pb-20 px-6 overflow-hidden"
     >
       {/* Subtle glow so the section lifts out of the hero */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.04)_0%,_transparent_65%)]" />
@@ -36,7 +36,7 @@ export function Manifesto() {
           {t.manifesto.lead}
         </motion.p>
 
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {t.manifesto.beliefs.map((b, i) => (
             <motion.div key={b.title} {...reveal(i * 0.08)} className="h-full">
               <SpotlightCard className="liquid-glass rounded-3xl p-8 h-full">

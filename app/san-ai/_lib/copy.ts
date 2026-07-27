@@ -1,9 +1,13 @@
+import type { SocialKey } from "./socials";
+
 export type Lang = "tr" | "en";
 
 type Belief = { title: string; desc: string };
 type Feature = { label: string; title: string; desc: string };
 type DayBlock = { time: string; title: string; desc: string };
-type Channel = { platform: string; handle: string; status: string; desc: string };
+// Platform name, handle, link and icon come from _lib/socials.ts; copy only
+// carries the localised blurb.
+type Channel = { key: SocialKey; desc: string };
 
 export type CopyShape = {
   meta: { location: string; coords: string };
@@ -52,7 +56,7 @@ export type CopyShape = {
     sub: string;
     aside: string;
     channels: Channel[];
-    soon: string;
+    cta: string;
   };
   invite: {
     eyebrow: string;
@@ -164,7 +168,7 @@ export const copy: Record<Lang, CopyShape> = {
           desc: "Paylaşımlı masa, sessiz köşe, mutfak, ateş. Yalnız çalış, birlikte yaşa.",
         },
       ],
-      note: "Fotoğraflar yükleniyor — burası gerçek bir ev, gerçek bir kıyı.",
+      note: "Burası gerçek bir ev, gerçek bir kıyı — Dalyan, Muğla.",
     },
     day: {
       eyebrow: "[ BİR GÜN BURADA ]",
@@ -181,29 +185,23 @@ export const copy: Record<Lang, CopyShape> = {
     feed: {
       eyebrow: "[ DENEYİM AKIŞI ]",
       title: "Süreci |açıkça paylaşıyoruz",
-      sub: "Dalyan'daki yapımın gündelik hâli — Instagram, TikTok ve YouTube'da. Kanallar hazırlanıyor; ilk kayıtlar çok yakında.",
+      sub: "Dalyan'daki yapımın gündelik hâli — Instagram, TikTok ve YouTube'da. Kanallar yayında; ilk içerikleri paylaşmaya başladık.",
       aside: "Kanallar",
       channels: [
         {
-          platform: "Instagram",
-          handle: "@sanai",
-          status: "Hazırlanıyor",
+          key: "instagram",
           desc: "Günlük kareler, kısa anlar ve sahne arkası — doğanın içindeki masadan.",
         },
         {
-          platform: "TikTok",
-          handle: "@sanai",
-          status: "Hazırlanıyor",
+          key: "tiktok",
           desc: "Kısa videolar: yapım süreci, denemeler ve hızlı fikir çekimleri.",
         },
         {
-          platform: "YouTube",
-          handle: "San·ai",
-          status: "Hazırlanıyor",
+          key: "youtube",
           desc: "Uzun anlatımlar, derin dalışlar ve haftalık üretim günlükleri.",
         },
       ],
-      soon: "yakında",
+      cta: "Takip et",
     },
     invite: {
       eyebrow: "[ KAPI AÇIK ]",
@@ -316,7 +314,7 @@ export const copy: Record<Lang, CopyShape> = {
           desc: "A shared table, a quiet corner, a kitchen, a fire. Work alone, live together.",
         },
       ],
-      note: "Photos loading soon — this is a real house on a real shore.",
+      note: "A real house on a real shore — Dalyan, Muğla.",
     },
     day: {
       eyebrow: "[ A DAY HERE ]",
@@ -333,29 +331,23 @@ export const copy: Record<Lang, CopyShape> = {
     feed: {
       eyebrow: "[ EXPERIENCE FEED ]",
       title: "We share the |process out loud",
-      sub: "The daily life of making in Dalyan — on Instagram, TikTok and YouTube. Channels are being prepared; the first recordings land very soon.",
+      sub: "The daily life of making in Dalyan — on Instagram, TikTok and YouTube. The channels are live; we've started sharing the first pieces.",
       aside: "Channels",
       channels: [
         {
-          platform: "Instagram",
-          handle: "@sanai",
-          status: "In progress",
+          key: "instagram",
           desc: "Daily frames, short moments and behind the scenes — from a desk inside nature.",
         },
         {
-          platform: "TikTok",
-          handle: "@sanai",
-          status: "In progress",
+          key: "tiktok",
           desc: "Short clips: the build process, experiments and quick idea takes.",
         },
         {
-          platform: "YouTube",
-          handle: "San·ai",
-          status: "In progress",
+          key: "youtube",
           desc: "Long-form stories, deep dives and weekly making journals.",
         },
       ],
-      soon: "soon",
+      cta: "Follow",
     },
     invite: {
       eyebrow: "[ THE DOOR IS OPEN ]",

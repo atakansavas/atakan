@@ -62,7 +62,7 @@ export function Footer() {
       </div>
 
       {/* CTA */}
-      <div className="relative z-10 max-w-3xl mx-auto text-center px-6 pt-32 md:pt-48 pb-20 md:pb-28">
+      <div className="relative z-10 max-w-3xl mx-auto text-center px-6 pt-24 md:pt-36 pb-16 md:pb-20">
         <motion.p {...reveal()} className="sanai-label text-[var(--sanai-su)] mb-7">
           {t.invite.eyebrow}
         </motion.p>
