@@ -10,7 +10,8 @@
  * false (pre-launch, default): no App Store badge and no apps.apple.com link
  *   anywhere; the call-to-action reads "Çok yakında App Store'da."
  * true (live): the official Turkish "Download on the App Store" badge shows
- *   in the hero and closing sections, linking to APP_STORE_URL.
+ *   in the hero and the closing section gets a text link (Apple allows one
+ *   badge per layout); both go to APP_STORE_URL.
  *
  * Flip only after the owner says "Nereye Gitti yayında", then commit + push
  * (Railway deploys main) and re-run the acceptance checks.

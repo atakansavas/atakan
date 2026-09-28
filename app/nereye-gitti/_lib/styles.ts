@@ -94,6 +94,7 @@ const landing = /* css */ `
 /* Apple badge: official artwork, unmodified; >=40px tall, clear space >= 1/4 of its height. */
 .badge{display:inline-block;margin:13px 0;line-height:0;border-radius:10px}
 .badge img{height:50px;width:auto}
+.store-link{display:inline-flex;align-items:center;min-height:44px;font-weight:600}
 
 /* Screenshot frame: plain rounded frame, radius ~6% of width, 1px border. */
 .shot{aspect-ratio:1320/2868;border-radius:6%/2.762%;border:1px solid var(--border);overflow:hidden;background:var(--surface2)}

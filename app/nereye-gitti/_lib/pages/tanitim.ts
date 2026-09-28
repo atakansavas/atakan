@@ -11,11 +11,15 @@ import { SCREENSHOTS, type Screenshot } from "../screenshots";
 import { landingCss } from "../styles";
 
 // Pre-launch: no badge and no apps.apple.com link anywhere on the page.
-const cta = () => html`<div class="cta">
+// Live: Apple allows one badge per layout, so the official badge sits in the
+// hero and the closing section gets a plain text link.
+const cta = (place: "hero" | "closing") => html`<div class="cta">
 ${
-  NEREYE_GITTI_APP_STORE_LIVE
-    ? html`<a class="badge" href="${APP_STORE_URL}"><img src="${APP_STORE_BADGE.src}" width="${APP_STORE_BADGE.width}" height="${APP_STORE_BADGE.height}" alt="${APP_STORE_BADGE.alt}"></a>`
-    : html`<p class="soon">Çok yakında App Store'da.</p>`
+  !NEREYE_GITTI_APP_STORE_LIVE
+    ? html`<p class="soon">Çok yakında App Store'da.</p>`
+    : place === "hero"
+      ? html`<a class="badge" href="${APP_STORE_URL}"><img src="${APP_STORE_BADGE.src}" width="${APP_STORE_BADGE.width}" height="${APP_STORE_BADGE.height}" alt="${APP_STORE_BADGE.alt}"></a>`
+      : html`<a class="store-link" href="${APP_STORE_URL}">App Store'dan indir</a>`
 }
 <p class="meta">iPhone · iOS 16.4 ve üstü · Türkçe</p>
 </div>`;
@@ -95,7 +99,7 @@ export const renderTanitim = () =>
 <p class="label label--accent label--keep">iPhone için gelir gider ve bütçe takibi</p>
 <h1 id="baslik">Paran nereye gitti? <span>Şimdi önünü de gör.</span></h1>
 <p class="lede">Nereye Gitti gelir ve giderini bir çarkla saniyeler içinde kaydeder, planlı ödemelerini günü gelince sorar ve sonraki gelirine kadar ne kalacağını gösterir. Hesap yok, reklam yok; verilerin iPhone'unda kalır.</p>
-${cta()}
+${cta("hero")}
 </div>
 <div class="hero-visual">${shot(SCREENSHOTS[0], true)}</div>
 </div>
@@ -151,7 +155,7 @@ ${shot(s)}
 <h2 id="kapanis-baslik">Ayna değil, pusula.</h2>
 <p class="closing-text">Nereye Gitti geçmişi kaydetmekle kalmaz, önünü gösterir.</p>
 </div>
-${cta()}
+${cta("closing")}
 </div>
 </section>`,
   });
