@@ -82,3 +82,13 @@ export const socials: Record<SocialKey, Social> = {
     icon: SiLinkedin,
   },
 };
+
+/** Every active profile, in the order shown in the footer icon row. */
+export const footerSocials: SocialKey[] = [
+  "instagram",
+  "tiktok",
+  "youtube",
+  "threads",
+  "facebook",
+  "linkedin",
+];

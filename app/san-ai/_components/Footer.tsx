@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Globe, Instagram, Twitter } from "lucide-react";
 import Link from "next/link";
 import { useLang } from "./LangProvider";
 import { Magnetic } from "./Magnetic";
@@ -9,12 +8,7 @@ import { Mark } from "./Mark";
 import { SectionVideo } from "./SectionVideo";
 import { reveal } from "../_lib/motion";
 import { videos } from "../_lib/videos";
-
-const socials = [
-  { icon: Instagram, href: "#akis", label: "Instagram" },
-  { icon: Twitter, href: "#akis", label: "X" },
-  { icon: Globe, href: "/", label: "Atakan" },
-];
+import { footerSocials, socials } from "../_lib/socials";
 
 /**
  * Merged closing CTA + site footer over a full-bleed cinematic clip. The scrim
@@ -87,18 +81,24 @@ export function Footer() {
           </Magnetic>
         </div>
 
-        <div className="mt-8 flex justify-center gap-4">
-          {socials.map(({ icon: Icon, href, label }) => (
-            <Magnetic key={label} strength={0.5}>
-              <Link
-                href={href}
-                aria-label={label}
-                className="liquid-glass rounded-full p-4 text-white/80 hover:text-white transition-colors"
-              >
-                <Icon size={20} />
-              </Link>
-            </Magnetic>
-          ))}
+        <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+          {footerSocials.map((key) => {
+            const s = socials[key];
+            const Icon = s.icon;
+            return (
+              <Magnetic key={key} strength={0.5}>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${s.platform} — ${s.handle}`}
+                  className="liquid-glass rounded-full p-4 text-white/80 hover:text-white transition-colors inline-flex"
+                >
+                  <Icon size={20} />
+                </a>
+              </Magnetic>
+            );
+          })}
         </div>
       </div>
 

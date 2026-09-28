@@ -26,7 +26,10 @@ export const metadata: Metadata = {
   title: SANAI_TITLE,
   description: SANAI_DESC,
   icons: {
-    icon: [{ url: "/brand/icon-green.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/brand/icon-green.svg", type: "image/svg+xml" },
+      { url: "/brand/favicon-32.png", type: "image/png", sizes: "32x32" },
+    ],
     apple: "/brand/apple-touch.png",
   },
   openGraph: {
