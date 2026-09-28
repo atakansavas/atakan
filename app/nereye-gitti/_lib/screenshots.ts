@@ -1,50 +1,53 @@
-// App Store screenshots for the landing page, in story order.
+// App Store screenshots for the landing page, in App Store order.
 //
-// Images come from scripts/nereye-gitti-screenshots.mjs (AVIF + WebP at
-// 360/720/1080 px, listed in screenshots.generated.ts). Until the frames
-// exist in gidertakip docs/magaza/ekran-goruntuleri/{final,ham}/, `image` is
-// null and the page shows grey 1320:2868 placeholders. When they arrive,
-// run the script and check each `alt` against what the image really shows.
+// The frames come ready-made from the app repo (gidertakip
+// docs/magaza/web/, sources in .../ekran-goruntuleri/final/): each already
+// carries its headline, so the page shows them as they are and puts the
+// headline in `alt` and the figcaption. scripts/nereye-gitti-screenshots.mjs
+// copies them (660/1320 px WebP + 660 px JPEG fallback) and lists them in
+// screenshots.generated.ts. Until that list is filled, grey placeholders
+// stand in.
 
 import { SCREENSHOT_IMAGES } from "./screenshots.generated";
 
 export type Screenshot = {
   title: string;
   subtitle: string;
+  /** What the frame shows, after its headline. */
   alt: string;
-  image: { base: string; widths: readonly number[] } | null;
+  image: string | null;
 };
 
 const CAPTIONS: readonly Omit<Screenshot, "image">[] = [
   {
     title: "Bas, çevir, bırak.",
     subtitle: "Gelir ya da gider, saniyeler içinde kayıtlı",
-    alt: "Nereye Gitti Çark ekranı: bir gider dilimi seçili, altında bugünün kayıtları",
+    alt: "Nereye Gitti Çark ekranı: çark basılı tutuluyor, Market dilimi seçili",
   },
   {
     title: "Maaşa kadar ne kalır?",
-    subtitle: "Pusula en dar günü önceden gösterir",
-    alt: "Pusula bandı: sonraki gelire kadar kalan tutar ve en dar gün",
+    subtitle: "Pusula sonraki gelire kadar kalanı gösterir",
+    alt: "Pusula bandı: sonraki gelire kadar 13.915 lira kalıyor, sonraki gelir 1 Ekim'de maaş",
   },
   {
     title: "Günü gelince sorar.",
     subtitle: "Ödedim ya da Yarın sor, tek dokunuşla",
-    alt: "Kilit ekranında vade bildirimi: Ödedim ve Yarın sor düğmeleri",
+    alt: 'Vade bildirimi "Telefon · bugün, ödedin mi?" ve Ödedim, Yarın sor seçenekleri',
   },
   {
-    title: "Kilit ekranından kaydet.",
-    subtitle: "Widget'lar ve iOS 18 kontrolleri",
-    alt: "Kilit ekranında Nereye Gitti widget'ları ve ana ekranda Yaklaşan widget'ı",
+    title: "Sıradaki ödeme hep önünde.",
+    subtitle: "Ana ekranda Yaklaşan widget'ı ve kısayollar",
+    alt: "Ana ekranda Yaklaşan widget'ı: bugünkü ödeme, 3 gün sonraki maaş ve Çark, Gider, Gelir kısayolları",
   },
   {
     title: "Ayın tamamı tek ekranda.",
     subtitle: "Kayıtlar, planlar ve en dar gün",
-    alt: "Takvim ekranı: işaretli günler ve seçili günün listesi",
+    alt: "Takvim ekranı: işaretli günler, en dar gün kartı ve seçili günün planı",
   },
   {
     title: "Paran nereye gitti?",
     subtitle: "Kategori raporu ve aylık bütçe tavanı",
-    alt: "Rapor ekranı: bu ayın kategori çubukları ve bir bütçe tavanı",
+    alt: "Rapor ekranı: bu ayın kategori çubukları ve aylık bütçe tavanları",
   },
 ];
 

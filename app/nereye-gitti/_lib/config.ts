@@ -36,7 +36,7 @@ export const OG_IMAGE = {
   url: `${SITE_ORIGIN}${BASE_PATH}/og.png`,
   width: 1200,
   height: 630,
-  alt: 'Nereye Gitti uygulama simgesi ve "Gelir gider ve bütçe takibi" yazısı',
+  alt: 'Nereye Gitti işareti, "Bas, çevir, bırak." yazısı ve çark ekranını gösteren bir iPhone',
 } as const;
 
 /**

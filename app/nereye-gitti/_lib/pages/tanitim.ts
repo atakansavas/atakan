@@ -37,7 +37,7 @@ const FEATURES = [
     tag: "plan",
     label: "Pusula",
     title: "Maaşa kadar ne kalır?",
-    text: "Bugün elindeki parayı bir kez gir. Pusula planlarını gün gün ileri sarar; sonraki gelirine kadar ne kalacağını tek sayıyla gösterir, en dar günü de işaretler.",
+    text: "Bugün elindeki parayı bir kez gir. Pusula planlarını gün gün ileri sarar; sonraki gelirine kadar ne kalacağını tek sayıyla gösterir, en dar günü de takvimde işaretler.",
   },
   {
     tag: "plan",
@@ -67,19 +67,17 @@ const FEATURES = [
 
 const tagClass = { cark: "tag tag--cark", plan: "tag", gelir: "tag tag--gelir", gider: "tag tag--gider" };
 
-// Real screenshots use <picture> (AVIF/WebP, 360/720/1080w); until they
-// exist, a plain grey 1320:2868 placeholder stands in (no fake screenshots).
+// The App Store frames, shown as they are (WebP 660/1320 w, JPEG fallback).
+// Their headline is part of the image, so it also goes into alt. Without
+// frames, a plain grey 1320:2868 placeholder stands in (no fake screenshots).
 const shot = (s: Screenshot, hero = false) => {
   if (!s.image) {
     return html`<div class="shot shot--placeholder" aria-hidden="true"></div>`;
   }
-  const srcset = (ext: string) =>
-    s.image!.widths.map((w) => `${s.image!.base}-${w}.${ext} ${w}w`).join(", ");
   const sizes = hero ? "(min-width: 900px) 320px, 76vw" : "(min-width: 900px) 264px, 70vw";
   return html`<div class="shot"><picture>
-<source type="image/avif" srcset="${srcset("avif")}" sizes="${sizes}">
-<source type="image/webp" srcset="${srcset("webp")}" sizes="${sizes}">
-<img src="${s.image.base}-720.webp" width="1320" height="2868" alt="${s.alt}"${
+<source type="image/webp" srcset="${s.image}-660.webp 660w, ${s.image}-1320.webp 1320w" sizes="${sizes}">
+<img src="${s.image}-660.jpg" width="1320" height="2868" alt="${`${s.title} ${s.alt}`}"${
     hero ? html` fetchpriority="high"` : html` loading="lazy" decoding="async"`
   }>
 </picture></div>`;

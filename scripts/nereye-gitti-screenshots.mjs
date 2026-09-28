@@ -1,71 +1,62 @@
 #!/usr/bin/env node
-// Builds the landing-page screenshots for /nereye-gitti from the App Store
-// frames (1320×2868 PNG) in the app repo, then writes the manifest the page
-// reads. Run from the repo root once the frames exist:
+// Publishes the landing-page screenshots for /nereye-gitti from the app
+// repo's ready-made web copies of the App Store frames, then writes the
+// manifest the page reads. Run from the repo root:
 //
 //   node scripts/nereye-gitti-screenshots.mjs [source-dir]
 //
-// Source: [source-dir], else gidertakip docs/magaza/ekran-goruntuleri/final/,
-// else .../ham/. Frames are taken in file-name order (= story order, 1–6).
-// Output: public/nereye-gitti/ekranlar/<nn>-<hash>-<w>.{avif,webp} at 360,
-// 720 and 1080 px wide (the 720 px WebP must stay under 150 KB), plus
-// app/nereye-gitti/_lib/screenshots.generated.ts. Uses the sharp that ships
-// with Next. Re-check each `alt` in _lib/screenshots.ts against the images.
+// Source: [source-dir], else gidertakip docs/magaza/web/. For each of the six
+// frames (01-… to 06-…, file-name order = story order) it copies
+// <name>-660.webp, <name>-1320.webp and the <name>-660.jpg fallback, unchanged,
+// to public/nereye-gitti/ekranlar/<name>.<hash>-<w>.<ext> (hash = content, so
+// they can be cached forever) and writes
+// app/nereye-gitti/_lib/screenshots.generated.ts. Check each caption/alt in
+// _lib/screenshots.ts against what the frame really shows.
 
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import sharp from "sharp";
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
-const APP_DOCS = "/Users/atakan/Projects/gidertakip/docs/magaza/ekran-goruntuleri";
+const APP_WEB = "/Users/atakan/Projects/gidertakip/docs/magaza/web";
 const OUT_DIR = path.join(ROOT, "public/nereye-gitti/ekranlar");
 const MANIFEST = path.join(ROOT, "app/nereye-gitti/_lib/screenshots.generated.ts");
-const WIDTHS = [360, 720, 1080];
-const MAX_720_WEBP = 150 * 1024;
+const FILES = ["660.webp", "1320.webp", "660.jpg"];
 
-const pngsIn = (dir) =>
-  fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => /\.png$/i.test(f)).sort().map((f) => path.join(dir, f)) : [];
-
-const sourceDir = [process.argv[2], `${APP_DOCS}/final`, `${APP_DOCS}/ham`].find((d) => d && pngsIn(d).length);
-if (!sourceDir) {
-  console.error("No screenshots found (final/ and ham/ are empty). Nothing to do.");
+const sourceDir = process.argv[2] || APP_WEB;
+const names = fs.existsSync(sourceDir)
+  ? [...new Set(fs.readdirSync(sourceDir).map((f) => f.match(/^(\d\d-.+)-660\.webp$/)?.[1]).filter(Boolean))].sort()
+  : [];
+if (names.length !== 6) {
+  console.error(`Expected 6 frames (<name>-660.webp) in ${sourceDir}, found ${names.length}. Nothing written.`);
   process.exit(1);
 }
-const sources = pngsIn(sourceDir).slice(0, 6);
-console.log(`Using ${sources.length} frame(s) from ${sourceDir}`);
 
 fs.rmSync(OUT_DIR, { recursive: true, force: true });
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const entries = [];
-for (const [i, file] of sources.entries()) {
-  const input = fs.readFileSync(file);
-  const { width, height } = await sharp(input).metadata();
-  if (Math.abs(width / height - 1320 / 2868) > 0.01) console.warn(`! ${file}: ${width}×${height} is not 1320:2868`);
-  const hash = crypto.createHash("sha256").update(input).digest("hex").slice(0, 8);
-  const name = `${String(i + 1).padStart(2, "0")}-${hash}`;
-  for (const w of WIDTHS) {
-    const resized = sharp(input).resize({ width: w });
-    let quality = 82;
-    let webp = await resized.clone().webp({ quality, effort: 6 }).toBuffer();
-    while (w === 720 && webp.length > MAX_720_WEBP && quality > 40) {
-      quality -= 6;
-      webp = await resized.clone().webp({ quality, effort: 6 }).toBuffer();
-    }
-    const avif = await resized.clone().avif({ quality: Math.min(quality, 60) - 8, effort: 6 }).toBuffer();
-    fs.writeFileSync(path.join(OUT_DIR, `${name}-${w}.webp`), webp);
-    fs.writeFileSync(path.join(OUT_DIR, `${name}-${w}.avif`), avif);
-    console.log(`  ${name}-${w}: webp ${(webp.length / 1024).toFixed(0)} KB (q${quality}), avif ${(avif.length / 1024).toFixed(0)} KB`);
+const entries = names.map((name) => {
+  const buffers = FILES.map((suffix) => {
+    const file = path.join(sourceDir, `${name}-${suffix}`);
+    if (!fs.existsSync(file)) throw new Error(`Missing ${file}`);
+    return [suffix, fs.readFileSync(file)];
+  });
+  const hash = crypto.createHash("sha256");
+  for (const [, buf] of buffers) hash.update(buf);
+  const base = `${name}.${hash.digest("hex").slice(0, 8)}`;
+  for (const [suffix, buf] of buffers) {
+    fs.writeFileSync(path.join(OUT_DIR, `${base}-${suffix}`), buf);
+    console.log(`  ${base}-${suffix}  ${(buf.length / 1024).toFixed(0)} KB`);
   }
-  entries.push(`  { base: "/nereye-gitti/ekranlar/${name}", widths: [${WIDTHS.join(", ")}] },`);
-}
+  return `  "/nereye-gitti/ekranlar/${base}",`;
+});
 
 fs.writeFileSync(
   MANIFEST,
   `// Generated by scripts/nereye-gitti-screenshots.mjs — do not edit by hand.
-// Source: ${sourceDir.startsWith(APP_DOCS) ? path.relative(APP_DOCS, sourceDir) : sourceDir}/ (${sources.map((s) => path.basename(s)).join(", ")})
-export const SCREENSHOT_IMAGES: readonly { base: string; widths: readonly number[] }[] = [
+// Source: ${sourceDir.startsWith(APP_WEB) ? "gidertakip docs/magaza/web" : sourceDir}/ (${names.join(", ")})
+// Each base has -660.webp, -1320.webp and a -660.jpg fallback.
+export const SCREENSHOT_IMAGES: readonly string[] = [
 ${entries.join("\n")}
 ];
 `,
