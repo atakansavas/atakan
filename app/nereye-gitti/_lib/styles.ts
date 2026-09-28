@@ -96,11 +96,10 @@ const landing = /* css */ `
 .badge img{height:50px;width:auto}
 .store-link{display:inline-flex;align-items:center;min-height:44px;font-weight:600}
 
-/* Screenshot frame: plain rounded frame, radius ~6% of width, 1px border. */
+/* App Store frame, shown as is: radius ~6% of width, 1px border, #131416 while loading. */
 .shot{aspect-ratio:1320/2868;border-radius:6%/2.762%;border:1px solid var(--border);overflow:hidden;background:var(--surface2)}
+.shot picture,.shot img{display:block}
 .shot img{width:100%;height:100%;object-fit:cover}
-/* Until the real screenshots arrive: an obviously empty grey slot. */
-.shot--placeholder{border-style:dashed;border-color:var(--border-strong);background:repeating-linear-gradient(135deg,#17181b 0 12px,#131416 12px 24px)}
 
 .hero{position:relative;isolation:isolate;overflow-x:clip;padding:48px 0 72px}
 .hero::before{content:"";position:absolute;z-index:-1;inset:0 0 auto 0;height:720px;background:radial-gradient(60% 55% at 20% 0%,rgba(180,149,254,.16),transparent 70%),radial-gradient(40% 45% at 85% 30%,rgba(180,149,254,.08),transparent 70%);pointer-events:none}
@@ -113,12 +112,10 @@ const landing = /* css */ `
 .hero .cta{margin-top:32px}
 .hero-visual{justify-self:center;width:min(300px,76vw);position:relative}
 .hero-visual::before{content:"";position:absolute;z-index:-1;inset:10% -20%;background:radial-gradient(closest-side,rgba(180,149,254,.18),transparent);pointer-events:none}
-.hero-visual:has(.shot--placeholder){width:min(240px,62vw)}
 @media (min-width:900px){
   .hero{padding:80px 0 112px}
   .hero-grid{grid-template-columns:minmax(0,1fr) 320px;gap:72px}
   .hero-visual{justify-self:end;width:100%}
-  .hero-visual:has(.shot--placeholder){width:280px}
 }
 
 .section{padding:72px 0;border-top:1px solid var(--border)}

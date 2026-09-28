@@ -67,6 +67,7 @@ ${page === "tanitim" ? html`<meta name="apple-itunes-app" content="app-id=${APP_
 <meta property="og:description" content="${description}">
 <meta property="og:url" content="${url}">
 <meta property="og:image" content="${OG_IMAGE.url}">
+<meta property="og:image:type" content="${OG_IMAGE.type}">
 <meta property="og:image:width" content="${OG_IMAGE.width}">
 <meta property="og:image:height" content="${OG_IMAGE.height}">
 <meta property="og:image:alt" content="${OG_IMAGE.alt}">

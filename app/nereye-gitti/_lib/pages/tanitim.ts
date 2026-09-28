@@ -67,19 +67,17 @@ const FEATURES = [
 
 const tagClass = { cark: "tag tag--cark", plan: "tag", gelir: "tag tag--gelir", gider: "tag tag--gider" };
 
-// The App Store frames, shown as they are (WebP 660/1320 w, JPEG fallback).
-// Their headline is part of the image, so it also goes into alt. Without
-// frames, a plain grey 1320:2868 placeholder stands in (no fake screenshots).
-const shot = (s: Screenshot, hero = false) => {
-  if (!s.image) {
-    return html`<div class="shot shot--placeholder" aria-hidden="true"></div>`;
-  }
-  const sizes = hero ? "(min-width: 900px) 320px, 76vw" : "(min-width: 900px) 264px, 70vw";
+// The App Store frames, shown as they are: WebP 660/1320 w with a JPEG
+// fallback. `sizes` follows the rendered width (hero: min(300px, 76vw), then
+// a 320px column; strip: min(70%, 250px), then 264px), so a 3x iPhone takes
+// the 1320w file and a 2x screen the 660w one.
+const shot = ({ files: f, alt }: Screenshot, hero = false) => {
+  const sizes = hero ? "(min-width: 900px) 320px, 300px" : "(min-width: 900px) 264px, 250px";
   return html`<div class="shot"><picture>
-<source type="image/webp" srcset="${s.image}-660.webp 660w, ${s.image}-1320.webp 1320w" sizes="${sizes}">
-<img src="${s.image}-660.jpg" width="1320" height="2868" alt="${`${s.title} ${s.alt}`}"${
+<source type="image/webp" srcset="${f.webp660} 660w, ${f.webp1320} 1320w" sizes="${sizes}">
+<img src="${f.jpg660}" srcset="${f.jpg660} 660w, ${f.jpg1320} 1320w" sizes="${sizes}" width="1320" height="2868"${
     hero ? html` fetchpriority="high"` : html` loading="lazy" decoding="async"`
-  }>
+  } alt="${alt}">
 </picture></div>`;
 };
 

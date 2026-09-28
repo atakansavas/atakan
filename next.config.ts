@@ -36,9 +36,11 @@ const nextConfig: NextConfig = {
         source: "/nereye-gitti/:file([^/]+\\.(?:svg|png))",
         headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
       },
-      // These file names carry a content hash.
+      // Content-hashed file names (<name>.<sha8>.<ext>): cache forever. Listed
+      // after the rule above so it wins for og.<sha8>.png.
+      { source: "/nereye-gitti/:file([^/]+\\.[0-9a-f]{8}\\.png)", headers: immutable },
       { source: "/nereye-gitti/fonts/:file([^/]+\\.[0-9a-f]{8}\\.woff2)", headers: immutable },
-      { source: "/nereye-gitti/ekranlar/:file*", headers: immutable },
+      { source: "/nereye-gitti/ekranlar/:file([^/]+\\.[0-9a-f]{8}\\.(?:webp|jpg))", headers: immutable },
     ];
   },
 };

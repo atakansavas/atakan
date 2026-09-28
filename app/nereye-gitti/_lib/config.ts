@@ -1,3 +1,5 @@
+import { OG_IMAGE_PATH } from "./screenshots.generated";
+
 // Nereye Gitti — iPhone app pages (/nereye-gitti, /gizlilik, /destek).
 //
 // These three URLs are hard-coded in App Store Connect (Marketing, Privacy
@@ -32,8 +34,10 @@ export const PATHS = {
 
 export const SUPPORT_EMAIL = "info@benatakan.com";
 
+// Content-hashed copy of og.png (see scripts/nereye-gitti-screenshots.mjs).
 export const OG_IMAGE = {
-  url: `${SITE_ORIGIN}${BASE_PATH}/og.png`,
+  url: `${SITE_ORIGIN}${OG_IMAGE_PATH}`,
+  type: "image/png",
   width: 1200,
   height: 630,
   alt: 'Nereye Gitti işareti, "Bas, çevir, bırak." yazısı ve çark ekranını gösteren bir iPhone',
