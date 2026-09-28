@@ -46,11 +46,8 @@ export const socials: Record<SocialKey, Social> = {
   tiktok: {
     key: "tiktok",
     platform: "TikTok",
-    // The live profile handle is @sezai.network — a known typo that will be
-    // corrected to @sanai.network once TikTok's 30-day handle lock lifts
-    // (2026-08-04). We link to the working profile but show the brand handle.
     handle: "@sanai.network",
-    href: "https://www.tiktok.com/@sezai.network",
+    href: "https://www.tiktok.com/@sanai.network",
     icon: SiTiktok,
   },
   youtube: {
