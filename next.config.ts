@@ -29,12 +29,16 @@ const nextConfig: NextConfig = {
     };
   },
   async headers() {
+    const immutable = [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }];
     return [
       {
-        // Font files carry a content hash in their name.
-        source: "/nereye-gitti/fonts/:file*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+        // Icons and og.png have stable names: cache a day, then revalidate.
+        source: "/nereye-gitti/:file([^/]+\\.(?:svg|png))",
+        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
       },
+      // These file names carry a content hash.
+      { source: "/nereye-gitti/fonts/:file([^/]+\\.[0-9a-f]{8}\\.woff2)", headers: immutable },
+      { source: "/nereye-gitti/ekranlar/:file*", headers: immutable },
     ];
   },
 };

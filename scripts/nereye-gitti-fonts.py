@@ -38,7 +38,6 @@ SORA_VF = Path(tempfile.gettempdir()) / "nereye-gitti-fonts" / "Sora[wght].ttf"
 SORA_LICENSE = EXPO / "sora/LICENSE_FONT"  # same text as google/fonts ofl/sora/OFL.txt
 
 PLEX = {
-    "400": EXPO / "ibm-plex-mono/400Regular/IBMPlexMono_400Regular.ttf",
     "500": EXPO / "ibm-plex-mono/500Medium/IBMPlexMono_500Medium.ttf",
 }
 PLEX_LICENSE = EXPO / "ibm-plex-mono/LICENSE_FONT"

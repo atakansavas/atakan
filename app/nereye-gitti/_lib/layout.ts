@@ -38,15 +38,15 @@ const footer = html`<footer class="site-footer">
 </ul>
 </nav>
 <p class="footer-copy">© 2026 Atakan Savaş</p>
-<p class="footer-tm">Apple, Apple logosu, iPhone ve App Store, Apple Inc.'in ABD'de ve diğer ülkelerde tescilli ticari markalarıdır.</p>
+<p class="footer-tm">Apple, Apple logosu ve iPhone, Apple Inc.'in ABD ve diğer ülkelerde ve bölgelerde kayıtlı ticari markalarıdır. App Store, Apple Inc.'in ABD ve diğer ülkelerde ve bölgelerde kayıtlı servis markasıdır.</p>
 </div>
 </footer>`;
 
 /**
  * A complete HTML document. No scripts, no third-party requests, one
- * canonical, page-specific og/twitter tags. The body is wrapped in
- * email_off markers so Cloudflare's Email Address Obfuscation leaves the
- * support address as plain text (and injects no decoder script).
+ * canonical, page-specific og/twitter tags. The body is also wrapped in
+ * email_off markers (see htmlResponse for the no-transform header) so
+ * Cloudflare's Email Address Obfuscation leaves the address as plain text.
  */
 export function renderDocument({ page, title, description, css, main }: DocumentOptions): Html {
   const url = `${SITE_ORIGIN}${PATHS[page]}`;
@@ -89,7 +89,7 @@ ${header(page)}
 ${main}
 </main>
 ${footer}
-<!--email_on-->
+<!--/email_off-->
 </body>
 </html>
 `;

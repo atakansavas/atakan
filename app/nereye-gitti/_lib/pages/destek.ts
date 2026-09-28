@@ -1,7 +1,7 @@
 import { PATHS, SUPPORT_EMAIL } from "../config";
 import { html, type Html } from "../html";
 import { renderDocument } from "../layout";
-import { docCss } from "../styles";
+import { destekCss } from "../styles";
 
 const mail = html`<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
 const policyLink = html`<a href="${PATHS.gizlilik}">Gizlilik Politikası</a>`;
@@ -57,10 +57,10 @@ export const renderDestek = () =>
     title: "Destek — Nereye Gitti",
     description:
       "Nereye Gitti için destek ve sık sorulan sorular: yeni telefona taşıma, verileri silme, CSV dışa aktarma, bildirimler ve widget'lar.",
-    css: docCss,
+    css: destekCss,
     main: html`<div class="doc"><div class="wrap">
-<h1>Nereye Gitti — Destek</h1>
-<p class="intro">Soru, öneri ya da hata bildirimi için e-posta gönder: ${mail}. Genellikle 2 iş günü içinde yanıt veririm.</p>
+<h1>Nereye <span class="nw">Gitti —</span> Destek</h1>
+<p class="intro">Soru, öneri ya da hata bildirimi için <span class="nw">e-posta</span> gönder: ${mail}. Genellikle 2 iş günü içinde yanıt veririm.</p>
 <a class="btn" href="mailto:${SUPPORT_EMAIL}?subject=Nereye%20Gitti">E-posta gönder</a>
 <section class="req" aria-labelledby="gereksinimler">
 <h2 id="gereksinimler">Sistem gereksinimleri</h2>

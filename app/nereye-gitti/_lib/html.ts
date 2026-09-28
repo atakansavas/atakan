@@ -45,8 +45,11 @@ export function htmlResponse(doc: Html): Response {
   return new Response(doc.value, {
     headers: {
       "content-type": "text/html; charset=utf-8",
-      // Short: a policy edit must reach readers right after a deploy.
-      "cache-control": "public, max-age=0, s-maxage=300, must-revalidate",
+      // Short, so a policy edit reaches readers right after a deploy.
+      // no-transform: Cloudflare must not rewrite these pages — it would
+      // otherwise inject its Web Analytics beacon (a third-party script) and
+      // obfuscate the support e-mail address behind a decoder script.
+      "cache-control": "public, max-age=0, s-maxage=300, must-revalidate, no-transform",
     },
   });
 }

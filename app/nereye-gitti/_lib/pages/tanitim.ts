@@ -20,46 +20,54 @@ ${
 <p class="meta">iPhone · iOS 16.4 ve üstü · Türkçe</p>
 </div>`;
 
+// Small mono tags echo the app's widget labels; colour keeps the app's
+// meaning (amber = expense, mint = income, purple = plans/reminders).
 const FEATURES = [
   {
-    tick: "cark",
+    tag: "cark",
+    label: "Çark",
     title: "Bas, çevir, bırak",
     text: "Çarka dokun, parmağını kategoriye kaydır, bırak: tutar ekranı hazır. Sol yarı gider, sağ yarı gelir; o kategoride son girdiğin tutar önerilir.",
   },
   {
-    tick: "plan",
+    tag: "plan",
+    label: "Pusula",
     title: "Maaşa kadar ne kalır?",
     text: "Bugün elindeki parayı bir kez gir. Pusula planlarını gün gün ileri sarar; sonraki gelirine kadar ne kalacağını tek sayıyla gösterir, en dar günü de işaretler.",
   },
   {
-    tick: "plan",
+    tag: "plan",
+    label: "Vade",
     title: "Günü gelince sorar",
     text: "Kira, maaş, fatura, taksit: bir kez planla. Vade günü seçtiğin saatte bildirim gelir; Ödedim de tutar hazır, Yarın sor de vade yarına kalsın.",
   },
   {
-    tick: "gelir",
+    tag: "gelir",
+    label: "Kilit ekranı",
     title: "Kilit ekranından kaydet",
     text: "Gider ekle, Gelir ekle ve Çark widget'ları; sıradaki ödemeyi gösteren Yaklaşan. iOS 18'de Denetim Merkezi, kilit ekranı köşeleri ve Eylem düğmesi için kontroller.",
   },
   {
-    tick: "plan",
+    tag: "plan",
+    label: "Takvim",
     title: "Ayın tamamı tek ekranda",
     text: "Takvimde günler gelir, gider ve vade işaretli, en dar gün vurgulu. Geçmiş bir güne dokunup unuttuğun harcamayı ekle, ileri bir güne dokunup plan kur.",
   },
   {
-    tick: "gider",
+    tag: "gider",
+    label: "Rapor",
     title: "Rapor ve aylık tavan",
     text: "Son 7 gün, bu ay ya da son 3 ay: paranın kategori kategori nereye gittiğini, gelirinin hangi kaynaktan geldiğini gör. İstediğin gider kategorisine aylık tavan koy; tavan aşılınca uyarı gör.",
   },
 ] as const;
 
-const tickClass = { cark: "tick tick--cark", plan: "tick", gelir: "tick tick--gelir", gider: "tick tick--gider" };
+const tagClass = { cark: "tag tag--cark", plan: "tag", gelir: "tag tag--gelir", gider: "tag tag--gider" };
 
 // Real screenshots use <picture> (AVIF/WebP, 360/720/1080w); until they
 // exist, a plain grey 1320:2868 placeholder stands in (no fake screenshots).
 const shot = (s: Screenshot, hero = false) => {
   if (!s.image) {
-    return html`<div class="shot shot--placeholder" aria-hidden="true"><img src="${BASE_PATH}/mark.svg" width="28" height="28" alt=""></div>`;
+    return html`<div class="shot shot--placeholder" aria-hidden="true"></div>`;
   }
   const srcset = (ext: string) =>
     s.image!.widths.map((w) => `${s.image!.base}-${w}.${ext} ${w}w`).join(", ");
@@ -101,7 +109,7 @@ ${cta()}
 </div>
 <ul class="features">
 ${FEATURES.map((f) => html`<li class="card">
-<span class="${tickClass[f.tick]}" aria-hidden="true"></span>
+<div class="${tagClass[f.tag]}">${f.label}</div>
 <h3>${f.title}</h3>
 <p>${f.text}</p>
 </li>
@@ -127,8 +135,10 @@ ${shot(s)}
 <section class="section" id="gizlilik" aria-labelledby="gizlilik-baslik">
 <div class="wrap">
 <div class="panel">
+<div class="panel-head">
 <p class="label">Gizlilik</p>
 <h2 id="gizlilik-baslik">Senin verin, senin telefonun.</h2>
+</div>
 <p>Hesap yok, reklam yok, analitik yok. Kayıtların, planların ve bakiyen iPhone'unda durur, bize gönderilmez; uygulama internet olmadan da çalışır. iCloud Yedekleme açıksa ya da iPhone'unu bilgisayara yedekliyorsan verilerin bu cihaz yedeğine dahil olur ve yeni iPhone'a yedekten geçtiğinde seninle gelir; yedek senin Apple hesabında ya da bilgisayarında durur, bizim erişimimiz yoktur. Kayıtlarını istediğin an CSV biçiminde dışa aktarabilir, Ayarlar'dan kayıt ve planlarını silebilirsin.</p>
 <a class="more" href="${PATHS.gizlilik}">Gizlilik politikasının tamamı</a>
 </div>

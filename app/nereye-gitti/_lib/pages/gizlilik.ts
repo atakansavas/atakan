@@ -1,7 +1,7 @@
 import { PATHS } from "../config";
 import { html } from "../html";
 import { renderDocument } from "../layout";
-import { docCss } from "../styles";
+import { gizlilikCss } from "../styles";
 
 // The policy text below is binding and matched word-for-word with the App
 // Store privacy declaration (source: gidertakip docs/magaza-metinleri.md §6).
@@ -28,7 +28,7 @@ export const renderGizlilik = () =>
     title: "Gizlilik Politikası — Nereye Gitti",
     description:
       "Nereye Gitti'nin gizlilik politikası: verilerin cihazında kalır; hesap, reklam ve analitik yok. Güncelleme kontrolü ve cihaz yedeği hakkında ayrıntılar.",
-    css: docCss,
+    css: gizlilikCss,
     main: html`<div class="doc"><div class="wrap">
 ${policy}
 <ul class="after-links">
