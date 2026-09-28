@@ -30,7 +30,7 @@ export const PATHS = {
   destek: `${BASE_PATH}/destek`,
 } as const;
 
-export const SUPPORT_EMAIL = "destek@benatakan.com";
+export const SUPPORT_EMAIL = "info@benatakan.com";
 
 export const OG_IMAGE = {
   url: `${SITE_ORIGIN}${BASE_PATH}/og.png`,
