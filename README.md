@@ -12,6 +12,7 @@ Personal site of Atakan Savaş — built with Next.js.
 - `/san-ai` — San·ai, a shared software house in Dalyan · [@sanai.network](https://www.instagram.com/sanai.network/)
 - `/mesai` — Mesai, an AI office for every project (closed beta)
 - `/presentations` — decks on voice AI scenarios and AI cost models
+- `/nereye-gitti` (+ `/gizlilik`, `/destek`) — Nereye Gitti iPhone app: landing, privacy policy, support. URLs are fixed in App Store Connect; static, JS-free route handlers. Launch switch: `NEREYE_GITTI_APP_STORE_LIVE` in `app/nereye-gitti/_lib/config.ts`
 
 ## Stack
 
