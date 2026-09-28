@@ -45,6 +45,9 @@ export const metadata: Metadata = {
   creator: "Atakan Savaş",
   publisher: "Ben Atakan AI Solutions",
   metadataBase: new URL("https://benatakan.com"),
+  // "./" resolves against each page's own path, so every page is its own
+  // canonical (/cv -> https://benatakan.com/cv) instead of the home page.
+  alternates: { canonical: "./" },
   formatDetection: {
     email: false,
     address: false,
@@ -99,7 +102,6 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <link rel="canonical" href="https://benatakan.com/" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script
           src="https://unpkg.com/@elevenlabs/convai-widget-embed"
