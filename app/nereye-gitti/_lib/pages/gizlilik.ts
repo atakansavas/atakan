@@ -6,10 +6,10 @@ import { gizlilikCss } from "../styles";
 // The policy text below is binding and matched word-for-word with the App
 // Store privacy declaration (source: gidertakip docs/magaza-metinleri.md §6).
 // Do not edit, shorten, "smart-quote" or text-transform it. Check after any
-// change: collapse whitespace in #politika's innerText -> 2075 characters,
-// SHA-256 d40a877104833db8455564d4433bbe8f6ee1ee675d206eb4458dd44c7552f0ab.
-// (The brief's text with the contact address changed from destek@ to
-// info@benatakan.com at the owner's request, 2026-09-28.)
+// change: collapse whitespace in #politika's innerText -> 2393 characters,
+// SHA-256 99c2de1f14872f836b1d5bc0d02e4dec2ece49c8eb5a358170ff2589f9913112.
+// (Update 2, 2026-09-29: three sentences on Expo as processor, retention and
+// requests — App Review 5.1.1(i) — before the Expo link, and the new date.)
 // When the policy changes, update the text and "Son güncelleme" together.
 const policy = html`<article id="politika">
 <h1>Nereye Gitti — Gizlilik Politikası</h1>
@@ -17,11 +17,11 @@ const policy = html`<article id="politika">
 <p><strong>Yedekleme:</strong> iPhone'unda iCloud Yedekleme açıksa ya da iPhone'unu bilgisayara yedekliyorsan Nereye Gitti verileri de bu cihaz yedeğine dahil olur; yeni bir iPhone'u bu yedekten geri yüklediğinde verilerin taşınır. iCloud yedeği senin Apple hesabında Apple tarafından, bilgisayar yedeği kendi bilgisayarında saklanır; ikisine de bizim erişimimiz yoktur.</p>
 <p><strong>Bildirimler:</strong> Vade hatırlatmaları cihazında yerel olarak planlanır; push token alınmaz.</p>
 <p><strong>Dışa aktarma:</strong> CSV dışa aktarmayı yalnızca sen başlatırsın ve paylaşacağın yeri sen seçersin.</p>
-<p><strong>Uygulama güncellemeleri:</strong> Uygulama, hata düzeltmelerini hızlıca ulaştırmak için açılışta Expo'nun EAS Update hizmetiyle güncelleme olup olmadığını kontrol eder. Bu kontrolde cihazının platformu, uygulama sürümü bilgisi, güncelleme kanalı ve uygulama kurulumuna özel rastgele bir kimlik gönderilir; her internet bağlantısında olduğu gibi IP adresin de Expo'nun sunucularına ulaşır. Expo bu kimliği güncellemeleri kademeli dağıtmak ve güncellemeyi alan kurulumları saymak için saklar. Kimlik seni ya da cihazının donanımını tanımlamaz, uygulamadaki verilerinle ilişkilendirilmez; uygulamayı silince cihazından da silinir. Expo'nun gizlilik politikası: <a href="https://expo.dev/privacy" rel="noreferrer">https://expo.dev/privacy</a></p>
+<p><strong>Uygulama güncellemeleri:</strong> Uygulama, hata düzeltmelerini hızlıca ulaştırmak için açılışta Expo'nun EAS Update hizmetiyle güncelleme olup olmadığını kontrol eder. Bu kontrolde cihazının platformu, uygulama sürümü bilgisi, güncelleme kanalı ve uygulama kurulumuna özel rastgele bir kimlik gönderilir; her internet bağlantısında olduğu gibi IP adresin de Expo'nun sunucularına ulaşır. Expo bu kimliği güncellemeleri kademeli dağıtmak ve güncellemeyi alan kurulumları saymak için saklar. Kimlik seni ya da cihazının donanımını tanımlamaz, uygulamadaki verilerinle ilişkilendirilmez; uygulamayı silince cihazından da silinir. Expo bu bilgileri güncelleme hizmetini sağlamak için bizim adımıza işler, bu politikadaki korumayla aynı ya da eşdeğer bir koruma sağlar ve hizmet için makul ölçüde gerekli olduğu sürece tutar. Uygulamayı silmek bu gönderimi durdurur. Bu konudaki soruların ve taleplerin için <a href="mailto:info@benatakan.com">info@benatakan.com</a> adresine yazabilirsin. Expo'nun gizlilik politikası: <a href="https://expo.dev/privacy" rel="noreferrer">https://expo.dev/privacy</a></p>
 <p><strong>Verilerini silmek:</strong> Uygulamada Ayarlar → Verileri sıfırla tüm kayıt, plan ve bakiye bilgisini siler; uygulamayı silmek cihazdaki tüm verileri kaldırır. Daha önce alınmış cihaz yedeklerindeki kopya, o yedekler yenilenene ya da silinene kadar durabilir.</p>
 <p><strong>Değişiklikler:</strong> Bu politika değişirse bu sayfa güncellenir; uygulama bir gün hesap ya da senkron gibi veri toplayan bir özellik kazanırsa politika o sürümden önce güncellenir.</p>
 <p class="contact"><strong>İletişim:</strong> Atakan Savaş · <a href="mailto:info@benatakan.com">info@benatakan.com</a></p>
-<p class="updated">Son güncelleme: 28 Eylül 2026</p>
+<p class="updated">Son güncelleme: 29 Eylül 2026</p>
 </article>`;
 
 export const renderGizlilik = () =>
