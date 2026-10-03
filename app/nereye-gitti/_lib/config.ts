@@ -17,11 +17,14 @@ import { OG_IMAGE_PATH } from "./screenshots.generated";
  *
  * Flip only after the owner says "Nereye Gitti yayında", then commit + push
  * (Railway deploys main) and re-run the acceptance checks.
+ *
+ * On since 2026-10-03: the app has been on the App Store since 2026-10-01.
  */
-export const NEREYE_GITTI_APP_STORE_LIVE = false;
+export const NEREYE_GITTI_APP_STORE_LIVE = true;
 
 export const APP_STORE_ID = "6812267051";
-export const APP_STORE_URL = `https://apps.apple.com/app/id${APP_STORE_ID}`;
+// The owner's link (Türkiye storefront); opens the App Store app on iPhone.
+export const APP_STORE_URL = `https://apps.apple.com/tr/app/nereye-gitti/id${APP_STORE_ID}`;
 
 export const SITE_ORIGIN = "https://benatakan.com";
 export const BASE_PATH = "/nereye-gitti";
@@ -56,5 +59,9 @@ export const APP_STORE_BADGE = {
   height: 40,
 } as const;
 
-/** Last-modified date for the sitemap entries of these pages. */
-export const LAST_MODIFIED = "2026-09-28";
+/** Last content change per page, for sitemap.xml. */
+export const LAST_MODIFIED: Record<keyof typeof PATHS, string> = {
+  tanitim: "2026-10-03",
+  gizlilik: "2026-09-29",
+  destek: "2026-09-28",
+};

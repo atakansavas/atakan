@@ -7,6 +7,9 @@ const SITE_PAGES = ["/", "/cv", "/projects", "/san-ai", "/mesai", "/presentation
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...SITE_PAGES.map((p) => ({ url: `${SITE_ORIGIN}${p === "/" ? "" : p}` })),
-    ...Object.values(PATHS).map((p) => ({ url: `${SITE_ORIGIN}${p}`, lastModified: LAST_MODIFIED })),
+    ...Object.entries(PATHS).map(([page, p]) => ({
+      url: `${SITE_ORIGIN}${p}`,
+      lastModified: LAST_MODIFIED[page as keyof typeof PATHS],
+    })),
   ];
 }

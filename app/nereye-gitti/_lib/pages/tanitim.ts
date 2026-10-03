@@ -12,7 +12,8 @@ import { landingCss } from "../styles";
 
 // Pre-launch: no badge and no apps.apple.com link anywhere on the page.
 // Live: Apple allows one badge per layout, so the official badge sits in the
-// hero and the closing section gets a plain text link.
+// hero and the closing section gets a plain text link. Android is in Google
+// Play testing: one plain line, no badge or link until it is published.
 const cta = (place: "hero" | "closing") => html`<div class="cta">
 ${
   !NEREYE_GITTI_APP_STORE_LIVE
@@ -22,6 +23,7 @@ ${
       : html`<a class="store-link" href="${APP_STORE_URL}">App Store'dan indir</a>`
 }
 <p class="meta">iPhone · iOS 16.4 ve üstü · Türkçe</p>
+<p class="android">Android sürümü yakında Google Play'de.</p>
 </div>`;
 
 // Small mono tags echo the app's widget labels; colour keeps the app's

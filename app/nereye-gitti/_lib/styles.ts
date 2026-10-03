@@ -95,6 +95,7 @@ const landing = /* css */ `
 .badge{display:inline-block;margin:13px 0;line-height:0;border-radius:10px}
 .badge img{height:50px;width:auto}
 .store-link{display:inline-flex;align-items:center;min-height:44px;font-weight:600}
+.android{margin-top:-6px;color:var(--n70);font-size:.875rem}
 
 /* App Store frame, shown as is: radius ~6% of width, 1px border, #131416 while loading. */
 .shot{aspect-ratio:1320/2868;border-radius:6%/2.762%;border:1px solid var(--border);overflow:hidden;background:var(--surface2)}
